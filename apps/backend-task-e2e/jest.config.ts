@@ -1,6 +1,6 @@
 export default {
   displayName: 'backend-task-e2e',
-  preset: '../../jest.preset.js',
+  preset: '../../jest.preset.cjs',
   globalSetup: '<rootDir>/src/support/global-setup.ts',
   globalTeardown: '<rootDir>/src/support/global-teardown.ts',
   setupFiles: ['<rootDir>/src/support/test-setup.ts'],
