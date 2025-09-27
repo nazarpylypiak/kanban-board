@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
+  "type": "module",
   "devDependencies": {
     "@angular-devkit/core": "~20.2.0",
     "@angular-devkit/schematics": "~20.2.0",
