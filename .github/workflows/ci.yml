@@ -8,6 +8,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # ensures full git history (needed if you switch back to nx affected)
 
       - uses: actions/setup-node@v3
         with:
@@ -21,7 +23,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm install --legacy-peer-deps
+      - run: npm ci --legacy-peer-deps # more reliable & faster than `npm install`
 
-      - run: npx nx run-many --target=build --all
-      - run: npx nx run-many --target=test --all
+      # Build all projects (uses Nx cache so only changed ones rebuild)
+      - run: npx nx run-many --target=build --all --parallel=3
+
+      # Run all tests
+      - run: npx nx run-many --target=test --all --parallel=3
