@@ -3,13 +3,12 @@ import { useAuth } from '../context/AuthContext';
 import React from 'react';
 
 interface PrivateRouteProps {
-  children: React.JSX.Element;
+  children: React.ReactNode;
 }
 
 export const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) {
+  const { isAuthenticated, loading } = useAuth();
+  if (!loading && !isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
