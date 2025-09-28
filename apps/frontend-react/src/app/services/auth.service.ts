@@ -1,11 +1,11 @@
-import api from './api';
+import apiAuth from './api-auth';
 
 export const register = async (
   email: string,
   password: string,
   role: 'user' | 'admin'
 ) => {
-  const response = await api.post('/auth/register', {
+  const response = await apiAuth.post('/auth/register', {
     email,
     password,
     role,
@@ -14,7 +14,7 @@ export const register = async (
 };
 
 export const login = async (email: string, password: string) => {
-  const response = await api.post<{ accessToken: string }>('/auth/login', {
+  const response = await apiAuth.post<{ accessToken: string }>('/auth/login', {
     email,
     password,
   });
@@ -22,10 +22,10 @@ export const login = async (email: string, password: string) => {
 };
 
 export const refreshToken = async () => {
-  const response = await api.post('/auth/refresh');
+  const response = await apiAuth.post('/auth/refresh');
   return response.data;
 };
 
 export const logout = async () => {
-  await api.post('/auth/logout');
+  await apiAuth.post('/auth/logout');
 };

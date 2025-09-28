@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-
-export type UserRole = 'user' | 'admin';
+import { UserRole } from '@kanban-board/shared';
 
 @Entity('users')
 export class User {
@@ -13,6 +12,6 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ default: 'user' })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 }

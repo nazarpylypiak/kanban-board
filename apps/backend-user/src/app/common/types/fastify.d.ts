@@ -1,7 +1,7 @@
-import { UserPayload } from './user-payload.interface';
+import { User } from '@kanban-board/shared';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    user?: UserPayload;
+    user?: User;
   }
 }

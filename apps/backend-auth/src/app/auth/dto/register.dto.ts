@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
-import { UserRole } from '../entities/user.entity';
+import { UserRole } from '@kanban-board/shared';
 
 export class RegisterDto {
   @IsEmail()

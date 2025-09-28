@@ -1,7 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
-
-export type UserRole = 'user' | 'admin';
+import { UserRole } from '@kanban-board/shared';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -13,7 +12,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ default: 'user' })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)

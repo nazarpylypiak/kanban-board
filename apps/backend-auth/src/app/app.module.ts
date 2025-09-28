@@ -23,7 +23,7 @@ import { RefreshToken } from './auth/entities/refresh-token.entity';
         password: config.get<string>('POSTGRES_PASSWORD'),
         database: config.get<string>('POSTGRES_DB'),
         entities: [User, RefreshToken],
-        synchronize: true, // TODO only for dev
+        synchronize: config.get<string>('NODE_ENV') === 'development',
       }),
     }),
 

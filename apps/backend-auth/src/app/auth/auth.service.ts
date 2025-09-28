@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { UserRole } from '@kanban-board/shared';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
     const user = this.userRepository.create({
       email: dto.email,
       password: hashed,
-      role: dto.role || 'user',
+      role: dto.role || UserRole.USER,
     });
 
     await this.userRepository.save(user);
@@ -85,6 +86,7 @@ export class AuthService {
     const refreshToken = req.cookies['refreshToken'];
     if (!refreshToken) throw new ForbiddenException('No refresh token');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let payload: any;
     try {
       payload = this.jwtService.verify(refreshToken, {

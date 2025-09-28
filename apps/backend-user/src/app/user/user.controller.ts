@@ -18,7 +18,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { FastifyRequest } from 'fastify';
 
 @Controller('users')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -52,7 +52,6 @@ export class UserController {
     return this.userService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req: FastifyRequest) {
     if (!req.user) {

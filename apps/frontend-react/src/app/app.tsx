@@ -5,7 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from './store';
 import { useEffect, useRef } from 'react';
-import api from './services/api';
+import apiAuth from './services/api-auth';
 import { setAccessToken, setLoading } from './store/authSlice';
 import PrivateLayout from './layouts/PrivateLayout';
 
@@ -18,7 +18,7 @@ export const App = () => {
     didRefresh.current = true;
     const refresh = async () => {
       try {
-        const res = await api.get<{ accessToken: string }>('/auth/refresh');
+        const res = await apiAuth.get<{ accessToken: string }>('/auth/refresh');
         dispatch(setAccessToken(res.data.accessToken));
       } catch (err) {
         dispatch(setAccessToken(null));
