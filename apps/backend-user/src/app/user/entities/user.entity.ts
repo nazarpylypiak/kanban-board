@@ -1,7 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { RefreshToken } from './refresh-token.entity';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 export type UserRole = 'user' | 'admin';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -15,7 +15,4 @@ export class User {
 
   @Column({ default: 'user' })
   role: UserRole;
-
-  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
-  refreshTokens: RefreshToken[];
 }
