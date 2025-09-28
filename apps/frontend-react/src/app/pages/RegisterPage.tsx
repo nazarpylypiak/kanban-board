@@ -8,13 +8,17 @@ export default function RegisterPage() {
   const [role, setRole] = useState<'user' | 'admin'>('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setRole('user');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const data = await register(email, password, role);
-      console.log('User created:', data);
-      setSuccess('Registration successful! You can now login.');
+      resetForm();
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');

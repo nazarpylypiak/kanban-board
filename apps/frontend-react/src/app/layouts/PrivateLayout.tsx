@@ -1,13 +1,9 @@
-import { Navigate } from 'react-router-dom';
-import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import TopBar from '../components/TopBar';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-}
-
-export const PrivateRoute = ({ children }: PrivateRouteProps) => {
+export default function PrivateLayout() {
   const { accessToken, loading } = useSelector(
     (state: RootState) => state.auth
   );
@@ -15,5 +11,10 @@ export const PrivateRoute = ({ children }: PrivateRouteProps) => {
   if (loading) return <div>Loading...</div>;
   if (!accessToken) return <Navigate to="/login" replace />;
 
-  return children;
-};
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <TopBar />
+      <Outlet />
+    </div>
+  );
+}

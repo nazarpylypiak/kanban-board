@@ -1,24 +1,26 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login as loginService } from '../services/auth.service';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch } from 'react-redux';
+import { setAccessToken, setLoggedIn } from '../store/authSlice';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const data = await loginService(email, password);
 
-      localStorage.setItem('token', data.access_token);
-      login();
+      dispatch(setAccessToken(data.accessToken));
+      dispatch(setLoggedIn(true));
 
-      navigate('/kanban');
+      navigate('/dashboard');
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');

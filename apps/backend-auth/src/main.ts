@@ -6,10 +6,22 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import cookie, { FastifyCookieOptions } from '@fastify/cookie';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter()
+  );
   const globalPrefix = 'api';
+
+  const configService = app.get(ConfigService);
+
   app.setGlobalPrefix(globalPrefix);
 
   app.enableCors({
@@ -22,7 +34,15 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = process.env.PORT || 3000;
+  await app.register(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    cookie as any,
+    {
+      secret: configService.get<string>('COOKIE_SECRET'),
+    } as FastifyCookieOptions
+  );
+
+  const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`

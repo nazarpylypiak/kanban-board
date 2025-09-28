@@ -1,17 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { RegisterDto, LoginDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { ConfigService } from '@nestjs/config';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectRepository(User)
-    private userRepository: Repository<User>
+    private userRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private refreshTokenRepository: Repository<RefreshToken>,
+    private configService: ConfigService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -26,17 +32,125 @@ export class AuthService {
     return { id: user.id, email: user.email, role: user.role };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, res: FastifyReply) {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
     });
+
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new Error('Invalid credentials');
     }
 
-    const payload = { sub: user.id, role: user.role };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    const tokens = this.generateTokens(user.id);
+
+    const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+    const refreshTokenEntity = this.refreshTokenRepository.create({
+      token: hashedRefreshToken,
+      user,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
+    });
+    await this.refreshTokenRepository.save(refreshTokenEntity);
+
+    // Set refresh token in cookie
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60,
+    });
+
+    return { accessToken: tokens.accessToken };
+  }
+
+  generateTokens(userId: string) {
+    const accessToken = this.jwtService.sign(
+      { sub: userId },
+      {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN'),
+      }
+    );
+    const refreshToken = this.jwtService.sign(
+      { sub: userId },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+      }
+    );
+    return { accessToken, refreshToken };
+  }
+
+  async refreshTokensFromCookie(req: FastifyRequest, res: FastifyReply) {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) throw new ForbiddenException('No refresh token');
+
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new ForbiddenException('Invalid refresh token');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+    if (!user) throw new ForbiddenException();
+
+    const tokenEntity = await this.refreshTokenRepository.findOne({
+      where: { user: { id: user.id } },
+    });
+    if (
+      !tokenEntity ||
+      !(await bcrypt.compare(refreshToken, tokenEntity.token))
+    ) {
+      throw new ForbiddenException();
+    }
+
+    const tokens = this.generateTokens(user.id);
+
+    tokenEntity.token = await bcrypt.hash(tokens.refreshToken, 10);
+    tokenEntity.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.refreshTokenRepository.save(tokenEntity);
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken: tokens.accessToken };
+  }
+
+  async logout(req: FastifyRequest, res: FastifyReply) {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      return;
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+    if (user) {
+      const tokenEntity = await this.refreshTokenRepository.findOne({
+        where: { user: { id: user.id } },
+      });
+      if (tokenEntity) await this.refreshTokenRepository.remove(tokenEntity);
+    }
+
+    // Видаляємо cookie
+    res.clearCookie('refreshToken', { path: '/' });
   }
 }
