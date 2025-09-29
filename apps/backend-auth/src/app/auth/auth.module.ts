@@ -14,8 +14,10 @@ import { RefreshToken } from './entities/refresh-token.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: config.get<string>('JWT_EXPIRES') || '1h' },
+        secret: config.get<string>('JWT_ACCESS_SECRET'),
+        signOptions: {
+          expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '1h',
+        },
       }),
     }),
   ],

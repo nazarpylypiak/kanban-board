@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { RefreshToken } from './refresh-token.entity';
 import { UserRole } from '@kanban-board/shared';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
