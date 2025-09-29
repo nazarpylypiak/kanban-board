@@ -13,20 +13,29 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 @WebSocketGateway({
   imports: [ConfigModule],
   cors: {
-    origin: [],
+    origin: (
+      origin: string,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
+      const configService = new ConfigService(); // Instantiate ConfigService
+      const allowedOriginsString = configService.get<string>('CORS_ORIGINS');
+      const allowedOrigins = allowedOriginsString
+        ? allowedOriginsString.split(',').map((c) => c.trim())
+        : [];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
   },
 })
 export class TasksGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private tasksService: TasksService
-  ) {
-    const origin = this.configService.get<string>('CORS_ORIGIN');
-    this.server.engine.opts.cors = { origin };
-  }
+  constructor(private tasksService: TasksService) {}
 
   @SubscribeMessage('createTask')
   async create(@MessageBody() dto: CreateTaskDto) {
