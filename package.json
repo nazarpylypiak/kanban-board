@@ -87,7 +87,9 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-fastify": "^11.1.6",
+    "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/typeorm": "^11.0.0",
+    "@nestjs/websockets": "^11.1.6",
     "@reduxjs/toolkit": "^2.9.0",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
@@ -104,6 +106,8 @@
     "react-router-dom": "6.29.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "typeorm": "^0.3.27",
     "zone.js": "~0.15.0"
   }

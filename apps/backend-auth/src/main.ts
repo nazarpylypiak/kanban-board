@@ -21,15 +21,18 @@ async function bootstrap() {
   const globalPrefix = 'api';
 
   const configService = app.get(ConfigService);
+  const origins = configService
+    .get<string>('CORS_ORIGIN')
+    ?.split(',')
+    .map((url) => url.trim());
 
   app.setGlobalPrefix(globalPrefix);
 
   app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:4300'],
+    origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-
   await app.register(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cookie as any,
