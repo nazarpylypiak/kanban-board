@@ -3,15 +3,15 @@
  * This is only a minimal backend to get started.
  */
 
+import cookie, { FastifyCookieOptions } from '@fastify/cookie';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import cookie, { FastifyCookieOptions } from '@fastify/cookie';
-import { ConfigService } from '@nestjs/config';
+import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -42,7 +42,7 @@ async function bootstrap() {
     } as FastifyCookieOptions
   );
 
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT') || 3001;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`

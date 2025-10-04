@@ -5,7 +5,7 @@ export const register = async (
   password: string,
   role: 'user' | 'admin'
 ) => {
-  const response = await apiAuth.post('/auth/register', {
+  const response = await apiAuth.post('/register', {
     email,
     password,
     role,
@@ -14,7 +14,7 @@ export const register = async (
 };
 
 export const login = async (email: string, password: string) => {
-  const response = await apiAuth.post<{ accessToken: string }>('/auth/login', {
+  const response = await apiAuth.post<{ accessToken: string }>('/login', {
     email,
     password,
   });
@@ -22,10 +22,10 @@ export const login = async (email: string, password: string) => {
 };
 
 export const refreshToken = async () => {
-  const response = await apiAuth.post('/auth/refresh');
+  const response = await apiAuth.get('/refresh');
   return response.data;
 };
 
 export const logout = async () => {
-  await apiAuth.post('/auth/logout');
+  await apiAuth.post('/logout');
 };

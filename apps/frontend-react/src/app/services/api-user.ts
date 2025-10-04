@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../store';
 
 const apiUser = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: '/api/users',
   withCredentials: true,
 });
 

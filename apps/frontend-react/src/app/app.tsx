@@ -1,13 +1,13 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import PrivateLayout from './layouts/PrivateLayout';
+import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import { useDispatch } from 'react-redux';
+import { refreshToken } from './services/auth.service';
 import { AppDispatch } from './store';
-import { useEffect, useRef } from 'react';
-import apiAuth from './services/api-auth';
 import { setAccessToken, setLoading } from './store/authSlice';
-import PrivateLayout from './layouts/PrivateLayout';
 
 export const App = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -18,8 +18,8 @@ export const App = () => {
     didRefresh.current = true;
     const refresh = async () => {
       try {
-        const res = await apiAuth.get<{ accessToken: string }>('/auth/refresh');
-        dispatch(setAccessToken(res.data.accessToken));
+        const res = await refreshToken();
+        dispatch(setAccessToken(res.accessToken));
       } catch (err) {
         dispatch(setAccessToken(null));
       } finally {

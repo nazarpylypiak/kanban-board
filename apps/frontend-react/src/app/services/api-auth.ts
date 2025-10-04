@@ -2,7 +2,7 @@ import axios from 'axios';
 import { store } from '../store';
 
 const apiAuth = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: '/api/auth',
   withCredentials: true,
 });
 
