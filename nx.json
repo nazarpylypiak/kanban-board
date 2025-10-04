@@ -69,6 +69,9 @@
         "style": "tailwind",
         "linter": "eslint"
       }
+    },
+    "@nx/angular:component": {
+      "style": "css"
     }
   },
   "plugins": [

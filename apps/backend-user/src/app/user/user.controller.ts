@@ -1,21 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  UseGuards,
-  Req,
+  Controller,
+  Delete,
   ForbiddenException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { FastifyRequest } from 'fastify';
+import { Roles } from '../common/decorators/roles.decorator';
+import { CreateUserDto, UpdateUserDto } from './dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { UserService } from './user.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)

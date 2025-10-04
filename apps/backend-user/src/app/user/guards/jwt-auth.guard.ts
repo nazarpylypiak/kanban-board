@@ -1,6 +1,7 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { FastifyRequest } from 'fastify';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -9,8 +10,8 @@ export class JwtAuthGuard implements CanActivate {
     private configService: ConfigService
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<FastifyRequest>();
     const authHeader = request.headers['authorization'];
     if (!authHeader) return false;
 
@@ -21,7 +22,8 @@ export class JwtAuthGuard implements CanActivate {
       });
       request.user = payload;
       return true;
-    } catch {
+    } catch (err) {
+      console.log('JwtAuthGuard error:', err);
       return false;
     }
   }

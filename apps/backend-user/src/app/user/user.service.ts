@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from './dto';
+import { UserDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -22,7 +23,15 @@ export class UserService {
   }
 
   async findAll() {
-    return this.userRepository.find();
+    const users = await this.userRepository.find();
+    return users.map(
+      (user) =>
+        new UserDto({
+          id: user.id,
+          email: user.id,
+          role: user.role,
+        })
+    );
   }
 
   async findOne(id: string) {

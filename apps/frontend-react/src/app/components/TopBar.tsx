@@ -1,10 +1,10 @@
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../services/auth.service';
-import { clearAuth, setUser } from '../store/authSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { useEffect, useRef } from 'react';
 import { getProfile } from '../services/user.service';
+import { RootState } from '../store';
+import { clearAuth, setUser } from '../store/authSlice';
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -40,7 +40,6 @@ export default function TopBar() {
       navigate('/login');
     }
   };
-  // const user =
 
   return (
     <header className="flex justify-between items-center mb-8">
@@ -49,7 +48,19 @@ export default function TopBar() {
         <p className="text-gray-600">
           User ID: {user ? user.email : 'loading...'}
         </p>
+        {/* Admin link */}
+        {user?.role === 'admin' && (
+          <a
+            href="http://localhost:4200"
+            className="text-blue-600 hover:underline mt-1 inline-block"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Go to Admin Panel
+          </a>
+        )}
       </div>
+
       <button
         onClick={handleLogout}
         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"

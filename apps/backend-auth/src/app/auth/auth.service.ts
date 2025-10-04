@@ -1,14 +1,14 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-import { RegisterDto, LoginDto } from './dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { ConfigService } from '@nestjs/config';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { RefreshToken } from './entities/refresh-token.entity';
 import { UserRole } from '@kanban-board/shared';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { Repository } from 'typeorm';
+import { LoginDto, RegisterDto } from './dto';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +42,7 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    const tokens = this.generateTokens(user.id);
+    const tokens = this.generateTokens(user);
 
     const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
     const refreshTokenEntity = this.refreshTokenRepository.create({
@@ -64,16 +64,16 @@ export class AuthService {
     return { accessToken: tokens.accessToken };
   }
 
-  generateTokens(userId: string) {
+  generateTokens(user: User) {
     const accessToken = this.jwtService.sign(
-      { sub: userId },
+      { sub: user.id, role: user.role },
       {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN'),
       }
     );
     const refreshToken = this.jwtService.sign(
-      { sub: userId },
+      { sub: user.id },
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
@@ -111,7 +111,7 @@ export class AuthService {
       throw new ForbiddenException();
     }
 
-    const tokens = this.generateTokens(user.id);
+    const tokens = this.generateTokens(user);
 
     tokenEntity.token = await bcrypt.hash(tokens.refreshToken, 10);
     tokenEntity.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
