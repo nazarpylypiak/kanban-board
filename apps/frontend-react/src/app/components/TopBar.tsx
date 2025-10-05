@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { logout } from '../services/auth.service';
-import { getProfile } from '../services/user.service';
-import { RootState } from '../store';
-import { clearAuth, setUser } from '../store/authSlice';
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../services/auth.service";
+import { getProfile } from "../services/user.service";
+import { RootState } from "../store";
+import { clearAuth, setUser } from "../store/authSlice";
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export default function TopBar() {
           const data = await getProfile();
           dispatch(setUser(data));
         } catch (err) {
-          console.error('Failed to load profile', err);
+          console.error("Failed to load profile", err);
         }
       };
       fetchUser();
@@ -37,7 +37,7 @@ export default function TopBar() {
       console.error(err);
     } finally {
       dispatch(clearAuth());
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -46,10 +46,10 @@ export default function TopBar() {
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-gray-600">
-          User ID: {user ? user.email : 'loading...'}
+          User ID: {user ? user.email : "loading..."}
         </p>
         {/* Admin link */}
-        {user?.role === 'admin' && (
+        {user?.role === "admin" && (
           <a
             href="http://localhost:4200"
             className="text-blue-600 hover:underline mt-1 inline-block"

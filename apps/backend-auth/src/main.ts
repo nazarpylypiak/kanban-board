@@ -3,48 +3,48 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import cookie, { FastifyCookieOptions } from "@fastify/cookie";
+import { Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { NestFactory } from "@nestjs/core";
 import {
   FastifyAdapter,
   NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import cookie, { FastifyCookieOptions } from '@fastify/cookie';
-import { ConfigService } from '@nestjs/config';
+} from "@nestjs/platform-fastify";
+import { AppModule } from "./app/app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    new FastifyAdapter(),
   );
-  const globalPrefix = 'api';
+  const globalPrefix = "api";
 
   const configService = app.get(ConfigService);
   const origins = configService
-    .get<string>('CORS_ORIGIN')
-    ?.split(',')
+    .get<string>("CORS_ORIGIN")
+    ?.split(",")
     .map((url) => url.trim());
 
   app.setGlobalPrefix(globalPrefix);
 
   app.enableCors({
     origin: origins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
   await app.register(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cookie as any,
     {
-      secret: configService.get<string>('COOKIE_SECRET'),
-    } as FastifyCookieOptions
+      secret: configService.get<string>("COOKIE_SECRET"),
+    } as FastifyCookieOptions,
   );
 
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>("PORT") || 3000;
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
   );
 }
 

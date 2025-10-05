@@ -50,7 +50,9 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "backend-auth:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": false,
+        "inspect": "inspect",
+        "port": 9231
       },
       "configurations": {
         "development": {

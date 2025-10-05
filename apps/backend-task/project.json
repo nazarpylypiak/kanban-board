@@ -51,7 +51,7 @@
       "options": {
         "buildTarget": "backend-task:build",
         "inspect": "inspect",
-        "port": 9231,
+        "port": 9232,
         "runBuildTargetDependencies": false
       },
       "configurations": {

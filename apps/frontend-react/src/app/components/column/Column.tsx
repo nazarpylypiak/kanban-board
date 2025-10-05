@@ -1,8 +1,8 @@
-import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { ITask, TaskStatus, allowedTransitions } from '@kanban-board/shared';
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { ITask, TaskStatus, allowedTransitions } from "@kanban-board/shared";
 
-import { useEffect, useRef, useState } from 'react';
-import TaskComponent from '../task';
+import { useEffect, useRef, useState } from "react";
+import { CreateTaskButton, Task as TaskComponent } from "../task";
 
 interface ColumnProps {
   tasks: Record<string, ITask[]>;
@@ -11,8 +11,8 @@ interface ColumnProps {
 
 export default function Column({ tasks, col }: ColumnProps) {
   const ref = useRef(null);
-  const [state, setState] = useState<'validMove' | 'invalidMove' | 'idle'>(
-    'idle'
+  const [state, setState] = useState<"validMove" | "invalidMove" | "idle">(
+    "idle",
   );
 
   useEffect(() => {
@@ -26,27 +26,30 @@ export default function Column({ tasks, col }: ColumnProps) {
           if (!source.data.col || !col) return;
 
           if (source.data.col === col) {
-            setState('idle');
+            setState("idle");
           } else if (
             allowedTransitions[source.data.col as TaskStatus] === col
           ) {
-            setState('validMove');
+            setState("validMove");
           } else {
-            setState('invalidMove');
+            setState("invalidMove");
           }
         },
-        onDragLeave: () => setState('idle'),
-        onDrop: () => setState('idle'),
+        onDragLeave: () => setState("idle"),
+        onDrop: () => setState("idle"),
       });
     }
   }, []);
+  const title = col.at(0)?.toUpperCase() + col.slice(1);
 
   return (
     <div
       ref={ref}
       className={`${getColor(state)} flex-1 bg-white rounded shadow p-4 `}
     >
-      <h2>{col.replace('-', ' ')}</h2>
+      <h2>{title.replace("-", " ")}</h2>
+
+      {col === TaskStatus.TODO && <CreateTaskButton />}
 
       <div className="flex flex-col gap-2 p-2 rounded transition-colors">
         {tasks[col].map((task) => (
@@ -57,9 +60,9 @@ export default function Column({ tasks, col }: ColumnProps) {
   );
 }
 
-function getColor(state: 'validMove' | 'invalidMove' | 'idle'): string {
-  if (state === 'validMove') {
-    return 'bg-blue-100 border-2 border-blue-300';
+function getColor(state: "validMove" | "invalidMove" | "idle"): string {
+  if (state === "validMove") {
+    return "bg-blue-100 border-2 border-blue-300";
   }
-  return '';
+  return "";
 }
