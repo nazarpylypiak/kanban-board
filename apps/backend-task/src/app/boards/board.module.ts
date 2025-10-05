@@ -1,16 +1,15 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtModule } from "@nestjs/jwt/dist/jwt.module";
+import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Board } from "../boards/entities/board.entity";
-import { Task } from "./entities/task.entity";
-import { TasksController } from "./tasks.controller";
-import { TasksGateway } from "./tasks.gateway";
-import { TasksService } from "./tasks.service";
+import { Task } from "../tasks/entities/task.entity";
+import { BoardController } from "./board.controller";
+import { BoardService } from "./board.service";
+import { Board } from "./entities/board.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, Board]),
+    TypeOrmModule.forFeature([Board, Task]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -22,7 +21,8 @@ import { TasksService } from "./tasks.service";
       }),
     }),
   ],
-  controllers: [TasksController],
-  providers: [TasksService, TasksGateway],
+  controllers: [BoardController],
+  providers: [BoardService],
+  exports: [BoardService],
 })
-export class TasksModule {}
+export class BoardModule {}

@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { TasksModule } from './tasks/tasks.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Task } from './tasks/entities/task.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { BoardModule } from "./boards/board.module";
+import { Board } from "./boards/entities/board.entity";
+import { Task } from "./tasks/entities/task.entity";
+import { TasksModule } from "./tasks/tasks.module";
 
 @Module({
   imports: [
@@ -15,17 +17,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('POSTGRES_HOST'),
-        port: config.get<number>('POSTGRES_PORT'),
-        username: config.get<string>('POSTGRES_USER'),
-        password: config.get<string>('POSTGRES_PASSWORD'),
-        database: config.get<string>('POSTGRES_DB'),
-        entities: [Task],
-        synchronize: config.get<string>('NODE_ENV') === 'development',
+        type: "postgres",
+        host: config.get<string>("POSTGRES_HOST"),
+        port: config.get<number>("POSTGRES_PORT"),
+        username: config.get<string>("POSTGRES_USER"),
+        password: config.get<string>("POSTGRES_PASSWORD"),
+        database: config.get<string>("POSTGRES_DB"),
+        entities: [Task, Board],
+        synchronize: config.get<string>("NODE_ENV") === "development",
       }),
     }),
     TasksModule,
+    BoardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
