@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { User } from '@kanban-board/shared';
+import { IUser } from '@kanban-board/shared';
 import { Observable } from 'rxjs';
 import { UserApiService } from '../../../../shared/services/api/user-api.service';
 
@@ -12,5 +12,5 @@ import { UserApiService } from '../../../../shared/services/api/user-api.service
 })
 export class UserListComponent {
   private readonly userApiService = inject(UserApiService);
-  users$: Observable<User[]> = this.userApiService.getAll();
+  users$: Observable<IUser[]> = this.userApiService.getAll();
 }

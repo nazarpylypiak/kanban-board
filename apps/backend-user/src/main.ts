@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
-  NestFastifyApplication,
+  NestFastifyApplication
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app/app.module';
 
@@ -31,14 +31,14 @@ async function bootstrap() {
   app.enableCors({
     origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+    credentials: true
   });
 
   await app.register(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cookie as any,
     {
-      secret: configService.get<string>('COOKIE_SECRET'),
+      secret: configService.get<string>('COOKIE_SECRET')
     } as FastifyCookieOptions
   );
 

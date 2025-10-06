@@ -1,4 +1,4 @@
-import { UserRole } from '@kanban-board/shared';
+import { User, UserRole } from '@kanban-board/shared';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -8,7 +8,6 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { Repository } from 'typeorm';
 import { LoginDto, RegisterDto } from './dto';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { User } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +25,7 @@ export class AuthService {
     const user = this.userRepository.create({
       email: dto.email,
       password: hashed,
-      role: dto.role || UserRole.USER,
+      role: dto.role || UserRole.USER
     });
 
     await this.userRepository.save(user);
@@ -35,7 +34,7 @@ export class AuthService {
 
   async login(dto: LoginDto, res: FastifyReply) {
     const user = await this.userRepository.findOne({
-      where: { email: dto.email },
+      where: { email: dto.email }
     });
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
@@ -48,7 +47,7 @@ export class AuthService {
     const refreshTokenEntity = this.refreshTokenRepository.create({
       token: hashedRefreshToken,
       user,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 днів
     });
     await this.refreshTokenRepository.save(refreshTokenEntity);
 
@@ -58,7 +57,7 @@ export class AuthService {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 7 * 24 * 60 * 60
     });
 
     return { accessToken: tokens.accessToken };
@@ -69,14 +68,14 @@ export class AuthService {
       { sub: user.id, role: user.role },
       {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN'),
+        expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN')
       }
     );
     const refreshToken = this.jwtService.sign(
       { sub: user.id },
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN')
       }
     );
     return { accessToken, refreshToken };
@@ -90,19 +89,19 @@ export class AuthService {
     let payload: any;
     try {
       payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET')
       });
     } catch {
       throw new ForbiddenException('Invalid refresh token');
     }
 
     const user = await this.userRepository.findOne({
-      where: { id: payload.sub },
+      where: { id: payload.sub }
     });
     if (!user) throw new ForbiddenException();
 
     const tokenEntity = await this.refreshTokenRepository.findOne({
-      where: { user: { id: user.id } },
+      where: { user: { id: user.id } }
     });
     if (
       !tokenEntity ||
@@ -122,7 +121,7 @@ export class AuthService {
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return { accessToken: tokens.accessToken };
@@ -136,18 +135,18 @@ export class AuthService {
     let payload: any;
     try {
       payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET')
       });
     } catch {
       return;
     }
 
     const user = await this.userRepository.findOne({
-      where: { id: payload.sub },
+      where: { id: payload.sub }
     });
     if (user) {
       const tokenEntity = await this.refreshTokenRepository.findOne({
-        where: { user: { id: user.id } },
+        where: { user: { id: user.id } }
       });
       if (tokenEntity) await this.refreshTokenRepository.remove(tokenEntity);
     }

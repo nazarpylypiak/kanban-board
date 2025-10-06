@@ -1,36 +1,37 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { BoardModule } from "./boards/board.module";
-import { Board } from "./boards/entities/board.entity";
-import { Task } from "./tasks/entities/task.entity";
-import { TasksModule } from "./tasks/tasks.module";
+import { User } from '@kanban-board/shared';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { BoardsModule } from './boards/boards.module';
+import { Board } from './boards/entities/board.entity';
+import { Task } from './tasks/entities/task.entity';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: "postgres",
-        host: config.get<string>("POSTGRES_HOST"),
-        port: config.get<number>("POSTGRES_PORT"),
-        username: config.get<string>("POSTGRES_USER"),
-        password: config.get<string>("POSTGRES_PASSWORD"),
-        database: config.get<string>("POSTGRES_DB"),
-        entities: [Task, Board],
-        synchronize: config.get<string>("NODE_ENV") === "development",
-      }),
+        type: 'postgres',
+        host: config.get<string>('POSTGRES_HOST'),
+        port: config.get<number>('POSTGRES_PORT'),
+        username: config.get<string>('POSTGRES_USER'),
+        password: config.get<string>('POSTGRES_PASSWORD'),
+        database: config.get<string>('POSTGRES_DB'),
+        entities: [Task, Board, User],
+        synchronize: config.get<string>('NODE_ENV') === 'development'
+      })
     }),
     TasksModule,
-    BoardModule,
+    BoardsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}

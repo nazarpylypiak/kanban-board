@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { User } from '@kanban-board/shared';
+import { IUser } from '@kanban-board/shared';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +10,6 @@ export class UserApiService {
   private readonly http = inject(HttpClient);
 
   getAll() {
-    return this.http.get<User[]>(this.baseUrl);
+    return this.http.get<IUser[]>(this.baseUrl);
   }
 }

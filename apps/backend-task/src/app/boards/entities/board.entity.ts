@@ -1,16 +1,30 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Task } from "../../tasks/entities/task.entity";
+// board.entity.ts
+import { User } from '@kanban-board/shared';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm';
+import { Task } from '../../tasks/entities/task.entity';
 
-@Entity()
+@Entity('boards')
 export class Board {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  ownerId?: string;
+  @ManyToOne(() => User, { nullable: true })
+  owner?: User;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  sharedUsers: User[];
 
   @OneToMany(() => Task, (task) => task.board)
   tasks: Task[];

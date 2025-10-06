@@ -3,15 +3,15 @@
  * This is only a minimal backend to get started.
  */
 
+import cookie, { FastifyCookieOptions } from '@fastify/cookie';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
 import {
   FastifyAdapter,
-  NestFastifyApplication,
+  NestFastifyApplication
 } from '@nestjs/platform-fastify';
-import { ConfigService } from '@nestjs/config';
-import cookie, { FastifyCookieOptions } from '@fastify/cookie';
+import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -31,14 +31,14 @@ async function bootstrap() {
   app.enableCors({
     origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+    credentials: true
   });
 
   await app.register(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cookie as any,
     {
-      secret: configService.get<string>('COOKIE_SECRET'),
+      secret: configService.get<string>('COOKIE_SECRET')
     } as FastifyCookieOptions
   );
 

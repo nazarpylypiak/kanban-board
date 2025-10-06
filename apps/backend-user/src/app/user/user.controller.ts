@@ -1,3 +1,4 @@
+import { AuthenticatedRequest, JwtAuthGuard } from '@kanban-board/shared';
 import {
   Body,
   Controller,
@@ -8,12 +9,10 @@ import {
   Patch,
   Post,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
-import { FastifyRequest } from 'fastify';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { UserService } from './user.service';
 
@@ -53,7 +52,7 @@ export class UserController {
   }
 
   @Get('profile')
-  getProfile(@Req() req: FastifyRequest) {
+  getProfile(@Req() req: AuthenticatedRequest) {
     if (!req.user) {
       throw new ForbiddenException('User not authenticated');
     }

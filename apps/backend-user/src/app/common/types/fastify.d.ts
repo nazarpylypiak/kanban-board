@@ -1,7 +1,8 @@
-import { User } from '@kanban-board/shared';
+import { IUser } from '@kanban-board/shared';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    user?: User;
+    user?: IUser;
   }
 }
+j;

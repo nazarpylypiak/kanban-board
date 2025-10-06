@@ -1,5 +1,5 @@
+import { User } from '@kanban-board/shared';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from './user.entity';
 
 @Entity('refresh_tokens')
 export class RefreshToken {
@@ -9,7 +9,7 @@ export class RefreshToken {
   @Column()
   token: string;
 
-  @ManyToOne(() => User, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   user: User;
 
   @Column({ type: 'timestamp', nullable: true })
