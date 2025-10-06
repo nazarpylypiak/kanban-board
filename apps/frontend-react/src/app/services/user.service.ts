@@ -1,4 +1,6 @@
-import apiUser from './api-user';
+import { createApi } from './api';
+
+const apiUser = createApi('/api/users');
 
 export const getProfile = async () => {
   const res = await apiUser.get('/profile');

@@ -12,8 +12,17 @@ export class BoardsService {
     @InjectRepository(User) private userRepository: Repository<User>
   ) {}
 
-  fintAll() {
+  findAll() {
     return this.boardRepository.find({ relations: ['tasks'] });
+  }
+
+  findAllByOwner(ownerId: string) {
+    return this.boardRepository.find({
+      where: {
+        owner: { id: ownerId }
+      },
+      relations: ['tasks', 'owner']
+    });
   }
 
   findOne(id: string) {

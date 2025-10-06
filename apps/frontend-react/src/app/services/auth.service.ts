@@ -1,5 +1,6 @@
-import apiAuth from './api-auth';
+import { createApi } from './api';
 
+const apiAuth = createApi('/api/auth');
 export const register = async (
   email: string,
   password: string,
@@ -8,7 +9,7 @@ export const register = async (
   const response = await apiAuth.post('/register', {
     email,
     password,
-    role,
+    role
   });
   return response.data;
 };
@@ -16,7 +17,7 @@ export const register = async (
 export const login = async (email: string, password: string) => {
   const response = await apiAuth.post<{ accessToken: string }>('/login', {
     email,
-    password,
+    password
   });
   return response.data;
 };

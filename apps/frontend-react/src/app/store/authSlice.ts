@@ -1,18 +1,18 @@
+import { IUser, User } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '@kanban-board/shared';
 
 interface AuthState {
   accessToken: string | null;
   loading: boolean;
   isLoggedIn: boolean;
-  user: User | null;
+  user: IUser | null;
 }
 
 const initialState: AuthState = {
   accessToken: null,
   loading: true,
   isLoggedIn: false,
-  user: null,
+  user: null
 };
 
 const authSlice = createSlice({
@@ -38,8 +38,8 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.isLoggedIn = false;
       state.user = null;
-    },
-  },
+    }
+  }
 });
 
 export const {
@@ -48,6 +48,6 @@ export const {
   setLoading,
   setLoggedIn,
   setUser,
-  clearAuth,
+  clearAuth
 } = authSlice.actions;
 export default authSlice.reducer;

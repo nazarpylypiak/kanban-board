@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Request,
   UseGuards
 } from '@nestjs/common';
@@ -18,8 +19,11 @@ export class BoardsController {
   constructor(private boardsService: BoardsService) {}
 
   @Get()
-  fintAll() {
-    return this.boardsService.fintAll();
+  fintAll(@Query('ownerId') ownerId: string) {
+    if (ownerId) {
+      return this.boardsService.findAllByOwner(ownerId);
+    }
+    return this.boardsService.findAll();
   }
 
   @Get(':id')
