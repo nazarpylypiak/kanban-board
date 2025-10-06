@@ -1,4 +1,4 @@
-import { createApi } from './api';
+import { createApi } from '../../../core/services/api';
 
 const apiAuth = createApi('/api/auth');
 export const register = async (

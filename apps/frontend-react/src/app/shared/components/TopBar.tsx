@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../services/auth.service';
+import { RootState } from '../../core/store';
+import { clearAuth, setUser } from '../../core/store/authSlice';
+import { logout } from '../../features/auth/services/auth.service';
 import { getProfile } from '../services/user.service';
-import { RootState } from '../store';
-import { clearAuth, setUser } from '../store/authSlice';
 
 export default function TopBar() {
   const navigate = useNavigate();

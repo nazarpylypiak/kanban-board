@@ -1,8 +1,8 @@
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { ITask, TaskStatus } from '@kanban-board/shared';
 import { useEffect, useState } from 'react';
-import BoardSelector from '../components/BoardSelector';
-import Column from '../components/column';
+import BoardSelector from '../containers/BoardSelector';
+import Column from '../containers/Column';
 
 const statuses = Object.values(TaskStatus);
 const tasksList: Record<string, ITask[]> = {

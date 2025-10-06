@@ -1,4 +1,5 @@
-import { ITask } from "./task.interface";
+import { ITask } from './task.interface';
+import { IUser } from './user.interface';
 
 export interface IBoard {
   id: string;
@@ -7,4 +8,5 @@ export interface IBoard {
   createdAt?: string; // ISO string
   updatedAt?: string; // ISO string
   tasks?: ITask[];
+  owner: IUser;
 }

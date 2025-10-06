@@ -1,29 +1,28 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { login as loginService } from '../services/auth.service';
-import { useDispatch } from 'react-redux';
-import { setAccessToken, setLoggedIn } from '../store/authSlice';
+import { Link } from 'react-router-dom';
+import { register } from '../services/auth.service';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [error, setError] = useState('');
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [success, setSuccess] = useState('');
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setRole('user');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const data = await loginService(email, password);
-
-      dispatch(setAccessToken(data.accessToken));
-      dispatch(setLoggedIn(true));
-
-      navigate('/dashboard');
+      const data = await register(email, password, role);
+      resetForm();
       setError('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Registration failed');
+      setSuccess('');
     }
   };
 
@@ -31,7 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Login
+          Register
         </h2>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col">
@@ -54,19 +53,33 @@ export default function LoginPage() {
               className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          <div className="flex flex-col">
+            <label className="mb-1 font-medium text-gray-700">Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {success && (
+            <p className="text-green-500 text-sm text-center">{success}</p>
+          )}
           <button
             type="submit"
-            className="mt-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="mt-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
           >
-            Login
+            Register
           </button>
         </form>
 
         <p className="mt-4 text-center text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-green-600 hover:underline">
-            Register here
+          Have an account?{' '}
+          <Link to="/login" className="text-green-600 hover:underline">
+            Login here
           </Link>
         </p>
       </div>

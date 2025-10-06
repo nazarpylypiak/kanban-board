@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
-import TopBar from '../components/TopBar';
+import TopBar from '../../shared/components/TopBar';
 import { RootState } from '../store';
 
 export default function PrivateLayout() {

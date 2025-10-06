@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
-import { App } from './app';
-import { store } from './store';
 import { Provider } from 'react-redux';
+import { App } from './app';
+import { store } from './core/store';
 
 describe('App', () => {
   it('should render successfully', () => {
