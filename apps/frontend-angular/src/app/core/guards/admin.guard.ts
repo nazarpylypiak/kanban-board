@@ -2,8 +2,8 @@ import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
-import { AuthService } from '../../shared/auth.service';
-import { selectAccessToken } from '../store/auth.selectors';
+import { AuthService } from '../../shared/services/auth.service';
+import { selectAccessToken } from '../store/auth/auth.selectors';
 
 export const adminGuard: CanActivateFn = async () => {
   const store = inject(Store);
@@ -14,7 +14,7 @@ export const adminGuard: CanActivateFn = async () => {
   if (!token || auth.isTokenExpired(token)) {
     const newToken = await firstValueFrom(auth.refreshToken());
     if (!newToken) {
-      window.location.href = 'http://localhost:4300/login';
+      // window.location.href = 'http://localhost:4300/login';
       return false;
     }
   }

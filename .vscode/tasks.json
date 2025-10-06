@@ -2,79 +2,24 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Backend[Auth]",
+      "label": "NX Serve Many (exclude analytics/notification)",
       "type": "shell",
-      "command": "nx serve apps/backend-auth",
-      "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": [],
-      "presentation": {
-        "group": "backend",
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Backend[User]",
-      "type": "shell",
-      "command": "nx serve apps/backend-user",
-      "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": [],
-      "presentation": {
-        "group": "backend",
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Backend[Task]",
-      "type": "shell",
-      "command": "nx serve apps/backend-task",
-      "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": [],
-      "presentation": {
-        "group": "backend-task",
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Frontend[React]",
-      "type": "shell",
-      "command": "nx serve apps/frontend-react",
-      "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": [],
-      "presentation": {
-        "group": "frontend",
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Frontend[Angular]",
-      "type": "shell",
-      "command": "nx serve apps/frontend-angular",
-      "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": [],
-      "presentation": {
-        "group": "frontend",
-        "reveal": "always",
-        "panel": "new"
-      }
-    },
-    {
-      "label": "Start Full Project",
-      "dependsOn": [
-        "Backend[Auth]",
-        "Backend[User]",
-        "Backend[Task]",
-        "Frontend[React]",
-        "Frontend[Angular]"
+      "command": "npx",
+      "args": [
+        "nx",
+        "run-many",
+        "-t",
+        "serve",
+        "--exclude=apps/backend-analytics,apps/backend-notification"
       ],
-      "dependsOrder": "parallel",
-      "problemMatcher": [],
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
       }
     }
   ]

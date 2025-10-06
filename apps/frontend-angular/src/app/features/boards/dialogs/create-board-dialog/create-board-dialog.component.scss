@@ -1,0 +1,59 @@
+/* Dialog title */
+.dialog-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* Form container */
+.board-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Full width form field */
+.board-form-field.full-width {
+  width: 100%;
+}
+
+/* Input styling */
+.board-input {
+  font-size: 14px;
+}
+
+/* Dialog actions */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Cancel button */
+.cancel-btn {
+  color: #555;
+}
+
+/* Create button */
+.create-btn {
+  background-color: #3f51b5;
+  color: white;
+
+  &:hover {
+    background-color: #303f9f;
+  }
+
+  &:disabled {
+    background-color: #9fa8da;
+    color: #e0e0e0;
+  }
+}
+
+/* Optional: host padding */
+:host {
+  display: block;
+  padding: 24px;
+  min-width: 300px;
+  max-width: 400px;
+}

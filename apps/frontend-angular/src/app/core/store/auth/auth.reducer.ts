@@ -6,7 +6,7 @@ export interface AuthState {
 }
 
 export const initialState: AuthState = {
-  accessToken: null,
+  accessToken: null
 };
 
 export const authReducer = createReducer(

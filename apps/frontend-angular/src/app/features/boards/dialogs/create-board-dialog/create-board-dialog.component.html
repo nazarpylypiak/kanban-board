@@ -1,0 +1,21 @@
+<h2 mat-dialog-title class="dialog-title">Create New Board</h2>
+
+<form [formGroup]="form" class="board-form">
+  <mat-form-field appearance="fill" class="board-form-field full-width">
+    <mat-label>Board Name</mat-label>
+    <input matInput formControlName="name" class="board-input" />
+  </mat-form-field>
+
+  <div mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button class="cancel-btn" (click)="cancel()">Cancel</button>
+    <button
+      mat-flat-button
+      color="primary"
+      class="create-btn"
+      (click)="submit()"
+      [disabled]="form.invalid"
+    >
+      {{ editMode ? 'Update' : 'Create' }}
+    </button>
+  </div>
+</form>

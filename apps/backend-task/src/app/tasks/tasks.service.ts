@@ -1,19 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Task } from './entities/task.entity';
 import { Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Task } from './entities/task.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private jwtService: JwtService,
     @InjectRepository(Task)
-    private taskRepository: Repository<Task>,
-    private configService: ConfigService
+    private taskRepository: Repository<Task>
   ) {}
 
   findAll() {

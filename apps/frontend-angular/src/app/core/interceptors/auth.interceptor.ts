@@ -2,13 +2,13 @@ import {
   HttpEvent,
   HttpHandlerFn,
   HttpInterceptorFn,
-  HttpRequest,
+  HttpRequest
 } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable, firstValueFrom } from 'rxjs';
-import { selectAccessToken } from '../store/auth.selectors';
-import { AppState } from '../store/auth.state';
+import { selectAccessToken } from '../store/auth/auth.selectors';
+import { AppState } from '../store/auth/auth.state';
 
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
@@ -23,8 +23,8 @@ export const authInterceptor: HttpInterceptorFn = (
       if (token) {
         authReq = req.clone({
           setHeaders: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         });
       }
 
@@ -32,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (
       next(authReq).subscribe({
         next: (res) => observer.next(res),
         error: (err) => observer.error(err),
-        complete: () => observer.complete(),
+        complete: () => observer.complete()
       });
     });
   });

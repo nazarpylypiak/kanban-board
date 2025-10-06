@@ -2,8 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { catchError, map, Observable, of } from 'rxjs';
-import { clearTokens, setAccessToken } from '../core/store/auth.actions';
-import { AppState } from '../core/store/auth.state';
+import {
+  clearTokens,
+  setAccessToken
+} from '../../core/store/auth/auth.actions';
+import { AppState } from '../../core/store/auth/auth.state';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
