@@ -6,3 +6,5 @@ export interface IUser {
   email?: string;
   role: UserRole;
 }
+
+export type JWTUser = Omit<IUser, 'id'> & { sub: string };

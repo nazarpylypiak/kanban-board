@@ -1,4 +1,3 @@
-import { IUser } from '@kanban-board/shared';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 export class CreateColumnDto {
   @IsString()
@@ -7,6 +6,4 @@ export class CreateColumnDto {
 
   @IsUUID()
   boardId: string;
-
-  user: IUser;
 }

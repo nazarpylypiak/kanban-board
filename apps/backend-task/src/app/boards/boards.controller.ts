@@ -34,7 +34,7 @@ export class BoardsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateBoardDto, @Request() req: AuthenticatedRequest) {
-    const ownerId = req.user.sub;
+    const ownerId = req.jwtUser.sub;
     return this.boardsService.create(ownerId, dto);
   }
 

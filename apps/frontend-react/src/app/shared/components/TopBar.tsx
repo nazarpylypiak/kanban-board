@@ -42,17 +42,18 @@ export default function TopBar() {
   };
 
   return (
-    <header className="flex justify-between items-center mb-8">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-gray-600">
-          User ID: {user ? user.email : 'loading...'}
-        </p>
-        {/* Admin link */}
+    <header className="flex justify-between items-center mb-8 p-4 bg-white shadow rounded">
+      <div className="flex items-end w-full">
+        <div className="mr-4">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500">
+            User: {user ? user.email : 'loading...'}
+          </p>
+        </div>
         {user?.role === 'admin' && (
           <a
             href="http://localhost:4200"
-            className="text-blue-600 hover:underline mt-1 inline-block"
+            className="text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium mt-1 inline-block"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -63,7 +64,7 @@ export default function TopBar() {
 
       <button
         onClick={handleLogout}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+        className="text-sm text-red-600 hover:text-red-800 underline ml-4"
       >
         Logout
       </button>

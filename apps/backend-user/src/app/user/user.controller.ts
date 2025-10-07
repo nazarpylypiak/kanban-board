@@ -56,9 +56,9 @@ export class UserController {
 
   @Get('profile')
   getProfile(@Req() req: AuthenticatedRequest) {
-    if (!req.user) {
+    if (!req.jwtUser) {
       throw new ForbiddenException('User not authenticated');
     }
-    return this.userService.getProfile(req.user.sub);
+    return this.userService.getProfile(req.jwtUser.sub);
   }
 }

@@ -30,7 +30,7 @@ export class ColumnsController {
     @Body('name') name: string,
     @Req() req: AuthenticatedRequest
   ) {
-    const user = req.user;
-    return this.columnsService.create({ boardId, name, user });
+    const user = req.jwtUser;
+    return this.columnsService.create({ boardId, name }, user);
   }
 }

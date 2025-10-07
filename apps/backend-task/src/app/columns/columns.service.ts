@@ -1,3 +1,4 @@
+import { JWTUser } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -30,8 +31,7 @@ export class ColumnsService {
     });
   }
 
-  async create(dto: CreateColumnDto) {
-    console.log(dto);
+  async create(dto: CreateColumnDto, user: JWTUser) {
     const board = await this.boardRepository.findOne({
       where: { id: dto.boardId },
       relations: ['owner']
@@ -39,7 +39,7 @@ export class ColumnsService {
 
     if (!board) throw new NotFoundException('Board not found');
 
-    if (board.owner.id !== dto.user.id && dto.user.role !== 'admin') {
+    if (user.role !== 'admin' && board.owner.id !== user.sub) {
       throw new ForbiddenException('You do not have permission to add columns');
     }
     const column = this.columnRepository.create({

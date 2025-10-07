@@ -34,7 +34,8 @@ export class AuthService {
 
   async login(dto: LoginDto, res: FastifyReply) {
     const user = await this.userRepository.findOne({
-      where: { email: dto.email }
+      where: { email: dto.email },
+      select: ['id', 'email', 'password', 'role']
     });
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {

@@ -5,4 +5,3 @@ declare module 'fastify' {
     user?: IUser;
   }
 }
-j;
