@@ -19,7 +19,7 @@ export class TasksService {
   ) {}
 
   findAll() {
-    return this.tasksRepository.find();
+    return this.tasksRepository.find({ order: { position: 'ASC' } });
   }
 
   async findOne(id: string) {
@@ -31,7 +31,7 @@ export class TasksService {
   async create(columnId: string, dto: CreateTaskDto, jwtUser: JWTUser) {
     const column = await this.columnsRepository.findOne({
       where: { id: columnId },
-      relations: ['board', 'board.owner']
+      relations: ['tasks', 'board', 'board.owner']
     });
     if (!column) throw new NotFoundException('Column not found');
 
@@ -42,10 +42,16 @@ export class TasksService {
       throw new ForbiddenException('You do not have permission to add tasks');
     }
 
+    const newPosition =
+      column.tasks?.length > 0
+        ? Math.max(...column.tasks.map(({ position }) => position)) + 1
+        : 0;
+
     const task = this.tasksRepository.create({
       ...dto,
       column,
-      columnId
+      columnId,
+      position: newPosition
     });
 
     return this.tasksRepository.save(task);
@@ -61,32 +67,64 @@ export class TasksService {
     if (result.affected === 0) throw new NotFoundException('Task not found');
   }
 
-  async moveTask(taskId: string, newColumnId: string, jwtUser: JWTUser) {
+  async moveOrReorderTask(
+    taskId: string,
+    columnId: string,
+    position?: number,
+    jwtUser?: JWTUser
+  ) {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId },
-      relations: ['column', 'column.board', 'column.board.owner']
+      relations: [
+        'column',
+        'column.tasks',
+        'column.board',
+        'column.board.owner'
+      ]
     });
 
     if (!task) throw new NotFoundException('Task not found');
 
-    const newColumn = await this.columnsRepository.findOne({
-      where: { id: newColumnId },
-      relations: ['board', 'board.owner']
-    });
-
-    if (!newColumn) throw new NotFoundException('Target column not found');
-
-    if (task.column.board.id !== newColumn.board.id) {
-      throw new ForbiddenException('Cannot move task to another board');
-    }
-
     const board = task.column.board;
-    if (jwtUser.role !== 'admin' && board.owner.id !== jwtUser.sub) {
-      throw new ForbiddenException('You do not have permission to move tasks');
+    if (jwtUser?.role !== 'admin' && board.owner.id !== jwtUser?.sub) {
+      throw new ForbiddenException('No permission');
     }
 
-    task.column = newColumn;
-    task.columnId = newColumnId;
+    // Moving to a new column
+    if (columnId && columnId !== task.columnId) {
+      const newColumn = await this.columnsRepository.findOne({
+        where: { id: columnId },
+        relations: ['tasks']
+      });
+      if (!newColumn) throw new NotFoundException('Target column not found');
+      task.column = newColumn;
+      task.columnId = newColumn.id;
+
+      // Reassign position in new column
+      const maxPosition = newColumn.tasks.length
+        ? Math.max(...newColumn.tasks.map((t) => t.position))
+        : -1;
+      task.position = maxPosition + 1;
+
+      // Reorder old column tasks
+      const oldColumnTasks = task.column.tasks
+        .filter((t) => t.id !== task.id)
+        .sort((a, b) => a.position - b.position);
+      oldColumnTasks.forEach((t, i) => (t.position = i));
+      await this.tasksRepository.save(oldColumnTasks);
+    }
+
+    // Reordering in the same column
+    if (position !== undefined && (!columnId || columnId === task.columnId)) {
+      const tasksInColumn = task.column.tasks
+        .filter((t) => t.id !== task.id)
+        .sort((a, b) => a.position - b.position);
+
+      tasksInColumn.splice(position, 0, task);
+      tasksInColumn.forEach((t, i) => (t.position = i));
+      await this.tasksRepository.save(tasksInColumn);
+    }
+
     const { column, ...movedTask } = await this.tasksRepository.save(task);
     return movedTask;
   }

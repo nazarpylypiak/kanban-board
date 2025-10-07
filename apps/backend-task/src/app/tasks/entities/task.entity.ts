@@ -1,4 +1,3 @@
-import { TaskStatus } from '@kanban-board/shared';
 import {
   Entity,
   ManyToOne,
@@ -18,12 +17,12 @@ export class Task {
   @TypeOrmColumn({ nullable: true })
   description: string;
 
-  @TypeOrmColumn({ type: 'enum', enum: TaskStatus, default: TaskStatus.TODO })
-  status: TaskStatus;
-
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
   column: Column;
 
   @TypeOrmColumn()
   columnId: string;
+
+  @TypeOrmColumn({ type: 'int', default: 0 })
+  position: number;
 }

@@ -51,7 +51,7 @@ export default function Board({ board }: BoardProps) {
         const destinationColId = (destination.data.col as IColumn).id;
         const sourceLocationColId = (source.data.col as IColumn).id;
 
-        if (destinationColId === sourceLocationColId) return;
+        // if (destinationColId === sourceLocationColId) return;
         const task = source.data.task as ITask;
 
         if (!task.id || !destinationColId) return;

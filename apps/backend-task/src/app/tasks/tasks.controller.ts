@@ -49,13 +49,19 @@ export class TasksController {
     return this.tasksService.delete(id);
   }
 
-  @Patch(':id/move/:columnId')
+  @Patch(':id/move')
   @UseGuards(JwtAuthGuard)
-  moveTask(
+  moveOrReorderTask(
     @Param('id') taskId: string,
-    @Param('columnId') columnId: string,
+    @Body() body: { columnId: string; position?: number },
     @Req() req: AuthenticatedRequest
   ) {
-    return this.tasksService.moveTask(taskId, columnId, req.jwtUser);
+    const { columnId, position } = body;
+    return this.tasksService.moveOrReorderTask(
+      taskId,
+      columnId,
+      position,
+      req.jwtUser
+    );
   }
 }

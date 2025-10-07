@@ -10,6 +10,10 @@ export const create = async (
   return await tasksApi.post<ITask>(columnId, task);
 };
 
-export const moveTask = async (taskId: string, newColumnId: string) => {
-  return await tasksApi.patch(`${taskId}/move/${newColumnId}`);
+export const moveTask = async (
+  taskId: string,
+  columnId: string,
+  position?: number
+) => {
+  return await tasksApi.patch(`${taskId}/move`, { columnId, position });
 };
