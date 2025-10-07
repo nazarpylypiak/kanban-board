@@ -1,6 +1,13 @@
-import { IColumn } from '@kanban-board/shared';
-import { useRef, useState } from 'react';
-import CreateTaskButton from './CreateTaskButton';
+import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { IColumn, ITask } from '@kanban-board/shared';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectTasksByColumn } from '../../../core/store/selectors/taskSelectors';
+import { addTask } from '../../../core/store/tasksSlice';
+import { create } from '../../../shared/services/task.service';
+import CreateTaskButton from '../components/CreateTaskButton';
+import TaskComponent from './Task';
+
 interface ColumnProps {
   col: IColumn;
 }
@@ -10,33 +17,34 @@ export default function Column({ col }: ColumnProps) {
   const [state, setState] = useState<'validMove' | 'invalidMove' | 'idle'>(
     'idle'
   );
+  const dispatch = useDispatch();
+  const tasks = useSelector(selectTasksByColumn(col.id));
 
-  // useEffect(() => {
-  //   const el = ref.current;
+  useEffect(() => {
+    const el = ref.current;
 
-  //   if (el) {
-  //     return dropTargetForElements({
-  //       element: el,
-  //       getData: () => ({ col }),
-  //       onDragEnter: ({ source }) => {
-  //         if (!source.data.col || !col) return;
+    if (el) {
+      return dropTargetForElements({
+        element: el,
+        getData: () => ({ col }),
+        onDragEnter: ({ source }) => {
+          if (!source.data.col || !col) return;
 
-  //         if (source.data.col === col) {
-  //           setState('idle');
-  //         } else if (
-  //           allowedTransitions[source.data.col as TaskStatus] === col
-  //         ) {
-  //           setState('validMove');
-  //         } else {
-  //           setState('invalidMove');
-  //         }
-  //       },
-  //       onDragLeave: () => setState('idle'),
-  //       onDrop: () => setState('idle')
-  //     });
-  //   }
-  // }, []);
-  // const title = col.at(0)?.toUpperCase() + col.slice(1);
+          if (source.data.col === col) {
+            setState('idle');
+          } else {
+            setState('validMove');
+          }
+        },
+        onDragLeave: () => setState('idle'),
+        onDrop: () => setState('idle')
+      });
+    }
+  }, []);
+
+  const taskCreated = async (task: Omit<ITask, 'columnId'>) => {
+    await create(col.id, task).then((res) => dispatch(addTask(res.data)));
+  };
 
   return (
     <div
@@ -45,12 +53,12 @@ export default function Column({ col }: ColumnProps) {
     >
       <h2>{col.name}</h2>
 
-      <CreateTaskButton />
+      <CreateTaskButton onCreateTask={(task) => taskCreated(task)} />
 
       <div className="flex flex-col gap-2 p-2 rounded transition-colors">
-        {/* {tasks[col].map((task) => (
+        {tasks.map((task) => (
           <TaskComponent key={task.id} task={task} col={col} />
-        ))} */}
+        ))}
       </div>
     </div>
   );

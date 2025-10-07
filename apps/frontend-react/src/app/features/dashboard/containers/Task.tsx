@@ -1,10 +1,10 @@
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { ITask, TaskStatus } from '@kanban-board/shared';
+import { IColumn, ITask } from '@kanban-board/shared';
 import { useEffect, useRef, useState } from 'react';
 
 interface TaskProps {
   task: ITask;
-  col: TaskStatus;
+  col: IColumn;
 }
 
 export default function Task({ task, col }: TaskProps) {
@@ -19,7 +19,7 @@ export default function Task({ task, col }: TaskProps) {
         element: el,
         getInitialData: () => ({ task, col }),
         onDragStart: () => setDragging(true),
-        onDrop: () => setDragging(false),
+        onDrop: () => setDragging(false)
       });
     }
   }, []);
@@ -34,10 +34,6 @@ export default function Task({ task, col }: TaskProps) {
       <div className="font-semibold">{task.title}</div>
       {task.description && (
         <div className="text-sm text-gray-500">{task.description}</div>
-      )}
-
-      {task.assignedTo && (
-        <div className="text-xs text-gray-400 mt-1">{task.assignedTo}</div>
       )}
     </div>
   );

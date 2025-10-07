@@ -1,14 +1,16 @@
+import { JWTUser } from '@kanban-board/shared';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
+  WebSocketServer
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TasksService } from './tasks.service';
 
 @WebSocketGateway({
   imports: [ConfigModule],
@@ -28,8 +30,8 @@ import { UpdateTaskDto } from './dto/update-task.dto';
       } else {
         callback(new Error('Not allowed by CORS'));
       }
-    },
-  },
+    }
+  }
 })
 export class TasksGateway {
   @WebSocketServer()
@@ -38,8 +40,12 @@ export class TasksGateway {
   constructor(private tasksService: TasksService) {}
 
   @SubscribeMessage('createTask')
-  async create(@MessageBody() dto: CreateTaskDto) {
-    const task = await this.tasksService.create(dto);
+  async create(
+    @MessageBody() dto: CreateTaskDto,
+    @ConnectedSocket() client: Socket
+  ) {
+    const jwtUser: JWTUser = client.data.user;
+    const task = await this.tasksService.create(dto.columnId, dto, jwtUser);
     this.server.emit('taskCreated', task);
     return task;
   }

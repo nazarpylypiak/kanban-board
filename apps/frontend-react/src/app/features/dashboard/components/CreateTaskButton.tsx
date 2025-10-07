@@ -1,13 +1,23 @@
-import { useState } from "react";
+import { ITask } from '@kanban-board/shared';
+import { useState } from 'react';
 
-export default function CreateTaskButton() {
+interface Props {
+  onCreateTask: (task: Omit<ITask, 'columnId'>) => void;
+}
+
+export default function CreateTaskButton({ onCreateTask }: Props) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    onCreateTask({ title, description });
+    setTitle('');
+    setDescription('');
+    setOpen(false);
   };
+
   return (
     <>
       <button

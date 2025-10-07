@@ -17,7 +17,10 @@ export default function BoardSelector({ onSelectBoard }: BoardSelectorProps) {
 
   useEffect(() => {
     if (!user) return;
-    getAll(user.id).then((res) => dispatch(setBoards(res.data)));
+    getAll(user.id).then((res) => {
+      dispatch(setBoards(res.data));
+      onSelectBoard(res.data[0]);
+    });
   }, [user?.id]);
 
   const createBoard = async () => {

@@ -21,9 +21,9 @@ export class Task {
   @TypeOrmColumn({ type: 'enum', enum: TaskStatus, default: TaskStatus.TODO })
   status: TaskStatus;
 
-  @TypeOrmColumn({ nullable: true })
-  assignedTo: string;
-
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
-  columns: Column[];
+  column: Column;
+
+  @TypeOrmColumn()
+  columnId: string;
 }

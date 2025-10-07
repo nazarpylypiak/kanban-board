@@ -24,7 +24,7 @@ export class Column {
   @ManyToOne(() => Board, (board) => board.columns, { onDelete: 'CASCADE' })
   board: Board;
 
-  @OneToMany(() => Task, (task) => task.columns)
+  @OneToMany(() => Task, (task) => task.column)
   tasks: Task[];
 
   @CreateDateColumn()
