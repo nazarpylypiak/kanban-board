@@ -1,9 +1,8 @@
-import { User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Board } from '../boards/entities/board.entity';
+import { Column } from '../columns/entities/column.entity';
 import { Task } from './entities/task.entity';
 import { TasksController } from './tasks.controller';
 import { TasksGateway } from './tasks.gateway';
@@ -11,7 +10,7 @@ import { TasksService } from './tasks.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, Board, User]),
+    TypeOrmModule.forFeature([Task, Column]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

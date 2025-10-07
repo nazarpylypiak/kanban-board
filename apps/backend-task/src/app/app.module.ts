@@ -6,6 +6,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BoardsModule } from './boards/boards.module';
 import { Board } from './boards/entities/board.entity';
+import { ColumnsModule } from './columns/columns.module';
+import { Column } from './columns/entities/column.entity';
 import { Task } from './tasks/entities/task.entity';
 import { TasksModule } from './tasks/tasks.module';
 
@@ -24,12 +26,13 @@ import { TasksModule } from './tasks/tasks.module';
         username: config.get<string>('POSTGRES_USER'),
         password: config.get<string>('POSTGRES_PASSWORD'),
         database: config.get<string>('POSTGRES_DB'),
-        entities: [Task, Board, User],
+        entities: [Board, User, Column, Task],
         synchronize: config.get<string>('NODE_ENV') === 'development'
       })
     }),
     TasksModule,
-    BoardsModule
+    BoardsModule,
+    ColumnsModule
   ],
   controllers: [AppController],
   providers: [AppService]

@@ -13,7 +13,7 @@ export class BoardsService {
   ) {}
 
   findAll() {
-    return this.boardRepository.find({ relations: ['tasks'] });
+    return this.boardRepository.find({ relations: ['columns'] });
   }
 
   findAllByOwner(ownerId: string) {
@@ -21,14 +21,14 @@ export class BoardsService {
       where: {
         owner: { id: ownerId }
       },
-      relations: ['tasks', 'owner']
+      relations: ['columns', 'owner']
     });
   }
 
   findOne(id: string) {
     return this.boardRepository.findOne({
       where: { id },
-      relations: ['tasks']
+      relations: ['columns']
     });
   }
 

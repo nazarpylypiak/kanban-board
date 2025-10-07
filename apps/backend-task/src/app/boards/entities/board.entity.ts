@@ -1,22 +1,21 @@
-// board.entity.ts
 import { User } from '@kanban-board/shared';
 import {
-  Column,
   Entity,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  Column as TypeOrmColumn
 } from 'typeorm';
-import { Task } from '../../tasks/entities/task.entity';
+import { Column } from '../../columns/entities/column.entity';
 
 @Entity('boards')
 export class Board {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @TypeOrmColumn()
   name: string;
 
   @ManyToOne(() => User, { nullable: true })
@@ -26,6 +25,6 @@ export class Board {
   @JoinTable()
   sharedUsers: User[];
 
-  @OneToMany(() => Task, (task) => task.board)
-  tasks: Task[];
+  @OneToMany(() => Column, (column) => column.board, { cascade: true })
+  columns: Column[];
 }

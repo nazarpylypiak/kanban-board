@@ -1,16 +1,16 @@
-import { User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Column } from '../columns/entities/column.entity';
-import { BoardsController } from './boards.controller';
-import { BoardsService } from './boards.service';
-import { Board } from './entities/board.entity';
+import { Board } from '../boards/entities/board.entity';
+import { Task } from '../tasks/entities/task.entity';
+import { ColumnsController } from './columns.controller';
+import { ColumnsService } from './columns.service';
+import { Column } from './entities/column.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Board, User, Column]),
+    TypeOrmModule.forFeature([Column, Board, Task]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -22,8 +22,7 @@ import { Board } from './entities/board.entity';
       })
     })
   ],
-  controllers: [BoardsController],
-  providers: [BoardsService],
-  exports: [BoardsService]
+  controllers: [ColumnsController],
+  providers: [ColumnsService]
 })
-export class BoardsModule {}
+export class ColumnsModule {}
