@@ -34,8 +34,7 @@ export class BoardsService {
 
   async create(ownerId: string, dto: CreateBoardDto) {
     const owner = await this.userRepository.findOne({ where: { id: ownerId } });
-    console.log('ownerId', typeof ownerId, ownerId);
-    console.log('owner', owner);
+
     if (!owner) throw new NotFoundException('Owner not found');
     const sharedUsers = dto.sharedUserIds?.length
       ? await this.userRepository.find({
