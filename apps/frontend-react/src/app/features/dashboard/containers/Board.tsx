@@ -2,7 +2,7 @@ import { IBoard, IColumn, ITask, TaskStatus } from '@kanban-board/shared';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
-import { addColumnToBoard, setColumns } from '../../../core/store/boardsSlice';
+import { addColumn, setColumns } from '../../../core/store/columnsSlice';
 import { create, getAll } from '../../../shared/services/columns.service';
 import Column from './Column';
 
@@ -24,22 +24,17 @@ interface BoardProps {
 
 export default function Board({ board }: BoardProps) {
   const [newColumnName, setNewColumnName] = useState('');
-  const columns = useSelector(
-    (state: RootState) =>
-      state.boards.data.find(({ id }) => id === board.id)?.columns || []
-  );
+  const columns = useSelector((state: RootState) => state.columns.data);
   const dispatch = useDispatch();
   useEffect(() => {
     if (!board.id) return;
-    getAll(board.id).then((res) =>
-      dispatch(setColumns({ boardId: board.id, columns: res.data }))
-    );
+    getAll(board.id).then((res) => dispatch(setColumns(res.data)));
   }, [board.id, dispatch]);
 
   const onAddColumn = async () => {
     if (!newColumnName) return;
     create(board.id, newColumnName).then((res) => {
-      addColumnToBoard({ boardId: board.id, column: res.data });
+      dispatch(addColumn({ ...res.data, boardId: board.id }));
       setNewColumnName('');
     });
   };

@@ -25,7 +25,8 @@ export class ColumnsService {
       where: {
         board: { id: boardId }
       },
-      relations: ['tasks']
+      relations: ['tasks'],
+      select: ['id', 'name', 'boardId']
     });
   }
 
@@ -45,7 +46,12 @@ export class ColumnsService {
       name: dto.name,
       board
     });
+    const newColumn = await this.columnRepository.save(column);
 
-    return this.columnRepository.save(column);
+    return {
+      id: newColumn.id,
+      name: newColumn.name,
+      boardId: newColumn.boardId
+    };
   }
 }

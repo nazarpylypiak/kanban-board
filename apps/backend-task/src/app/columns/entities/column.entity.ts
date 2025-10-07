@@ -16,6 +16,9 @@ export class Column {
   @TypeOrmColumn()
   name: string;
 
+  @TypeOrmColumn()
+  boardId: string;
+
   @ManyToOne(() => Board, (board) => board.columns, { onDelete: 'CASCADE' })
   board: Board;
 

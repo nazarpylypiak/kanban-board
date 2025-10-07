@@ -1,14 +1,15 @@
 import { IColumn } from '@kanban-board/shared';
-
+import { useRef, useState } from 'react';
+import CreateTaskButton from './CreateTaskButton';
 interface ColumnProps {
   col: IColumn;
 }
 
 export default function Column({ col }: ColumnProps) {
-  // const ref = useRef(null);
-  // const [state, setState] = useState<'validMove' | 'invalidMove' | 'idle'>(
-  //   'idle'
-  // );
+  const ref = useRef(null);
+  const [state, setState] = useState<'validMove' | 'invalidMove' | 'idle'>(
+    'idle'
+  );
 
   // useEffect(() => {
   //   const el = ref.current;
@@ -38,21 +39,20 @@ export default function Column({ col }: ColumnProps) {
   // const title = col.at(0)?.toUpperCase() + col.slice(1);
 
   return (
-    <div>Task</div>
-    // <div
-    //   ref={ref}
-    //   className={`${getColor(state)} flex-1 bg-white rounded shadow p-4 `}
-    // >
-    //   <h2>{title.replace('-', ' ')}</h2>
+    <div
+      ref={ref}
+      className={`${getColor(state)} w-64 bg-white rounded shadow p-4 `}
+    >
+      <h2>{col.name}</h2>
 
-    //   {col === TaskStatus.TODO && <CreateTaskButton />}
+      <CreateTaskButton />
 
-    //   <div className="flex flex-col gap-2 p-2 rounded transition-colors">
-    //     {tasks[col].map((task) => (
-    //       <TaskComponent key={task.id} task={task} col={col} />
-    //     ))}
-    //   </div>
-    // </div>
+      <div className="flex flex-col gap-2 p-2 rounded transition-colors">
+        {/* {tasks[col].map((task) => (
+          <TaskComponent key={task.id} task={task} col={col} />
+        ))} */}
+      </div>
+    </div>
   );
 }
 
