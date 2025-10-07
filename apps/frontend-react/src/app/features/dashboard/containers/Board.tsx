@@ -1,5 +1,5 @@
 import { IBoard, IColumn, ITask, TaskStatus } from '@kanban-board/shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
 import { addColumn, setColumns } from '../../../core/store/columnsSlice';
@@ -23,6 +23,7 @@ interface BoardProps {
 }
 
 export default function Board({ board }: BoardProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [newColumnName, setNewColumnName] = useState('');
   const columns = useSelector((state: RootState) => state.columns.data);
   const dispatch = useDispatch();
@@ -36,6 +37,11 @@ export default function Board({ board }: BoardProps) {
     create(board.id, newColumnName).then((res) => {
       dispatch(addColumn({ ...res.data, boardId: board.id }));
       setNewColumnName('');
+      setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollLeft = containerRef.current.scrollWidth;
+        }
+      }, 0);
     });
   };
   // const [tasks, setTasks] = useState<Record<TaskStatus, ITask[]>>(tasksList);
@@ -63,26 +69,28 @@ export default function Board({ board }: BoardProps) {
   //   });
   // }, [tasks]);
   return (
-    <main className="flex gap-4 mt-4 h-screen bg-gray-100 p-4 overflow-x-auto">
-      {columns.length > 0 &&
-        columns.map((col: IColumn) => <Column key={col.id} col={col} />)}
+    <main ref={containerRef} className="flex gap-4 p-4 overflow-x-auto flex-1">
+      <div className="flex gap-4 items-start">
+        {columns.length > 0 &&
+          columns.map((col: IColumn) => <Column key={col.id} col={col} />)}
 
-      <div className="flex-shrink-0 w-64 h-full bg-gray-200 p-4 flex flex-col gap-2 rounded shadow">
-        <input
-          value={newColumnName}
-          onChange={(e) => setNewColumnName(e.target.value)}
-          type="text"
-          placeholder="Enter column name..."
-          className="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
+        <div className="flex-shrink-0 w-64 bg-gray-200 p-4 flex flex-col gap-2 rounded shadow">
+          <input
+            value={newColumnName}
+            onChange={(e) => setNewColumnName(e.target.value)}
+            type="text"
+            placeholder="Enter column name..."
+            className="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
 
-        <button
-          onClick={onAddColumn}
-          type="button"
-          className="w-full p-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600 transition"
-        >
-          Add Column
-        </button>
+          <button
+            onClick={onAddColumn}
+            type="button"
+            className="w-full p-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600 transition"
+          >
+            Add Column
+          </button>
+        </div>
       </div>
     </main>
   );

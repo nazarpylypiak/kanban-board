@@ -1,9 +1,11 @@
 import {
+  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Column as TypeOrmColumn
+  Column as TypeOrmColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { Board } from '../../boards/entities/board.entity';
 import { Task } from '../../tasks/entities/task.entity';
@@ -24,4 +26,10 @@ export class Column {
 
   @OneToMany(() => Task, (task) => task.columns)
   tasks: Task[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -27,7 +27,8 @@ export class ColumnsService {
         board: { id: boardId }
       },
       relations: ['tasks'],
-      select: ['id', 'name', 'boardId']
+      select: ['id', 'name', 'boardId'],
+      order: { createdAt: 'ASC' }
     });
   }
 
