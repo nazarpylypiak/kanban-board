@@ -1,5 +1,7 @@
+import { RolesGuard } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Board } from '../boards/entities/board.entity';
@@ -23,6 +25,6 @@ import { Column } from './entities/column.entity';
     })
   ],
   controllers: [ColumnsController],
-  providers: [ColumnsService]
+  providers: [ColumnsService, { provide: APP_GUARD, useClass: RolesGuard }]
 })
 export class ColumnsModule {}

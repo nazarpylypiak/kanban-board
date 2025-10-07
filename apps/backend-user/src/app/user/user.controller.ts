@@ -1,4 +1,9 @@
-import { AuthenticatedRequest, JwtAuthGuard } from '@kanban-board/shared';
+import {
+  AuthenticatedRequest,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard
+} from '@kanban-board/shared';
 import {
   Body,
   Controller,
@@ -11,9 +16,7 @@ import {
   Req,
   UseGuards
 } from '@nestjs/common';
-import { Roles } from '../common/decorators/roles.decorator';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { RolesGuard } from './guards/roles.guard';
 import { UserService } from './user.service';
 
 @Controller('users')

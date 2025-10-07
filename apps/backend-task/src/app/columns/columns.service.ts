@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Board } from '../boards/entities/board.entity';
@@ -25,12 +29,18 @@ export class ColumnsService {
     });
   }
 
-  async create(boardId: string, dto: CreateColumnDto) {
+  async create(dto: CreateColumnDto) {
+    console.log(dto);
     const board = await this.boardRepository.findOne({
-      where: { id: boardId }
+      where: { id: dto.boardId },
+      relations: ['owner']
     });
 
     if (!board) throw new NotFoundException('Board not found');
+
+    if (board.owner.id !== dto.user.id && dto.user.role !== 'admin') {
+      throw new ForbiddenException('You do not have permission to add columns');
+    }
     const column = this.columnRepository.create({
       name: dto.name,
       board

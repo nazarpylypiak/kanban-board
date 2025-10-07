@@ -1,10 +1,9 @@
-import { JwtAuthGuard, User } from '@kanban-board/shared';
+import { JwtAuthGuard, RolesGuard, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RolesGuard } from './guards/roles.guard';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 

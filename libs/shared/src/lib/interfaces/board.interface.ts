@@ -1,4 +1,4 @@
-import { ITask } from './task.interface';
+import { IColumn } from './column.interface';
 import { IUser } from './user.interface';
 
 export interface IBoard {
@@ -7,6 +7,6 @@ export interface IBoard {
   description?: string;
   createdAt?: string; // ISO string
   updatedAt?: string; // ISO string
-  tasks?: ITask[];
+  columns?: IColumn[];
   owner: IUser;
 }

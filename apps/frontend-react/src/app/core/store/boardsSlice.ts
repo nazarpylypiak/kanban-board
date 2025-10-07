@@ -1,10 +1,15 @@
-import { IBoard } from '@kanban-board/shared';
+import { IBoard, IColumn } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface BoardsState {
   data: IBoard[];
   loading: boolean;
   error: string | null;
+}
+
+interface AddColumnPayload {
+  boardId: string;
+  column: IColumn;
 }
 
 const initialState: BoardsState = {
@@ -31,10 +36,35 @@ const boardsSlice = createSlice({
     },
     deleteBoard: (state, action: PayloadAction<string>) => {
       state.data = state.data.filter((b) => b.id !== action.payload);
+    },
+    setColumns: (
+      state,
+      action: PayloadAction<{ boardId: string; columns: IColumn[] }>
+    ) => {
+      const board = state.data.find(({ id }) => id === action.payload.boardId);
+
+      if (board) {
+        if (!action.payload.columns.length) board.columns = [];
+        board.columns = action.payload.columns;
+      }
+    },
+    addColumnToBoard: (state, action: PayloadAction<AddColumnPayload>) => {
+      const board = state.data.find(({ id }) => id === action.payload.boardId);
+
+      if (board) {
+        if (!board.columns) board.columns = [];
+        board.columns.push(action.payload.column);
+      }
     }
   }
 });
 
-export const { setBoards, updateBoard, addBoard, deleteBoard } =
-  boardsSlice.actions;
+export const {
+  setBoards,
+  updateBoard,
+  addBoard,
+  deleteBoard,
+  setColumns,
+  addColumnToBoard
+} = boardsSlice.actions;
 export default boardsSlice.reducer;

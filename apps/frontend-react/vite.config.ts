@@ -13,8 +13,9 @@ export default defineConfig(() => ({
     proxy: {
       '/api/auth': 'http://localhost:3000',
       '/api/users': 'http://localhost:3001',
-      '/api/tasks': 'http://localhost:3002',
-      '/api/boards': 'http://localhost:3002'
+      '/api/boards': 'http://localhost:3002',
+      '/api/columns': 'http://localhost:3002',
+      '/api/tasks': 'http://localhost:3002'
     }
   },
   preview: {

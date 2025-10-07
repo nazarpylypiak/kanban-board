@@ -9,7 +9,7 @@ export default function DashboardPage() {
   return (
     <>
       <BoardSelector onSelectBoard={(board) => setCurrentBoard(board)} />
-      {currentBoard && <Board />}
+      {currentBoard && <Board board={currentBoard} />}
     </>
   );
 }
