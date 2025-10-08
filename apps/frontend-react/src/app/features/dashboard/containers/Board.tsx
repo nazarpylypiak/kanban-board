@@ -1,6 +1,6 @@
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { IBoard, IColumn, ITask } from '@kanban-board/shared';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '../../../core/store';
 import { addColumn, setColumns } from '../../../core/store/columnsSlice';
@@ -24,33 +24,97 @@ interface BoardProps {
 
 export default function Board({ board }: BoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const columns = useSelector((state: RootState) => state.columns.data);
-
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (!board.id) return;
-    getAll(board.id).then((res) => {
-      const allTasks = res.data.flatMap((col) =>
-        (col.tasks || []).map((task) => ({ ...task, columnId: col.id }))
-      );
-      dispatch(setColumns(res.data));
-      dispatch(setTasks(allTasks));
-    });
+
+    const loadBoardData = async () => {
+      try {
+        const res = await getAll(board.id);
+        const allTasks = res.data.flatMap((col) =>
+          (col.tasks || []).map((task) => ({ ...task, columnId: col.id }))
+        );
+        dispatch(setColumns(res.data));
+        dispatch(setTasks(allTasks));
+      } catch (e) {
+        console.error('Failed to load board data:', e);
+      }
+    };
+
+    loadBoardData();
   }, [board.id, dispatch]);
 
-  const columnAdded = async (name: string) => {
-    create(board.id, name).then((res) => {
-      dispatch(addColumn({ ...res.data, boardId: board.id }));
+  const handleColumnAdded = useCallback(
+    async (name: string) => {
+      try {
+        const res = await create(board.id, name);
+        dispatch(addColumn({ ...res.data, boardId: board.id }));
 
-      setTimeout(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollLeft = containerRef.current.scrollWidth;
-        }
-      }, 0);
-    });
-  };
+        // Auto-scroll to the new column
+        setTimeout(() => {
+          if (containerRef.current) {
+            containerRef.current.scrollLeft = containerRef.current.scrollWidth;
+          }
+        }, 0);
+      } catch (e) {
+        console.error('Failed to create column:', e);
+      }
+    },
+    [board.id, dispatch]
+  );
+
+  const handleReorderInSameColumn = useCallback(
+    async (
+      taskId: string,
+      columnId: string,
+      newIndex: number,
+      tasks: ITask[]
+    ) => {
+      const prevTasks = [...tasks];
+      dispatch(reorderTaskInColumn({ taskId, columnId, newIndex }));
+
+      try {
+        const res = await moveTask(taskId, columnId, newIndex);
+        dispatch(udpateTask(res.data));
+      } catch (e) {
+        console.error('Failed to reorder task:', e);
+        dispatch(setTasks(prevTasks));
+      }
+    },
+    [dispatch]
+  );
+
+  const handleMoveToColumn = useCallback(
+    async (
+      taskId: string,
+      sourceColumnId: string,
+      destinationColumnId: string,
+      newIndex: number,
+      tasks: ITask[]
+    ) => {
+      const prevTasks = [...tasks];
+      dispatch(
+        moveTaskToColumn({
+          taskId,
+          sourceColumnId,
+          destinationColumnId,
+          newIndex
+        })
+      );
+
+      try {
+        const res = await moveTask(taskId, destinationColumnId, newIndex);
+        dispatch(udpateTask(res.data));
+      } catch (e) {
+        console.log('Failed to move task: ', e);
+        dispatch(setTasks(prevTasks));
+      }
+    },
+    [dispatch]
+  );
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -58,106 +122,101 @@ export default function Board({ board }: BoardProps) {
       },
       onDrop({ source, location }) {
         const dragging = source.data;
+        if (!isTaskData(dragging) || !dragging?.task?.id) return;
 
-        if (!isTaskData(dragging)) return;
+        const target = location.current.dropTargets[0];
+        if (!target) return;
 
-        const innerMost = location.current.dropTargets[0];
+        const dropTargetData = target.data;
+        const taskId = dragging.task.id;
 
-        if (!innerMost) {
-          return;
-        }
-        const dropTargetData = innerMost.data;
         const homeColumnIndex = columns.findIndex(
           (column) => column.id === dragging.task.columnId
         );
         const home: IColumn | undefined = columns[homeColumnIndex];
-
         if (!home) return;
-        if (!dragging?.task.id) return;
-        let prevTasks: ITask[];
-        let taskId = dragging.task.id;
-        let columnId;
-        let newIndex;
-        const selectTasks = makeSelectTasksByColumn(home.id);
-        const homeTasks = selectTasks(store.getState());
+
+        const selectHomeTasks = makeSelectTasksByColumn(home.id);
+        const homeTasks = selectHomeTasks(store.getState());
         const taskIndexInHome =
-          homeTasks?.findIndex(({ id }) => id === dragging.task.id) ?? -1;
+          homeTasks?.findIndex(({ id }) => id === taskId) ?? -1;
+
+        if (taskIndexInHome === -1) return;
 
         if (isTaskDropTargetData(dropTargetData)) {
           const destinationColumnIndex = columns.findIndex(
             ({ id }) => id === dropTargetData.columnId
           );
           const destination = columns[destinationColumnIndex];
-          columnId = destination.id;
-
-          // reordering in home column
-          if (home === destination) {
-            const taskFinishIndex =
-              homeTasks?.findIndex(
-                (task) => task.id === dropTargetData.task.id
-              ) ?? -1;
-
-            if (taskIndexInHome === -1 || taskFinishIndex === -1) return;
-            if (taskIndexInHome === taskFinishIndex) return;
-
-            prevTasks = [...homeTasks];
-            newIndex = taskFinishIndex;
-            dispatch(
-              reorderTaskInColumn({
-                taskId,
-                columnId,
-                newIndex
-              })
-            );
-            moveTask(taskId, columnId, newIndex)
-              .then((res) => {
-                dispatch(udpateTask(res.data));
-              })
-              .catch(() => {
-                dispatch(setTasks(prevTasks));
-              });
-            return;
-          }
-
-          // move task from one column to another
           if (!destination) return;
+
           const selectDestinationTasks = makeSelectTasksByColumn(
             destination.id
           );
           const destinationTasks = selectDestinationTasks(store.getState());
-          const indexOfTarget =
+          const taskFinishIndex =
             destinationTasks?.findIndex(
               (task) => task.id === dropTargetData.task.id
             ) ?? -1;
 
-          prevTasks = [...destinationTasks];
-          newIndex = indexOfTarget;
+          if (taskFinishIndex === -1) return;
 
-          dispatch(
-            moveTaskToColumn({
+          // reordering in home column
+          if (home === destination) {
+            if (taskIndexInHome === taskFinishIndex) return;
+            handleReorderInSameColumn(
               taskId,
-              sourceColumnId: home.id,
-              destinationColumnId: columnId,
-              newIndex
-            })
-          );
-
-          moveTask(taskId, columnId, newIndex)
-            .then((res) => {
-              dispatch(udpateTask(res.data));
-            })
-            .catch(() => {
-              dispatch(setTasks(prevTasks));
-            });
+              destination.id,
+              taskFinishIndex,
+              homeTasks
+            );
+          } else {
+            handleMoveToColumn(
+              taskId,
+              home.id,
+              destination.id,
+              taskFinishIndex,
+              destinationTasks
+            );
+          }
           return;
         }
 
         if (isColumnData(dropTargetData)) {
-          console.log('column', dropTargetData);
+          const destinationColumnIndex = columns.findIndex(
+            (column) => column.id === dropTargetData.column.id
+          );
+          const destination = columns[destinationColumnIndex];
+          if (!destination) return;
+
+          const selectDestinationTasks = makeSelectTasksByColumn(
+            destination.id
+          );
+          const destinationTasks = selectDestinationTasks(store.getState());
+          const newIndex = destinationTasks.length;
+
+          // Same column move to end
+          if (home === destination) {
+            handleReorderInSameColumn(
+              taskId,
+              destination.id,
+              newIndex,
+              homeTasks
+            );
+          } else {
+            handleMoveToColumn(
+              taskId,
+              home.id,
+              destination.id,
+              newIndex,
+              destinationTasks
+            );
+          }
         }
       }
     });
-  }, [columns]);
+  }, [columns, handleReorderInSameColumn, handleMoveToColumn]);
+
   return (
     <main
       ref={containerRef}
@@ -167,7 +226,7 @@ export default function Board({ board }: BoardProps) {
         {columns.length > 0 &&
           columns.map((col: IColumn) => <Column key={col.id} col={col} />)}
 
-        <AddNewColumn onAddColumn={(name) => columnAdded(name)} />
+        <AddNewColumn onAddColumn={(name) => handleColumnAdded(name)} />
       </div>
     </main>
   );
