@@ -87,23 +87,25 @@ export default function Column({ col }: ColumnProps) {
     }
   }, []);
 
-  const taskCreated = async (task: Omit<ITask, 'columnId'>) => {
+  const taskCreated = async (task: Omit<ITask, 'columnId' | 'position'>) => {
     await create(col.id, task).then((res) => dispatch(addTask(res.data)));
   };
 
   return (
     <div
       ref={ref}
-      className={`${stateStyles[state.type]} w-64 bg-white rounded shadow p-4 `}
+      className={`${stateStyles[state.type]} w-64 bg-white rounded shadow p-4 flex flex-col h-full`}
     >
-      <h2>{col.name}</h2>
+      <h2 className="font-bold mb-2">{col.name}</h2>
 
-      <CreateTaskButton onCreateTask={(task) => taskCreated(task)} />
-
-      <div className="flex flex-col gap-2 p-2 rounded transition-colors">
+      <div className="overflow-y-auto flex flex-col gap-2 p-2 rounded transition-colors">
         {tasks.map((task) => (
           <TaskComponent key={task.id} task={task} col={col} />
         ))}
+      </div>
+
+      <div className="mt-2">
+        <CreateTaskButton onCreateTask={(task) => taskCreated(task)} />
       </div>
     </div>
   );

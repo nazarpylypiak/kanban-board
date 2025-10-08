@@ -5,7 +5,7 @@ const tasksApi = createApi('/api/tasks');
 
 export const create = async (
   columnId: string,
-  task: Omit<ITask, 'columnId'>
+  task: Omit<ITask, 'columnId' | 'position'>
 ) => {
   return await tasksApi.post<ITask>(columnId, task);
 };

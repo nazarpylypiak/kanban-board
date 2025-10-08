@@ -1,11 +1,12 @@
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { IBoard, IColumn } from '@kanban-board/shared';
+import { IBoard, IColumn, ITask } from '@kanban-board/shared';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '../../../core/store';
 import { addColumn, setColumns } from '../../../core/store/columnsSlice';
 import { makeSelectTasksByColumn } from '../../../core/store/selectors/taskSelectors';
 import {
+  moveTaskToColumn,
   reorderTaskInColumn,
   setTasks,
   udpateTask
@@ -72,6 +73,11 @@ export default function Board({ board }: BoardProps) {
         const home: IColumn | undefined = columns[homeColumnIndex];
 
         if (!home) return;
+        if (!dragging?.task.id) return;
+        let prevTasks: ITask[];
+        let taskId = dragging.task.id;
+        let columnId;
+        let newIndex;
         const selectTasks = makeSelectTasksByColumn(home.id);
         const homeTasks = selectTasks(store.getState());
         const taskIndexInHome =
@@ -82,6 +88,7 @@ export default function Board({ board }: BoardProps) {
             ({ id }) => id === dropTargetData.columnId
           );
           const destination = columns[destinationColumnIndex];
+          columnId = destination.id;
 
           // reordering in home column
           if (home === destination) {
@@ -92,24 +99,24 @@ export default function Board({ board }: BoardProps) {
 
             if (taskIndexInHome === -1 || taskFinishIndex === -1) return;
             if (taskIndexInHome === taskFinishIndex) return;
-            if (!dragging?.task.id) return;
 
-            const prevTasks = [...homeTasks];
-
+            prevTasks = [...homeTasks];
+            newIndex = taskFinishIndex;
             dispatch(
               reorderTaskInColumn({
-                taskId: dragging.task.id,
-                columnId: destination.id,
-                newIndex: taskFinishIndex
+                taskId,
+                columnId,
+                newIndex
               })
             );
-            moveTask(dragging.task.id, destination.id, taskFinishIndex)
+            moveTask(taskId, columnId, newIndex)
               .then((res) => {
                 dispatch(udpateTask(res.data));
               })
               .catch(() => {
                 dispatch(setTasks(prevTasks));
               });
+            return;
           }
 
           // move task from one column to another
@@ -122,33 +129,27 @@ export default function Board({ board }: BoardProps) {
             destinationTasks?.findIndex(
               (task) => task.id === dropTargetData.task.id
             ) ?? -1;
-          console.log(indexOfTarget);
-          //  const indexOfTarget = destination.cards.findIndex(
-          //     (card) => card.id === dropTargetData.card.id,
-          //   );
 
-          //   const closestEdge = extractClosestEdge(dropTargetData);
-          //   const finalIndex = closestEdge === 'bottom' ? indexOfTarget + 1 : indexOfTarget;
+          prevTasks = [...destinationTasks];
+          newIndex = indexOfTarget;
 
-          //   // remove card from home list
-          //   const homeCards = Array.from(home.cards);
-          //   homeCards.splice(cardIndexInHome, 1);
+          dispatch(
+            moveTaskToColumn({
+              taskId,
+              sourceColumnId: home.id,
+              destinationColumnId: columnId,
+              newIndex
+            })
+          );
 
-          //   // insert into destination list
-          //   const destinationCards = Array.from(destination.cards);
-          //   destinationCards.splice(finalIndex, 0, dragging.card);
-
-          //   const columns = Array.from(data.columns);
-          //   columns[homeColumnIndex] = {
-          //     ...home,
-          //     cards: homeCards,
-          //   };
-          //   columns[destinationColumnIndex] = {
-          //     ...destination,
-          //     cards: destinationCards,
-          //   };
-          //   setData({ ...data, columns });
-          //   return;
+          moveTask(taskId, columnId, newIndex)
+            .then((res) => {
+              dispatch(udpateTask(res.data));
+            })
+            .catch(() => {
+              dispatch(setTasks(prevTasks));
+            });
+          return;
         }
 
         if (isColumnData(dropTargetData)) {
@@ -158,7 +159,10 @@ export default function Board({ board }: BoardProps) {
     });
   }, [columns]);
   return (
-    <main ref={containerRef} className="flex gap-4 p-4 overflow-x-auto flex-1">
+    <main
+      ref={containerRef}
+      className="flex gap-4 pt-4 pr-4 pb-4 overflow-x-auto flex-1  h-screen"
+    >
       <div className="flex gap-4 items-start">
         {columns.length > 0 &&
           columns.map((col: IColumn) => <Column key={col.id} col={col} />)}

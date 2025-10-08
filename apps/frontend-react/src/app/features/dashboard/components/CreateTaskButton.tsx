@@ -2,7 +2,7 @@ import { ITask } from '@kanban-board/shared';
 import { useState } from 'react';
 
 interface Props {
-  onCreateTask: (task: Omit<ITask, 'columnId'>) => void;
+  onCreateTask: (task: Omit<ITask, 'columnId' | 'position'>) => void;
 }
 
 export default function CreateTaskButton({ onCreateTask }: Props) {
@@ -22,7 +22,7 @@ export default function CreateTaskButton({ onCreateTask }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-2 bg-blue-600 text-white rounded-md"
+        className="px-3 py-2 bg-blue-600 text-white rounded-md w-full"
       >
         + New Task
       </button>

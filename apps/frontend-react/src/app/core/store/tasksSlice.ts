@@ -59,6 +59,44 @@ const tasksSlice = createSlice({
         ...state.data.filter((t) => t.columnId !== columnId),
         ...otherTasks
       ];
+    },
+    moveTaskToColumn(
+      state,
+      action: PayloadAction<{
+        taskId: string;
+        sourceColumnId: string;
+        destinationColumnId: string;
+        newIndex: number;
+      }>
+    ) {
+      const { taskId, sourceColumnId, destinationColumnId, newIndex } =
+        action.payload;
+
+      const task = state.data.find((t) => t.id === taskId);
+      if (!task) return;
+
+      const sourceTasks = state.data
+        .filter((t) => t.columnId === sourceColumnId && t.id !== taskId)
+        .sort((a, b) => a.position - b.position);
+      sourceTasks.forEach((t, i) => (t.position = i));
+
+      const destinationTasks = state.data
+        .filter((t) => t.columnId === destinationColumnId)
+        .sort((a, b) => a.position - b.position);
+
+      task.columnId = destinationColumnId;
+      destinationTasks.splice(newIndex, 0, task);
+
+      destinationTasks.forEach((t, i) => (t.position = i));
+
+      state.data = [
+        ...state.data.filter(
+          (t) =>
+            t.columnId !== sourceColumnId && t.columnId !== destinationColumnId
+        ),
+        ...sourceTasks,
+        ...destinationTasks
+      ];
     }
   }
 });
@@ -68,6 +106,7 @@ export const {
   addTask,
   udpateTask,
   deleteTask,
-  reorderTaskInColumn
+  reorderTaskInColumn,
+  moveTaskToColumn
 } = tasksSlice.actions;
 export default tasksSlice.reducer;
