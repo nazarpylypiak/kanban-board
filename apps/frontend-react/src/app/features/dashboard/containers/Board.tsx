@@ -1,3 +1,4 @@
+import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { IBoard, IColumn, ITask } from '@kanban-board/shared';
 import { useCallback, useEffect, useRef } from 'react';
@@ -154,20 +155,22 @@ export default function Board({ board }: BoardProps) {
             destination.id
           );
           const destinationTasks = selectDestinationTasks(store.getState());
-          const taskFinishIndex =
+
+          let taskFinishIndex =
             destinationTasks?.findIndex(
               (task) => task.id === dropTargetData.task.id
             ) ?? -1;
 
           if (taskFinishIndex === -1) return;
-
+          const indexOffsetByEdge =
+            extractClosestEdge(dropTargetData) === 'bottom' ? 1 : 0;
           // reordering in home column
           if (home === destination) {
             if (taskIndexInHome === taskFinishIndex) return;
             handleReorderInSameColumn(
               taskId,
               destination.id,
-              taskFinishIndex,
+              taskFinishIndex + indexOffsetByEdge,
               homeTasks
             );
           } else {
@@ -175,7 +178,7 @@ export default function Board({ board }: BoardProps) {
               taskId,
               home.id,
               destination.id,
-              taskFinishIndex,
+              taskFinishIndex + indexOffsetByEdge,
               destinationTasks
             );
           }

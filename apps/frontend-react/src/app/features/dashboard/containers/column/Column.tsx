@@ -1,3 +1,5 @@
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { IColumn, ITask } from '@kanban-board/shared';
@@ -30,9 +32,11 @@ const stateStyles: { [Key in ColumnState['type']]: string } = {
 
 export default function Column({ col }: ColumnProps) {
   const ref = useRef(null);
+  const scrollableRef = useRef<HTMLDivElement | null>(null);
   const [state, setState] = useState<ColumnState>(idle);
   const dispatch = useDispatch();
   const tasks = useSelector(selectTasksByColumn(col.id));
+
   function setIsTaskOver({
     data,
     location
@@ -62,28 +66,44 @@ export default function Column({ col }: ColumnProps) {
 
   useEffect(() => {
     const element = ref.current;
+    const scrollable = scrollableRef.current;
 
-    if (element) {
-      return dropTargetForElements({
-        element,
-        getData: () => data,
-        canDrop({ source }) {
-          return isDraggingATask({ source });
-        },
-        getIsSticky: () => true,
-        onDragStart({ source, location }) {
-          if (isTaskData(source.data)) {
-            setIsTaskOver({ data: source.data, location });
-          }
-        },
-        onDragEnter({ source, location }) {
-          if (isTaskData(source.data)) {
-            setIsTaskOver({ data: source.data, location });
-          }
-        },
-        onDragLeave: () => setState(idle),
-        onDrop: () => setState(idle)
-      });
+    if (element && scrollable) {
+      return combine(
+        dropTargetForElements({
+          element,
+          getData: () => data,
+          canDrop({ source }) {
+            return isDraggingATask({ source });
+          },
+          getIsSticky: () => true,
+          onDragStart({ source, location }) {
+            if (isTaskData(source.data)) {
+              setIsTaskOver({ data: source.data, location });
+            }
+          },
+          onDragEnter({ source, location }) {
+            if (isTaskData(source.data)) {
+              setIsTaskOver({ data: source.data, location });
+            }
+          },
+          onDragLeave: () => setState(idle),
+          onDrop: () => setState(idle)
+        }),
+        autoScrollForElements({
+          canScroll({ source }) {
+            // if (!settings.isOverElementAutoScrollEnabled) {
+            //   return false;
+            // }
+
+            return isDraggingATask({ source });
+          },
+          getConfiguration: () => ({
+            maxScrollSpeed: 'standard'
+          }),
+          element: scrollable
+        })
+      );
     }
   }, []);
 
@@ -98,7 +118,10 @@ export default function Column({ col }: ColumnProps) {
     >
       <h2 className="font-bold mb-2">{col.name}</h2>
 
-      <div className="overflow-y-auto flex flex-col gap-2 p-2 rounded transition-colors">
+      <div
+        ref={scrollableRef}
+        className="overflow-y-auto flex flex-col gap-2 p-2 rounded transition-colors"
+      >
         {tasks.map((task) => (
           <TaskComponent key={task.id} task={task} col={col} />
         ))}
