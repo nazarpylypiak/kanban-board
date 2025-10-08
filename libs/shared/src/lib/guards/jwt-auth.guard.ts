@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthenticatedRequest } from '../interfaces';
@@ -23,8 +28,7 @@ export class JwtAuthGuard implements CanActivate {
       request.jwtUser = payload;
       return true;
     } catch (err) {
-      console.log('JwtAuthGuard error:', err);
-      return false;
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 }

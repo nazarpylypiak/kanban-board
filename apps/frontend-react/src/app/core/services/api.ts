@@ -1,5 +1,7 @@
 import axios from 'axios';
+import { refreshToken } from '../../features/auth/services/auth.service';
 import { store } from '../store';
+import { clearAuth, setAccessToken } from '../store/authSlice';
 
 export const createApi = (baseURL: string) => {
   const instance = axios.create({
@@ -14,6 +16,32 @@ export const createApi = (baseURL: string) => {
     }
     return config;
   });
+
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+          const data = await refreshToken();
+          const newAccessToken = data.accessToken;
+
+          store.dispatch(setAccessToken(newAccessToken));
+
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          return instance(originalRequest);
+        } catch (err) {
+          store.dispatch(clearAuth());
+          return Promise.reject(err);
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   return instance;
 };

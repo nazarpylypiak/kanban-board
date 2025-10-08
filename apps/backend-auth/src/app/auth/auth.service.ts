@@ -152,7 +152,6 @@ export class AuthService {
       if (tokenEntity) await this.refreshTokenRepository.remove(tokenEntity);
     }
 
-    // Видаляємо cookie
     res.clearCookie('refreshToken', { path: '/' });
   }
 }
