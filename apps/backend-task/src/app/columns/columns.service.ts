@@ -18,7 +18,14 @@ export class ColumnsService {
   ) {}
 
   findAll() {
-    return this.columnRepository.find({ relations: ['tasks'] });
+    return this.columnRepository.find({
+      relations: ['tasks'],
+      order: {
+        tasks: {
+          position: 'ASC'
+        }
+      }
+    });
   }
 
   findAllByBoardId(boardId: string) {
@@ -28,7 +35,12 @@ export class ColumnsService {
       },
       relations: ['tasks'],
       select: ['id', 'name', 'boardId'],
-      order: { createdAt: 'ASC' }
+      order: {
+        createdAt: 'ASC',
+        tasks: {
+          position: 'ASC'
+        }
+      }
     });
   }
 

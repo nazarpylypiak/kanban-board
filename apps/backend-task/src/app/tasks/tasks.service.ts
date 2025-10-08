@@ -123,9 +123,9 @@ export class TasksService {
       tasksInColumn.splice(position, 0, task);
       tasksInColumn.forEach((t, i) => (t.position = i));
       await this.tasksRepository.save(tasksInColumn);
+      task.position = position;
     }
 
-    const { column, ...movedTask } = await this.tasksRepository.save(task);
-    return movedTask;
+    return task;
   }
 }

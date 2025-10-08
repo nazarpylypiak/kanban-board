@@ -34,9 +34,40 @@ const tasksSlice = createSlice({
     },
     deleteTask: (state, action: PayloadAction<string>) => {
       state.data = state.data.filter(({ id }) => id !== action.payload);
+    },
+    reorderTaskInColumn(
+      state,
+      action: PayloadAction<{
+        taskId: string;
+        columnId: string;
+        newIndex: number;
+      }>
+    ) {
+      const { taskId, columnId, newIndex } = action.payload;
+
+      const tasksInColumn = state.data.filter((t) => t.columnId === columnId);
+      const task = tasksInColumn.find((t) => t.id === taskId);
+      if (!task) return;
+
+      const otherTasks = tasksInColumn.filter((t) => t.id !== taskId);
+
+      otherTasks.splice(newIndex, 0, task);
+
+      otherTasks.forEach((t, i) => (t.position = i));
+
+      state.data = [
+        ...state.data.filter((t) => t.columnId !== columnId),
+        ...otherTasks
+      ];
     }
   }
 });
 
-export const { setTasks, addTask, udpateTask, deleteTask } = tasksSlice.actions;
+export const {
+  setTasks,
+  addTask,
+  udpateTask,
+  deleteTask,
+  reorderTaskInColumn
+} = tasksSlice.actions;
 export default tasksSlice.reducer;

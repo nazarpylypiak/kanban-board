@@ -82,6 +82,7 @@
     "@angular/platform-browser-dynamic": "~20.2.0",
     "@angular/router": "~20.2.0",
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@fastify/cookie": "^11.0.2",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
