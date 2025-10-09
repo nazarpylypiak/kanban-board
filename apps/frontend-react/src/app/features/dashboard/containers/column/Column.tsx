@@ -2,7 +2,7 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { IColumn, ITask } from '@kanban-board/shared';
+import { IColumn, ITask, IUser } from '@kanban-board/shared';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
@@ -36,6 +36,7 @@ export default function Column({ col }: ColumnProps) {
   const [state, setState] = useState<ColumnState>(idle);
   const dispatch = useDispatch();
   const tasks = useSelector(selectTasksByColumn(col.id));
+  const users: IUser[] = [];
 
   function setIsTaskOver({
     data,
@@ -128,7 +129,10 @@ export default function Column({ col }: ColumnProps) {
       </div>
 
       <div className="mt-2">
-        <CreateTaskButton onCreateTask={(task) => taskCreated(task)} />
+        <CreateTaskButton
+          onCreateTask={(task) => taskCreated(task)}
+          users={users}
+        />
       </div>
     </div>
   );

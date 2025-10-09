@@ -1,8 +1,13 @@
-import { User } from '@kanban-board/shared';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { JWTUser, User } from '@kanban-board/shared';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { ShareBoardDto } from './dto/share-board.dto';
 import { Board } from './entities/board.entity';
 
 @Injectable()
@@ -57,5 +62,21 @@ export class BoardsService {
 
   delete(id: string) {
     return this.boardRepository.delete(id);
+  }
+
+  async shareBoard(boardId: string, dto: ShareBoardDto, currentUser: JWTUser) {
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: ['owner', 'sharedUsers']
+    });
+
+    if (!board) throw new NotFoundException('Board not found');
+    if (board.owner.id !== currentUser.sub && currentUser.role !== 'admin') {
+      throw new ForbiddenException('No permission');
+    }
+
+    const users = await this.userRepository.findBy({ id: In(dto.userIds) });
+    board.sharedUsers = users;
+    return this.boardRepository.save(board);
   }
 }

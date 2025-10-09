@@ -3,13 +3,15 @@ import authReducer from './authSlice';
 import boardsReducer from './boardsSlice';
 import columnsReducer from './columnsSlice';
 import tasksRedurer from './tasksSlice';
+import usersReducer from './usersSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     boards: boardsReducer,
     columns: columnsReducer,
-    tasks: tasksRedurer
+    tasks: tasksRedurer,
+    users: usersReducer
   }
 });
 

@@ -5,14 +5,17 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
+  Req,
   Request,
   UseGuards
 } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { ShareBoardDto } from './dto/share-board.dto';
 
 @Controller('boards')
 export class BoardsController {
@@ -46,5 +49,14 @@ export class BoardsController {
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.boardsService.delete(id);
+  }
+
+  @Patch(':boardId/share')
+  shareBoard(
+    @Param('boardId') boardId: string,
+    @Body() dto: ShareBoardDto,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.boardsService.shareBoard(boardId, dto, req.jwtUser);
   }
 }

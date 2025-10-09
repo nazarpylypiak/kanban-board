@@ -113,10 +113,19 @@ export default function Task({ task, col }: TaskProps) {
           className={`${state.type === 'is-dragging' ? 'opacity-40' : ''} p-3 bg-gray-50 rounded shadow-sm hover:bg-gray-100 cursor-grab`}
         >
           <div className="font-semibold">{task.title}</div>
+
           {task.description && (
             <div className="text-sm text-gray-500">{task.description}</div>
           )}
+
+          {task.assignee && (
+            <div className="mt-2 text-xs text-gray-600 flex items-center gap-1">
+              <span className="font-medium">Assigned to:</span>
+              <span className="truncate">{task.assignee.email}</span>
+            </div>
+          )}
         </div>
+
         {state.type === 'is-dragging-over' && state.closestEdge ? (
           <DropIndicator edge={state.closestEdge} gap={'8px'} />
         ) : null}

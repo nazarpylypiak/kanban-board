@@ -5,8 +5,9 @@ export interface IBoard {
   id: string;
   name: string;
   description?: string;
-  createdAt?: string; // ISO string
-  updatedAt?: string; // ISO string
+  createdAt?: string;
+  updatedAt?: string;
   columns?: IColumn[];
+  sharedUsers: IUser[];
   owner: IUser;
 }
