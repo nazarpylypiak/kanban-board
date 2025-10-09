@@ -1,5 +1,10 @@
 import { User, UserRole } from '@kanban-board/shared';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +26,10 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: dto.email }
+    });
+    if (existingUser) throw new BadRequestException('Email already in use');
     const hashed = await bcrypt.hash(dto.password, 10);
     const user = this.userRepository.create({
       email: dto.email,
@@ -39,7 +48,7 @@ export class AuthService {
     });
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const tokens = this.generateTokens(user);
