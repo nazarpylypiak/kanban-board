@@ -1,3 +1,4 @@
+import { User } from '@kanban-board/shared';
 import {
   Entity,
   ManyToOne,
@@ -16,6 +17,9 @@ export class Task {
 
   @TypeOrmColumn({ nullable: true })
   description: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  assignee?: User;
 
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
   column: Column;

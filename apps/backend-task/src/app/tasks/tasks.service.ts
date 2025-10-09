@@ -1,4 +1,4 @@
-import { JWTUser } from '@kanban-board/shared';
+import { JWTUser, User } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -54,12 +54,42 @@ export class TasksService {
       position: newPosition
     });
 
+    if (dto.assigneeId) {
+      const assignee = await this.tasksRepository.manager
+        .getRepository<User>('user')
+        .findOneBy({ id: dto.assigneeId });
+      if (!assignee) throw new NotFoundException('Assignee not found');
+      task.assignee = assignee;
+    }
+
     return this.tasksRepository.save(task);
   }
 
-  async update(id: string, updateTaskTdo: UpdateTaskDto) {
-    await this.tasksRepository.update(id, updateTaskTdo);
-    return this.findOne(id);
+  async update(id: string, updateTaskDto: UpdateTaskDto) {
+    const task = await this.tasksRepository.findOne({
+      where: { id },
+      relations: ['assignee']
+    });
+
+    if (!task) throw new NotFoundException('Task not found');
+
+    if (updateTaskDto.title !== undefined) task.title = updateTaskDto.title;
+    if (updateTaskDto.description !== undefined)
+      task.description = updateTaskDto.description;
+
+    if (updateTaskDto.assigneeId !== undefined) {
+      if (updateTaskDto.assigneeId === null) {
+        task.assignee = null;
+      } else {
+        const assignee = await this.tasksRepository.manager
+          .getRepository(User)
+          .findOneBy({ id: updateTaskDto.assigneeId });
+        if (!assignee) throw new NotFoundException('Assignee not found');
+        task.assignee = assignee;
+      }
+    }
+
+    return this.tasksRepository.save(task);
   }
 
   async delete(id: string) {
