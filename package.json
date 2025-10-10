@@ -85,6 +85,7 @@
     "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^2.1.2",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@fastify/cookie": "^11.0.2",
+    "@fastify/websocket": "^11.2.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",

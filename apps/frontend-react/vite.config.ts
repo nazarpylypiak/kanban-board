@@ -15,7 +15,13 @@ export default defineConfig(() => ({
       '/api/users': 'http://localhost:3001',
       '/api/boards': 'http://localhost:3002',
       '/api/columns': 'http://localhost:3002',
-      '/api/tasks': 'http://localhost:3002'
+      '/api/tasks': 'http://localhost:3002',
+      '/socket.io': {
+        target: 'http://localhost:3002',
+        ws: true,
+        changeOrigin: true,
+        secure: false
+      }
     }
   },
   preview: {

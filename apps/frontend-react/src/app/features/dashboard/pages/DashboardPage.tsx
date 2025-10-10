@@ -4,11 +4,14 @@ import Board from '../containers/Board';
 import BoardSelector from '../containers/BoardSelector';
 
 export default function DashboardPage() {
-  const [currentBoard, setCurrentBoard] = useState<IBoard | null>(null);
+  const [currentBoard, onSelectCurrentBoard] = useState<IBoard | null>(null);
 
   return (
     <>
-      <BoardSelector onSelectBoard={(board) => setCurrentBoard(board)} />
+      <BoardSelector
+        onSelectCurrentBoard={(board) => onSelectCurrentBoard(board)}
+        currentBoard={currentBoard}
+      />
       {currentBoard && <Board board={currentBoard} />}
     </>
   );

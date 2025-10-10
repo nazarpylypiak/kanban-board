@@ -28,6 +28,8 @@ export default function Board({ board }: BoardProps) {
   const columns = useSelector((state: RootState) => state.columns.data);
   const dispatch = useDispatch();
 
+
+
   useEffect(() => {
     if (!board.id) return;
 

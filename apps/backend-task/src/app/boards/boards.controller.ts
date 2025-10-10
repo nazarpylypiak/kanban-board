@@ -17,12 +17,18 @@ import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { ShareBoardDto } from './dto/share-board.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('boards')
 export class BoardsController {
   constructor(private boardsService: BoardsService) {}
 
+  @Get('my-boards')
+  async getBoards(@Req() req: AuthenticatedRequest) {
+    return this.boardsService.findAllForUser(req.jwtUser.sub);
+  }
+
   @Get()
-  fintAll(@Query('ownerId') ownerId: string) {
+  findAll(@Query('ownerId') ownerId: string) {
     if (ownerId) {
       return this.boardsService.findAllByOwner(ownerId);
     }
@@ -30,11 +36,10 @@ export class BoardsController {
   }
 
   @Get(':id')
-  fintOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     return this.boardsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateBoardDto, @Request() req: AuthenticatedRequest) {
     const ownerId = req.jwtUser.sub;
@@ -52,6 +57,7 @@ export class BoardsController {
   }
 
   @Patch(':boardId/share')
+  @UseGuards(JwtAuthGuard)
   shareBoard(
     @Param('boardId') boardId: string,
     @Body() dto: ShareBoardDto,

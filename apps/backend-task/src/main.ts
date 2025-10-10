@@ -11,6 +11,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication
 } from '@nestjs/platform-fastify';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
@@ -28,6 +29,8 @@ async function bootstrap() {
 
   app.setGlobalPrefix(globalPrefix);
 
+  app.useWebSocketAdapter(new IoAdapter(app));
+
   app.enableCors({
     origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -42,8 +45,8 @@ async function bootstrap() {
     } as FastifyCookieOptions
   );
 
-  const port = configService.get<number>('PORT') || 3000;
-  await app.listen(port);
+  const port = configService.get<number>('PORT') || 3002;
+  await app.listen(port, '0.0.0.0');
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );

@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Column } from '../columns/entities/column.entity';
 import { BoardsController } from './boards.controller';
+import { BoardsGateway } from './boards.gateway';
 import { BoardsService } from './boards.service';
 import { Board } from './entities/board.entity';
 
@@ -23,7 +24,7 @@ import { Board } from './entities/board.entity';
     })
   ],
   controllers: [BoardsController],
-  providers: [BoardsService],
+  providers: [BoardsService, BoardsGateway],
   exports: [BoardsService]
 })
 export class BoardsModule {}

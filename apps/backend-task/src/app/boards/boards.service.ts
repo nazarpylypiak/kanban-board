@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { BoardsGateway } from './boards.gateway';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { ShareBoardDto } from './dto/share-board.dto';
 import { Board } from './entities/board.entity';
@@ -14,8 +15,19 @@ import { Board } from './entities/board.entity';
 export class BoardsService {
   constructor(
     @InjectRepository(Board) private boardRepository: Repository<Board>,
-    @InjectRepository(User) private userRepository: Repository<User>
+    @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly boardsGateway: BoardsGateway
   ) {}
+
+  async findAllForUser(userId: string) {
+    return this.boardRepository
+      .createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.owner', 'owner')
+      .leftJoinAndSelect('boards.sharedUsers', 'sharedUsers')
+      .where('owner.id = :userId', { userId })
+      .orWhere('sharedUsers.id = :userId', { userId })
+      .getMany();
+  }
 
   findAll() {
     return this.boardRepository.find({ relations: ['columns'] });
@@ -76,7 +88,21 @@ export class BoardsService {
     }
 
     const users = await this.userRepository.findBy({ id: In(dto.userIds) });
+
+    const removedUsers = board.sharedUsers.filter(
+      (u) => !dto.userIds.includes(u.id)
+    );
+
     board.sharedUsers = users;
-    return this.boardRepository.save(board);
+    const savedBoard = await this.boardRepository.save(board);
+
+    this.boardsGateway.notifyBoardShared(board);
+
+    // Notify removed users
+    removedUsers.forEach((u) => {
+      this.boardsGateway.notifyBoardRemoved(board.id, u.id);
+    });
+
+    return savedBoard;
   }
 }

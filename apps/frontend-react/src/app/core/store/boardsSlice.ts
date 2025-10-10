@@ -26,6 +26,7 @@ const boardsSlice = createSlice({
       state.data = action.payload;
     },
     addBoard: (state, action: PayloadAction<IBoard>) => {
+      console.log(action.payload);
       state.data.push(action.payload);
     },
     updateBoard: (state, action: PayloadAction<IBoard>) => {
