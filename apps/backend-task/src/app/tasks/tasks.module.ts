@@ -1,3 +1,4 @@
+import { User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
@@ -10,7 +11,7 @@ import { TasksService } from './tasks.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, Column]),
+    TypeOrmModule.forFeature([Task, Column, User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

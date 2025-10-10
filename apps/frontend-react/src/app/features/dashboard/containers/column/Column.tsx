@@ -2,13 +2,15 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { IColumn, ITask, IUser } from '@kanban-board/shared';
-import { useEffect, useRef, useState } from 'react';
+import { IColumn, IUser } from '@kanban-board/shared';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../core/store';
 import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
 import { addTask } from '../../../../core/store/tasksSlice';
 import { create } from '../../../../shared/services/task.service';
-import CreateTaskButton from '../../components/CreateTaskButton';
+import { TCreateTask } from '../../../../shared/types/task.type';
+import AddNewTask from '../../components/AddNewTask';
 import TaskComponent from '../task/Task';
 import { isTaskData, TaskData } from '../task/task-data';
 import {
@@ -19,6 +21,8 @@ import {
 
 interface ColumnProps {
   col: IColumn;
+  isOwner: boolean;
+  user: IUser;
 }
 const idle = { type: 'idle' } satisfies ColumnState;
 type ColumnState =
@@ -30,13 +34,17 @@ const stateStyles: { [Key in ColumnState['type']]: string } = {
   'is-task-over': 'bg-blue-100 border-2 border-blue-300'
 };
 
-export default function Column({ col }: ColumnProps) {
+export default function Column({ col, isOwner, user }: ColumnProps) {
   const ref = useRef(null);
   const scrollableRef = useRef<HTMLDivElement | null>(null);
   const [state, setState] = useState<ColumnState>(idle);
   const dispatch = useDispatch();
   const tasks = useSelector(selectTasksByColumn(col.id));
-  const users: IUser[] = [];
+  const users = useSelector((state: RootState) => state.users.data);
+  const filteredUsers = useMemo(
+    () => users.filter(({ id }) => id !== user?.id),
+    [user?.id, users]
+  );
 
   function setIsTaskOver({
     data,
@@ -108,8 +116,13 @@ export default function Column({ col }: ColumnProps) {
     }
   }, []);
 
-  const taskCreated = async (task: Omit<ITask, 'columnId' | 'position'>) => {
-    await create(col.id, task).then((res) => dispatch(addTask(res.data)));
+  const handleTaskCreate = async (task: TCreateTask) => {
+    try {
+      const res = await create(col.id, task);
+      dispatch(addTask(res.data));
+    } catch (e) {
+      console.error('Failure to create task', e);
+    }
   };
 
   return (
@@ -128,12 +141,14 @@ export default function Column({ col }: ColumnProps) {
         ))}
       </div>
 
-      <div className="mt-2">
-        <CreateTaskButton
-          onCreateTask={(task) => taskCreated(task)}
-          users={users}
-        />
-      </div>
+      {isOwner && (
+        <div className="mt-2">
+          <AddNewTask
+            onCreateTask={(task) => handleTaskCreate(task)}
+            users={filteredUsers}
+          />
+        </div>
+      )}
     </div>
   );
 }

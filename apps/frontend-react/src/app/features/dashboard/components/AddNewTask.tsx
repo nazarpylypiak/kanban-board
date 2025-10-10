@@ -1,13 +1,14 @@
-import { ITask, IUser } from '@kanban-board/shared';
+import { IUser } from '@kanban-board/shared';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { TCreateTask } from '../../../shared/types/task.type';
 
 interface Props {
-  onCreateTask: (task: Omit<ITask, 'columnId' | 'position'>) => void;
+  onCreateTask: (task: TCreateTask) => void;
   users: IUser[];
 }
 
-export default function CreateTaskButton({ onCreateTask, users }: Props) {
+export default function AddNewTask({ onCreateTask, users }: Props) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -15,7 +16,7 @@ export default function CreateTaskButton({ onCreateTask, users }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTask({ title, description });
+    onCreateTask({ title, description, assigneeId });
     setTitle('');
     setDescription('');
     setOpen(false);

@@ -27,8 +27,8 @@ export default function Board({ board }: BoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const columns = useSelector((state: RootState) => state.columns.data);
   const dispatch = useDispatch();
-
-
+  const user = useSelector((state: RootState) => state.auth.user);
+  const isOwner = user?.id === board.owner.id;
 
   useEffect(() => {
     if (!board.id) return;
@@ -202,6 +202,7 @@ export default function Board({ board }: BoardProps) {
 
           // Same column move to end
           if (home === destination) {
+            if (homeTasks.length === 1) return;
             handleReorderInSameColumn(
               taskId,
               destination.id,
@@ -229,9 +230,13 @@ export default function Board({ board }: BoardProps) {
     >
       <div className="flex gap-4 items-start">
         {columns.length > 0 &&
-          columns.map((col: IColumn) => <Column key={col.id} col={col} />)}
+          columns.map((col: IColumn) => (
+            <Column key={col.id} col={col} isOwner={isOwner} user={user} />
+          ))}
 
-        <AddNewColumn onAddColumn={(name) => handleColumnAdded(name)} />
+        {isOwner && (
+          <AddNewColumn onAddColumn={(name) => handleColumnAdded(name)} />
+        )}
       </div>
     </main>
   );

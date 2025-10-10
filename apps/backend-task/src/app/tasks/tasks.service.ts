@@ -56,7 +56,7 @@ export class TasksService {
 
     if (dto.assigneeId) {
       const assignee = await this.tasksRepository.manager
-        .getRepository<User>('user')
+        .getRepository<User>(User)
         .findOneBy({ id: dto.assigneeId });
       if (!assignee) throw new NotFoundException('Assignee not found');
       task.assignee = assignee;
@@ -106,9 +106,10 @@ export class TasksService {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId },
       relations: [
-        'column',
+        'assignee',
         'column.tasks',
         'column.board',
+        'column.board.sharedUsers',
         'column.board.owner'
       ]
     });
@@ -116,7 +117,10 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not found');
 
     const board = task.column.board;
-    if (jwtUser?.role !== 'admin' && board.owner.id !== jwtUser?.sub) {
+    if (
+      jwtUser?.role !== 'admin' &&
+      !board.sharedUsers?.some(({ id }) => id === jwtUser.sub)
+    ) {
       throw new ForbiddenException('No permission');
     }
 
@@ -156,6 +160,15 @@ export class TasksService {
       task.position = position;
     }
 
-    return task;
+    return {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      columnId: task.column.id,
+      position: task.position,
+      assignee: task.assignee
+        ? { id: task.assignee.id, email: task.assignee.email }
+        : null
+    };
   }
 }
