@@ -31,17 +31,25 @@ export function useTaskEvents(user: IUser | null) {
 
     const handleTaskDeleted = ({ taskId }: { taskId: string }) => {
       console.log('Task deleted', taskId);
+
       dispatch(deleteTask(taskId));
+    };
+
+    const handleTaskMoved = (task: ITask) => {
+      console.log('Task moved');
+      dispatch(updateTask(task));
     };
 
     socket.on('taskCreated', handleTaskCreated);
     socket.on('taskUpdated', handleTaskUpdated);
     socket.on('taskDeleted', handleTaskDeleted);
+    socket.on('taskMoved', handleTaskMoved);
 
     return () => {
       socket.off('taskCreated', handleTaskCreated);
       socket.off('taskUpdated', handleTaskUpdated);
       socket.off('taskDeleted', handleTaskDeleted);
+      socket.off('taskMoved', handleTaskMoved);
       socket.emit('leaveUser', { userId: user.id }, () => {
         socket.disconnect();
       });

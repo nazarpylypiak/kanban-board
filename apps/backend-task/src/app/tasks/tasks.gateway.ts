@@ -59,11 +59,7 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyTaskMoved(task: ITask) {
     task.assignees.forEach((user) => {
       if (user.id !== task.owner.id) {
-        this.server.to(`user:${user.id}`).emit('taskMoved', {
-          taskId: task.id,
-          columnId: task.columnId,
-          position: task.position
-        });
+        this.server.to(`user:${user.id}`).emit('taskMoved', task);
       }
     });
   }
