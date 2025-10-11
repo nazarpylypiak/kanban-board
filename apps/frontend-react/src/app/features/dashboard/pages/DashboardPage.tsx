@@ -1,18 +1,17 @@
-import { IBoard } from '@kanban-board/shared';
-import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../core/store';
 import Board from '../containers/Board';
 import BoardSelector from '../containers/BoardSelector';
 
 export default function DashboardPage() {
-  const [currentBoard, onSelectCurrentBoard] = useState<IBoard | null>(null);
+  const selectedBoard = useSelector(
+    (state: RootState) => state.boards.selectedBoard
+  );
 
   return (
     <>
-      <BoardSelector
-        onSelectCurrentBoard={(board) => onSelectCurrentBoard(board)}
-        currentBoard={currentBoard}
-      />
-      {currentBoard && <Board board={currentBoard} />}
+      <BoardSelector />
+      {selectedBoard && <Board board={selectedBoard} />}
     </>
   );
 }

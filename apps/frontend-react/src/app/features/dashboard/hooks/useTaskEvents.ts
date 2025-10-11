@@ -17,7 +17,7 @@ export function useTaskEvents(user: IUser | null) {
       socket.connect();
     }
 
-    socket.emit('joinUser', { userId: user.id });
+    socket.emit('joinTasks', { userId: user.id });
 
     const handleTaskCreated = (task: ITask) => {
       console.log('Task created', task.id);
@@ -50,7 +50,7 @@ export function useTaskEvents(user: IUser | null) {
       socket.off('taskUpdated', handleTaskUpdated);
       socket.off('taskDeleted', handleTaskDeleted);
       socket.off('taskMoved', handleTaskMoved);
-      socket.emit('leaveUser', { userId: user.id }, () => {
+      socket.emit('leaveTasks', { userId: user.id }, () => {
         socket.disconnect();
       });
     };

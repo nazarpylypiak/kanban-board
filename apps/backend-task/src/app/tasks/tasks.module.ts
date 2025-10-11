@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Column } from '../columns/entities/column.entity';
-import { OnlineUsersModule } from '../shared/online-users.module';
 import { Task } from './entities/task.entity';
 import { TasksController } from './tasks.controller';
 import { TasksGateway } from './tasks.gateway';
@@ -22,8 +21,7 @@ import { TasksService } from './tasks.service';
           expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '1h'
         }
       })
-    }),
-    OnlineUsersModule
+    })
   ],
   controllers: [TasksController],
   providers: [TasksService, TasksGateway]

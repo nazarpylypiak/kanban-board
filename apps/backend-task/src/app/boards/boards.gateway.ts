@@ -1,42 +1,54 @@
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { OnlineUsersService } from '../shared/online-users.service';
+import { Board } from './entities/board.entity';
 
-@WebSocketGateway(3003, { namespace: 'boards' })
+@WebSocketGateway(3003)
 export class BoardsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer()
-  server: Server;
+  @WebSocketServer() server: Server;
 
-  constructor(private onlineUsers: OnlineUsersService) {}
+  @SubscribeMessage('joinBoards')
+  handleJoinUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.join(`board:${data.userId}`);
+    console.log(`User ${data.userId} joined their room`);
+  }
+
+  @SubscribeMessage('leaveBoards')
+  handleLeaveUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.leave(`board:${data.userId}`);
+    console.log(`User board:${data.userId} leaved their room`);
+  }
 
   handleConnection(client: Socket) {
-    const userId = client.handshake.query.userId as string;
-    if (userId) this.onlineUsers.set(userId, client.id);
+    client.emit('Boards connected');
   }
 
   handleDisconnect(client: Socket) {
-    this.onlineUsers.removeBySocket(client.id);
+    console.log(`Client ${client.id} disconnected`);
   }
 
-  notifyBoardShared(board: any) {
-    // Notify all shared users
+  notifyBoardShared(board: Board) {
     board.sharedUsers.forEach((user) => {
-      const socketId = this.onlineUsers.get(user.id);
-      if (socketId) {
-        this.server.to(socketId).emit('board-shared', board);
+      if (user.id !== board.owner.id) {
+        this.server.to(`board:${user.id}`).emit('boardShared', board);
       }
     });
   }
 
-  notifyBoardRemoved(boardId: string, userId: string) {
-    const socketId = this.onlineUsers.get(userId);
-    if (socketId) {
-      this.server.to(socketId).emit('board-removed', { boardId });
-    }
+  notifyBoardUnshared(boardId: string, userId: string) {
+    this.server.to(`board:${userId}`).emit('boardUnshared', { boardId });
   }
 }

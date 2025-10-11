@@ -2,26 +2,23 @@ import { IBoard, IUser } from '@kanban-board/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
-import { updateBoard } from '../../../core/store/boardsSlice';
+import { setSelectedBoard, updateBoard } from '../../../core/store/boardsSlice';
 import { share } from '../../../shared/services/boards.service';
 import ShareBoardModal from '../modals/ShareBoardModal';
 
 interface Props {
   user: IUser | null;
-  currentBoard: IBoard | null;
-  onSelectCurrentBoard: (board: IBoard | null) => void;
 }
 
-export default function BoardDropdown({
-  user,
-  currentBoard,
-  onSelectCurrentBoard
-}: Props) {
+export default function BoardDropdown({ user }: Props) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [popupOpen, setPopupOpen] = useState(false);
   const [sharePopupOpen, setSharePopupOpen] = useState(false);
   const boards = useSelector((state: RootState) => state.boards.data);
   const users = useSelector((state: RootState) => state.users.data);
+  const currentBoard = useSelector(
+    (state: RootState) => state.boards.selectedBoard
+  );
   const dispatch = useDispatch();
   const filteredUsers = useMemo(
     () => users.filter(({ id }) => id !== user?.id),
@@ -30,7 +27,7 @@ export default function BoardDropdown({
 
   const handleBoardSelect = (board: IBoard) => {
     setPopupOpen(false);
-    onSelectCurrentBoard(board);
+    dispatch(setSelectedBoard(board));
   };
 
   const handleShareBoard = async (boardId: string, userIds: string[]) => {

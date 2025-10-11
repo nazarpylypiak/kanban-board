@@ -100,7 +100,7 @@ export class BoardsService {
 
     // Notify removed users
     removedUsers.forEach((u) => {
-      this.boardsGateway.notifyBoardRemoved(board.id, u.id);
+      this.boardsGateway.notifyBoardUnshared(board.id, u.id);
     });
 
     return savedBoard;

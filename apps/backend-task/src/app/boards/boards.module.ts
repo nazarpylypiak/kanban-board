@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Column } from '../columns/entities/column.entity';
-import { OnlineUsersModule } from '../shared/online-users.module';
 import { BoardsController } from './boards.controller';
 import { BoardsGateway } from './boards.gateway';
 import { BoardsService } from './boards.service';
@@ -22,8 +21,7 @@ import { Board } from './entities/board.entity';
           expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '1h'
         }
       })
-    }),
-    OnlineUsersModule
+    })
   ],
   controllers: [BoardsController],
   providers: [BoardsService, BoardsGateway],

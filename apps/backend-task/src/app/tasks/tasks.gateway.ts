@@ -14,22 +14,22 @@ import { Server, Socket } from 'socket.io';
 export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  @SubscribeMessage('joinUser')
+  @SubscribeMessage('joinTasks')
   handleJoinUser(
     @MessageBody() data: { userId: string },
     @ConnectedSocket() socket: Socket
   ) {
-    socket.join(`user:${data.userId}`);
-    console.log(`User ${data.userId} joined their room`);
+    socket.join(`task:${data.userId}`);
+    console.log(`User task:${data.userId} joined their room`);
   }
 
-  @SubscribeMessage('leaveUser')
+  @SubscribeMessage('leaveTasks')
   handleLeaveUser(
     @MessageBody() data: { userId: string },
     @ConnectedSocket() socket: Socket
   ) {
-    socket.leave(`user:${data.userId}`);
-    console.log(`User ${data.userId} leaved their room`);
+    socket.leave(`task:${data.userId}`);
+    console.log(`User task:${data.userId} leaved their room`);
   }
 
   handleConnection(client: Socket) {
@@ -43,7 +43,7 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyTaskCreated(task: ITask) {
     task.assignees.forEach((user) => {
       if (user.id !== task.owner.id) {
-        this.server.to(`user:${user.id}`).emit('taskCreated', {
+        this.server.to(`task:${user.id}`).emit('taskCreated', {
           id: task.id,
           title: task.title,
           description: task.description,
@@ -59,7 +59,7 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyTaskMoved(task: ITask) {
     task.assignees.forEach((user) => {
       if (user.id !== task.owner.id) {
-        this.server.to(`user:${user.id}`).emit('taskMoved', task);
+        this.server.to(`task:${user.id}`).emit('taskMoved', task);
       }
     });
   }
@@ -68,7 +68,7 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
     task.assignees.forEach((user) => {
       if (user.id !== task.owner.id) {
         this.server
-          .to(`user:${user.id}`)
+          .to(`task:${user.id}`)
           .emit('taskDeleted', { taskId: task.id });
       }
     });
