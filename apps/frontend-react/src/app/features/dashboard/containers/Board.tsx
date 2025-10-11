@@ -1,14 +1,20 @@
-import { IBoard, IColumn } from '@kanban-board/shared';
+import { IBoard, IColumn, ITask } from '@kanban-board/shared';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
 import AddNewColumn from '../components/AddNewColumn';
 import { useBoardData } from '../hooks/useBoardData';
 import { useTaskDnD } from '../hooks/useTaskDnD';
-import { useTaskSocket } from '../hooks/useTaskSocket';
+import { useTaskEvents } from '../hooks/useTaskEvents';
 import Column from './column/Column';
 
 interface BoardProps {
   board: IBoard;
+}
+
+interface TaskEvents {
+  taskCreated: ITask;
+  taskDeleted: { taskId: string };
+  taskMoved: { taskId: string; columnId: string; position?: number };
 }
 
 export default function Board({ board }: BoardProps) {
@@ -17,9 +23,7 @@ export default function Board({ board }: BoardProps) {
   const { containerRef, handleAddColumn } = useBoardData(board.id);
   const isOwner = user?.id === board.owner.id;
 
-  if (board.id && user?.id) {
-    useTaskSocket(board.id, user.id);
-  }
+  useTaskEvents(user);
   useTaskDnD(columns);
 
   return (

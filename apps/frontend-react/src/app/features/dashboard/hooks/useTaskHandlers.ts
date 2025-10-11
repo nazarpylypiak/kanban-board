@@ -2,7 +2,7 @@ import { ITask } from '@kanban-board/shared';
 import { useDispatch } from 'react-redux';
 import {
   setTasks,
-  udpateTask,
+  updateTask,
   updateTasksInColumn
 } from '../../../core/store/tasksSlice';
 import { moveTask } from '../../../shared/services/task.service';
@@ -21,8 +21,9 @@ export const useTaskHandlers = () => {
 
     try {
       const res = await moveTask(taskId, columnId, newIndex);
-      dispatch(udpateTask(res.data));
+      dispatch(updateTask(res.data));
     } catch (e) {
+      console.error('Fail to reorder a task', e);
       dispatch(setTasks(prevTasks));
     }
   };
@@ -44,8 +45,9 @@ export const useTaskHandlers = () => {
 
     try {
       const res = await moveTask(taskId, destinationColumnId, newIndex);
-      dispatch(udpateTask(res.data));
-    } catch {
+      dispatch(updateTask(res.data));
+    } catch (e) {
+      console.error('Fail to move task', e);
       dispatch(updateTasksInColumn(prevTasks));
     }
   };

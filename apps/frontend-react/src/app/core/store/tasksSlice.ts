@@ -23,7 +23,7 @@ const tasksSlice = createSlice({
     addTask: (state, action: PayloadAction<ITask>) => {
       state.data.push(action.payload);
     },
-    udpateTask: (state, action: PayloadAction<ITask>) => {
+    updateTask: (state, action: PayloadAction<ITask>) => {
       const taskIndex = state.data.findIndex(
         ({ id }) => id === action.payload.id
       );
@@ -45,7 +45,7 @@ const tasksSlice = createSlice({
 export const {
   setTasks,
   addTask,
-  udpateTask,
+  updateTask,
   deleteTask,
   updateTasksInColumn
 } = tasksSlice.actions;

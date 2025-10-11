@@ -1,41 +1,56 @@
 import { ITask } from '@kanban-board/shared';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { OnlineUsersService } from '../shared/online-users.service';
 
-@WebSocketGateway(3003, { namespace: 'tasks' })
+@WebSocketGateway(3003)
 export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer()
-  server: Server;
+  @WebSocketServer() server: Server;
 
-  constructor(private onlineUsers: OnlineUsersService) {}
+  @SubscribeMessage('joinUser')
+  handleJoinUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.join(`user:${data.userId}`);
+    console.log(`User ${data.userId} joined their room`);
+  }
+
+  @SubscribeMessage('leaveUser')
+  handleLeaveUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.leave(`user:${data.userId}`);
+    console.log(`User ${data.userId} leaved their room`);
+  }
 
   handleConnection(client: Socket) {
-    const userId = client.handshake.query.userId as string;
-    if (userId) this.onlineUsers.set(userId, client.id);
-    this.server.to(userId).emit('connected');
+    client.emit('connected');
   }
 
   handleDisconnect(client: Socket) {
-    this.onlineUsers.removeBySocket(client.id);
+    console.log(`Client ${client.id} disconnected`);
   }
 
   notifyTaskCreated(task: ITask) {
     task.assignees.forEach((user) => {
-      const socketId = this.onlineUsers.get(user.id);
-      if (socketId && user.id !== task.owner.id) {
-        this.server.to(socketId).emit('taskCreated', {
+      if (user.id !== task.owner.id) {
+        this.server.to(`user:${user.id}`).emit('taskCreated', {
           id: task.id,
           title: task.title,
           description: task.description,
           position: task.position,
           columnId: task.columnId,
-          assignees: task.assignees
+          assignees: task.assignees,
+          owner: task.owner
         });
       }
     });
@@ -43,10 +58,8 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   notifyTaskMoved(task: ITask) {
     task.assignees.forEach((user) => {
-      const socketId = this.onlineUsers.get(user.id);
-      console.log(task);
-      if (socketId && user.id !== task.owner.id) {
-        this.server.to(socketId).emit('taskMoved', {
+      if (user.id !== task.owner.id) {
+        this.server.to(`user:${user.id}`).emit('taskMoved', {
           taskId: task.id,
           columnId: task.columnId,
           position: task.position
@@ -57,9 +70,10 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   notifyTaskDeleted(task: ITask) {
     task.assignees.forEach((user) => {
-      const socketId = this.onlineUsers.get(user.id);
-      if (socketId && user.id !== task.owner.id) {
-        this.server.to(socketId).emit('taskDeleted', { taskId: task.id });
+      if (user.id !== task.owner.id) {
+        this.server
+          .to(`user:${user.id}`)
+          .emit('taskDeleted', { taskId: task.id });
       }
     });
   }
