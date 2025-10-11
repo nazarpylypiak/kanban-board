@@ -7,4 +7,5 @@ export interface ITask {
   columnId: string;
   position: number;
   assignees?: IUser[];
+  owner: IUser;
 }

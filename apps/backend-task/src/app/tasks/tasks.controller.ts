@@ -16,6 +16,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
 
 @Controller('tasks')
+@UseGuards(JwtAuthGuard)
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
@@ -30,7 +31,6 @@ export class TasksController {
   }
 
   @Post(':columnId')
-  @UseGuards(JwtAuthGuard)
   create(
     @Param('columnId') columnId: string,
     @Body() createTaskTdo: CreateTaskDto,
@@ -45,8 +45,8 @@ export class TasksController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.tasksService.delete(id);
+  delete(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.tasksService.delete(id, req.jwtUser);
   }
 
   @Patch(':id/move')

@@ -6,7 +6,7 @@ import { TCreateTask } from '../../../shared/types/task.type';
 interface Props {
   onCreateTask: (task: TCreateTask) => void;
   users: IUser[];
-  currentUser: IUser;
+  currentUser: IUser | null;
 }
 
 export default function AddNewTask({

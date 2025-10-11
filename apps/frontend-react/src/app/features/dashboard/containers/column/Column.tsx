@@ -22,7 +22,7 @@ import {
 interface ColumnProps {
   col: IColumn;
   isOwner: boolean;
-  user: IUser;
+  user: IUser | null;
 }
 const idle = { type: 'idle' } satisfies ColumnState;
 type ColumnState =

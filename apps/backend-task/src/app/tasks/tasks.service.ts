@@ -50,11 +50,16 @@ export class TasksService {
         ? Math.max(...column.tasks.map(({ position }) => position)) + 1
         : 0;
 
+    const owner = await this.tasksRepository.manager
+      .getRepository(User)
+      .findOne({ where: { id: jwtUser.sub } });
+    if (!owner) throw new NotFoundException('Owner not found');
     const task = this.tasksRepository.create({
       ...dto,
       column,
       columnId,
-      position: newPosition
+      position: newPosition,
+      owner
     });
 
     if (dto.assigneeIds) {
@@ -76,14 +81,18 @@ export class TasksService {
       description: task.description,
       position: task.position,
       columnId: task.columnId,
-      assignees: task.assignees
+      assignees: task.assignees,
+      owner: {
+        id: owner.id,
+        email: owner.email
+      }
     };
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto) {
     const task = await this.tasksRepository.findOne({
       where: { id },
-      relations: ['assignees']
+      relations: ['assignees', 'owner']
     });
 
     if (!task) throw new NotFoundException('Task not found');
@@ -107,9 +116,20 @@ export class TasksService {
     return this.tasksRepository.save(task);
   }
 
-  async delete(id: string) {
-    const result = await this.tasksRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException('Task not found');
+  async delete(id: string, jwtUser: JWTUser) {
+    const task = await this.tasksRepository.findOne({
+      where: { id },
+      relations: ['assignees', 'owner']
+    });
+    if (task.owner.id !== jwtUser.sub && jwtUser.role !== 'admin') {
+      throw new ForbiddenException(
+        'You do not have permission to delete this task'
+      );
+    }
+    if (!task) throw new NotFoundException('Task not found');
+    await this.tasksRepository.delete(id);
+    this.taskGateway.notifyTaskDeleted(task);
+    return { message: 'Task deleted successfully', id };
   }
 
   async moveOrReorderTask(
@@ -122,6 +142,7 @@ export class TasksService {
       where: { id: taskId },
       relations: [
         'assignees',
+        'owner',
         'column.tasks',
         'column.board',
         'column.board.sharedUsers',
@@ -175,6 +196,8 @@ export class TasksService {
       task.position = position;
     }
 
+    this.taskGateway.notifyTaskMoved(task);
+
     return {
       id: task.id,
       title: task.title,
@@ -182,7 +205,11 @@ export class TasksService {
       columnId: task.column.id,
       position: task.position,
       assignees:
-        task.assignees?.map((u) => ({ id: u.id, email: u.email })) || []
+        task.assignees?.map((u) => ({ id: u.id, email: u.email })) || [],
+      owner: {
+        id: task.owner.id,
+        email: task.owner.email
+      }
     };
   }
 }

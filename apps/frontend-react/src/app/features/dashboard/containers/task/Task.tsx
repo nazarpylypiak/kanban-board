@@ -19,6 +19,12 @@ import {
   useState
 } from 'react';
 import { createPortal } from 'react-dom';
+import { FaTrash } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../core/store';
+import { deleteTask as deleteTaskSlice } from '../../../../core/store/tasksSlice';
+import { deleteTask } from '../../../../shared/services/task.service';
+import { ConfirmModal } from '../../modals/ConfirmModal';
 import { getTaskData, getTaskDropTargetData, isTaskData } from './task-data';
 
 type TaskState =
@@ -36,7 +42,11 @@ const idle: TaskState = { type: 'idle' };
 
 export default function Task({ task, col }: TaskProps) {
   const [state, setState] = useState<TaskState>(idle);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const user = useSelector((state: RootState) => state.auth.user);
   const ref = useRef<HTMLDivElement | null>(null);
+  const dispatch = useDispatch();
+  const isOwner = user?.id === task.owner.id;
 
   useEffect(() => {
     const element = ref.current;
@@ -105,6 +115,26 @@ export default function Task({ task, col }: TaskProps) {
     }
   }, [task, col]);
 
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowConfirm(true); // open modal
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!task.id) return;
+    try {
+      await deleteTask(task.id);
+      setShowConfirm(false);
+      dispatch(deleteTaskSlice(task.id));
+    } catch (e) {
+      console.error('Failure to delete task', e);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirm(false);
+  };
+
   return (
     <>
       <div className="relative">
@@ -112,7 +142,29 @@ export default function Task({ task, col }: TaskProps) {
           ref={ref}
           className={`${state.type === 'is-dragging' ? 'opacity-40' : ''} p-3 bg-gray-50 rounded shadow-sm hover:bg-gray-100 cursor-grab`}
         >
-          <div className="font-semibold">{task.title}</div>
+          <div className="flex justify-between">
+            <div className="font-semibold">{task.title}</div>
+            {isOwner && (
+              <FaTrash
+                onClick={handleDeleteClick}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ')
+                    handleDeleteClick(e as any);
+                }}
+                className=" hover:text-gray-700 cursor-pointer"
+              />
+            )}
+
+            {showConfirm && (
+              <ConfirmModal
+                message="Are you sure you want to delete this task?"
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+              />
+            )}
+          </div>
 
           {task.description && (
             <div className="text-sm text-gray-500">{task.description}</div>

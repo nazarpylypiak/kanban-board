@@ -28,7 +28,7 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyTaskCreated(task: ITask) {
     task.assignees.forEach((user) => {
       const socketId = this.onlineUsers.get(user.id);
-      if (socketId) {
+      if (socketId && user.id !== task.owner.id) {
         this.server.to(socketId).emit('taskCreated', {
           id: task.id,
           title: task.title,
@@ -37,6 +37,29 @@ export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
           columnId: task.columnId,
           assignees: task.assignees
         });
+      }
+    });
+  }
+
+  notifyTaskMoved(task: ITask) {
+    task.assignees.forEach((user) => {
+      const socketId = this.onlineUsers.get(user.id);
+      console.log(task);
+      if (socketId && user.id !== task.owner.id) {
+        this.server.to(socketId).emit('taskMoved', {
+          taskId: task.id,
+          columnId: task.columnId,
+          position: task.position
+        });
+      }
+    });
+  }
+
+  notifyTaskDeleted(task: ITask) {
+    task.assignees.forEach((user) => {
+      const socketId = this.onlineUsers.get(user.id);
+      if (socketId && user.id !== task.owner.id) {
+        this.server.to(socketId).emit('taskDeleted', { taskId: task.id });
       }
     });
   }

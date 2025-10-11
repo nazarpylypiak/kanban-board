@@ -8,6 +8,7 @@ import { addColumn, setColumns } from '../../../core/store/columnsSlice';
 import { makeSelectTasksByColumn } from '../../../core/store/selectors/taskSelectors';
 import {
   addTask,
+  deleteTask,
   moveTaskToColumn,
   reorderTaskInColumn,
   setTasks,
@@ -27,6 +28,8 @@ interface BoardProps {
 
 interface TaskEvents {
   taskCreated: ITask;
+  taskDeleted: { taskId: string };
+  taskMoved: { taskId: string; columnId: string; position?: number };
 }
 
 export default function Board({ board }: BoardProps) {
@@ -44,14 +47,32 @@ export default function Board({ board }: BoardProps) {
     if (!user) return;
 
     const timer = setTimeout(() => {
-      const unsubscribe = on('taskCreated', (task) => {
+      const unsubscribeCreated = on('taskCreated', (task) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('Task created:', task);
         }
         dispatch(addTask(task));
       });
 
-      return unsubscribe;
+      const unsubscribeMove = on(
+        'taskMoved',
+        ({ taskId, columnId, position }) => {
+          console.log('Moved');
+        }
+      );
+
+      const unsubscribeDeleted = on('taskDeleted', ({ taskId }) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Task deleted:', taskId);
+        }
+        dispatch(deleteTask(taskId));
+      });
+
+      return () => {
+        unsubscribeCreated();
+        unsubscribeMove();
+        unsubscribeDeleted();
+      };
     }, 100);
 
     return () => clearTimeout(timer);
@@ -230,20 +251,19 @@ export default function Board({ board }: BoardProps) {
           // Same column move to end
           if (home === destination) {
             if (homeTasks.length === 1) return;
-            handleReorderInSameColumn(
-              taskId,
-              destination.id,
-              newIndex,
-              homeTasks
-            );
+            // handleReorderInSameColumn(
+            //   taskId,
+            //   destination.id,
+            //   newIndex,
+            //   homeTasks
+            // );
           } else {
-            handleMoveToColumn(
-              taskId,
-              home.id,
-              destination.id,
-              newIndex,
-              destinationTasks
-            );
+            // handleMoveToColumn(
+            //   taskId,
+            //   destination.id,
+            //   newIndex,
+            //   destinationTasks
+            // );
           }
         }
       }

@@ -24,6 +24,9 @@ export class Task {
   @JoinTable()
   assignees?: User[];
 
+  @ManyToOne(() => User, { nullable: true, eager: true })
+  owner: User;
+
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
   column: Column;
 
