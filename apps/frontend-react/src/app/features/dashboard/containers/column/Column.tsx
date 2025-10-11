@@ -132,8 +132,8 @@ export default function Column({ col, isOwner, user }: ColumnProps) {
         ref={scrollableRef}
         className="overflow-y-auto flex flex-col gap-2 p-2 rounded transition-colors"
       >
-        {tasks.map((task) => (
-          <TaskComponent key={task.id} task={task} col={col} />
+        {tasks.map((task, i) => (
+          <TaskComponent index={i} key={task.id} task={task} col={col} />
         ))}
       </div>
 

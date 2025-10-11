@@ -35,68 +35,9 @@ const tasksSlice = createSlice({
     deleteTask: (state, action: PayloadAction<string>) => {
       state.data = state.data.filter(({ id }) => id !== action.payload);
     },
-    reorderTaskInColumn(
-      state,
-      action: PayloadAction<{
-        taskId: string;
-        columnId: string;
-        newIndex: number;
-      }>
-    ) {
-      const { taskId, columnId, newIndex } = action.payload;
-
-      const tasksInColumn = state.data.filter((t) => t.columnId === columnId);
-      const task = tasksInColumn.find((t) => t.id === taskId);
-      if (!task) return;
-
-      const otherTasks = tasksInColumn.filter((t) => t.id !== taskId);
-
-      otherTasks.splice(newIndex, 0, task);
-
-      otherTasks.forEach((t, i) => (t.position = i));
-
-      state.data = [
-        ...state.data.filter((t) => t.columnId !== columnId),
-        ...otherTasks
-      ];
-    },
-    moveTaskToColumn(
-      state,
-      action: PayloadAction<{
-        taskId: string;
-        sourceColumnId: string;
-        destinationColumnId: string;
-        newIndex: number;
-      }>
-    ) {
-      const { taskId, sourceColumnId, destinationColumnId, newIndex } =
-        action.payload;
-
-      const task = state.data.find((t) => t.id === taskId);
-      if (!task) return;
-
-      const sourceTasks = state.data
-        .filter((t) => t.columnId === sourceColumnId && t.id !== taskId)
-        .sort((a, b) => a.position - b.position);
-      sourceTasks.forEach((t, i) => (t.position = i));
-
-      const destinationTasks = state.data
-        .filter((t) => t.columnId === destinationColumnId)
-        .sort((a, b) => a.position - b.position);
-
-      task.columnId = destinationColumnId;
-      destinationTasks.splice(newIndex, 0, task);
-
-      destinationTasks.forEach((t, i) => (t.position = i));
-
-      state.data = [
-        ...state.data.filter(
-          (t) =>
-            t.columnId !== sourceColumnId && t.columnId !== destinationColumnId
-        ),
-        ...sourceTasks,
-        ...destinationTasks
-      ];
+    updateTasksInColumn: (state, action: PayloadAction<ITask[]>) => {
+      const updatedMap = new Map(action.payload.map((t) => [t.id, t]));
+      state.data = state.data.map((task) => updatedMap.get(task.id) ?? task);
     }
   }
 });
@@ -106,7 +47,6 @@ export const {
   addTask,
   udpateTask,
   deleteTask,
-  reorderTaskInColumn,
-  moveTaskToColumn
+  updateTasksInColumn
 } = tasksSlice.actions;
 export default tasksSlice.reducer;

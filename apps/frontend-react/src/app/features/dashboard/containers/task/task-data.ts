@@ -8,8 +8,8 @@ export type TaskData = {
   rect: DOMRect;
 };
 
-export function getTaskData(task: ITask, column: IColumn) {
-  return { [taskKey]: true, task, columnId: column.id };
+export function getTaskData(task: ITask, column: IColumn, index: number) {
+  return { [taskKey]: true, task, columnId: column.id, index };
 }
 
 export function isTaskData(
@@ -18,28 +18,31 @@ export function isTaskData(
   return data[taskKey] === true;
 }
 
-const cardDropTargetKey = Symbol('task-drop-target');
+const taskDropTargetKey = Symbol('task-drop-target');
 export type TCardDropTargetData = {
-  [cardDropTargetKey]: true;
+  [taskDropTargetKey]: true;
   task: ITask;
   columnId: string;
+  index: number;
 };
 
 export function isTaskDropTargetData(
   value: Record<string | symbol, unknown>
 ): value is TCardDropTargetData {
-  return Boolean(value[cardDropTargetKey]);
+  return Boolean(value[taskDropTargetKey]);
 }
 
 export function getTaskDropTargetData({
   task,
-  columnId
-}: Omit<TCardDropTargetData, typeof cardDropTargetKey> & {
+  columnId,
+  index
+}: Omit<TCardDropTargetData, typeof taskDropTargetKey> & {
   columnId: string;
 }): TCardDropTargetData {
   return {
-    [cardDropTargetKey]: true,
+    [taskDropTargetKey]: true,
     task,
-    columnId
+    columnId,
+    index
   };
 }

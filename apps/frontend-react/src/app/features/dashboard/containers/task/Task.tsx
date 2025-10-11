@@ -6,7 +6,8 @@ import {
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import {
   draggable,
-  dropTargetForElements
+  dropTargetForElements,
+  ElementDropTargetEventBasePayload
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview';
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
@@ -23,6 +24,7 @@ import { FaTrash } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import { deleteTask as deleteTaskSlice } from '../../../../core/store/tasksSlice';
+import { getIsDropIndicatorHidden } from '../../../../shared/helpres';
 import { deleteTask } from '../../../../shared/services/task.service';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { getTaskData, getTaskDropTargetData, isTaskData } from './task-data';
@@ -36,11 +38,12 @@ type TaskState =
 interface TaskProps {
   task: ITask;
   col: IColumn;
+  index: number;
 }
 
 const idle: TaskState = { type: 'idle' };
 
-export default function Task({ task, col }: TaskProps) {
+export default function Task({ task, col, index }: TaskProps) {
   const [state, setState] = useState<TaskState>(idle);
   const [showConfirm, setShowConfirm] = useState(false);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -51,11 +54,38 @@ export default function Task({ task, col }: TaskProps) {
   useEffect(() => {
     const element = ref.current;
 
+    const onChange = ({ source, self }: ElementDropTargetEventBasePayload) => {
+      const closestEdge = extractClosestEdge(self.data);
+      const sourceIndex = source.data.index as number;
+
+      const isDropIndicatorHidden = getIsDropIndicatorHidden(
+        index,
+        sourceIndex,
+        closestEdge
+      );
+      if (isDropIndicatorHidden) {
+        setState({ type: 'is-dragging-over', closestEdge: null });
+        return;
+      }
+      setState((current) => {
+        if (
+          current.type === 'is-dragging-over' &&
+          current.closestEdge === closestEdge
+        ) {
+          return current;
+        }
+        return {
+          type: 'is-dragging-over',
+          closestEdge
+        };
+      });
+    };
+
     if (element) {
       return combine(
         draggable({
           element,
-          getInitialData: () => getTaskData(task, col),
+          getInitialData: () => getTaskData(task, col, index),
           onGenerateDragPreview: ({ nativeSetDragImage }) => {
             setCustomNativeDragPreview({
               nativeSetDragImage,
@@ -80,30 +110,19 @@ export default function Task({ task, col }: TaskProps) {
             return isTaskData(source.data);
           },
           getData: ({ input }) => {
-            const data = getTaskDropTargetData({ task, columnId: col.id });
+            const data = getTaskDropTargetData({
+              task,
+              columnId: col.id,
+              index
+            });
             return attachClosestEdge(data, {
               element,
               input,
               allowedEdges: ['top', 'bottom']
             });
           },
-          onDragEnter: ({ self }) => {
-            const closestEdge = extractClosestEdge(self.data);
-            setState({ type: 'is-dragging-over', closestEdge });
-          },
-          onDrag: ({ self }) => {
-            const closestEdge = extractClosestEdge(self.data);
-
-            setState((current) => {
-              if (
-                current.type === 'is-dragging-over' &&
-                current.closestEdge === closestEdge
-              ) {
-                return current;
-              }
-              return { type: 'is-dragging-over', closestEdge };
-            });
-          },
+          onDragEnter: onChange,
+          onDrag: onChange,
           onDragLeave: () => {
             setState(idle);
           },
