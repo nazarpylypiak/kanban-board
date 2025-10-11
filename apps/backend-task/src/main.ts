@@ -11,8 +11,8 @@ import {
   FastifyAdapter,
   NestFastifyApplication
 } from '@nestjs/platform-fastify';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app/app.module';
+import { SocketIOAdapter } from './app/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -22,14 +22,15 @@ async function bootstrap() {
   const globalPrefix = 'api';
 
   const configService = app.get(ConfigService);
+
   const origins = configService
-    .get<string>('CORS_ORIGIN')
+    .get<string>('CORS_ORIGINS')
     ?.split(',')
     .map((url) => url.trim());
 
-  app.setGlobalPrefix(globalPrefix);
+  app.useWebSocketAdapter(new SocketIOAdapter(app, origins));
 
-  app.useWebSocketAdapter(new IoAdapter(app));
+  app.setGlobalPrefix(globalPrefix);
 
   app.enableCors({
     origin: origins,

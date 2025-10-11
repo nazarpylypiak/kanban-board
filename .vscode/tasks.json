@@ -12,6 +12,11 @@
         "serve",
         "--exclude=apps/backend-analytics,apps/backend-notification"
       ],
+      "options": {
+        "env": {
+          "NX_TASKS_RUNNER_OUTPUT_STYLE": "dynamic"
+        }
+      },
       "group": {
         "kind": "build",
         "isDefault": true

@@ -1,6 +1,8 @@
 import { User } from '@kanban-board/shared';
 import {
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   Column as TypeOrmColumn
@@ -18,8 +20,9 @@ export class Task {
   @TypeOrmColumn({ nullable: true })
   description: string;
 
-  @ManyToOne(() => User, { nullable: true })
-  assignee?: User;
+  @ManyToMany(() => User, { nullable: true })
+  @JoinTable()
+  assignees?: User[];
 
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
   column: Column;

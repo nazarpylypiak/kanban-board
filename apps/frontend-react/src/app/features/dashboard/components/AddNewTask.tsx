@@ -1,22 +1,27 @@
 import { IUser } from '@kanban-board/shared';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import Select from 'react-select';
 import { TCreateTask } from '../../../shared/types/task.type';
-
 interface Props {
   onCreateTask: (task: TCreateTask) => void;
   users: IUser[];
+  currentUser: IUser;
 }
 
-export default function AddNewTask({ onCreateTask, users }: Props) {
+export default function AddNewTask({
+  onCreateTask,
+  users,
+  currentUser
+}: Props) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [assigneeId, setAssigneeId] = useState<string | undefined>(undefined);
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTask({ title, description, assigneeId });
+    onCreateTask({ title, description, assigneeIds });
     setTitle('');
     setDescription('');
     setOpen(false);
@@ -51,19 +56,22 @@ export default function AddNewTask({ onCreateTask, users }: Props) {
                   placeholder="Description"
                   className="border p-2 rounded"
                 />
-
-                <select
-                  value={assigneeId ?? ''}
-                  onChange={(e) => setAssigneeId(e.target.value || undefined)}
-                  className="border p-2 rounded"
-                >
-                  <option value="">-- Assign to --</option>
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.email}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  isMulti
+                  options={users.map((u) => ({
+                    value: u.id,
+                    label: currentUser.id === u.id ? 'me' : u.email
+                  }))}
+                  value={users
+                    .filter((u) => assigneeIds.includes(u.id))
+                    .map((u) => ({
+                      value: u.id,
+                      label: u.email
+                    }))}
+                  onChange={(selectedOptions) => {
+                    setAssigneeIds(selectedOptions.map((o) => o.value));
+                  }}
+                />
 
                 <div className="flex justify-end gap-2 mt-3">
                   <button

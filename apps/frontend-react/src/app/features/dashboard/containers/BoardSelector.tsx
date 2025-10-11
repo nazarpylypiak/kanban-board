@@ -1,13 +1,8 @@
 import { IBoard } from '@kanban-board/shared';
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { io } from 'socket.io-client';
 import { RootState } from '../../../core/store';
-import {
-  addBoard,
-  deleteBoard,
-  setBoards
-} from '../../../core/store/boardsSlice';
+import { addBoard, setBoards } from '../../../core/store/boardsSlice';
 import { setUsers } from '../../../core/store/usersSlice';
 import { create, getMyBoards } from '../../../shared/services/boards.service';
 import { getAllUsers } from '../../../shared/services/user.service';
@@ -55,25 +50,25 @@ export default function BoardSelector({
     loadAllUsers();
   }, [dispatch]);
 
-  useEffect(() => {
-    if (!user?.id) return;
+  // useEffect(() => {
+  //   if (!user?.id) return;
 
-    const socket = io('http://localhost:3003', {
-      transports: ['websocket'],
-      query: { userId: user.id }
-    });
-    socket.on('board-shared', (board) => {
-      dispatch(addBoard(board));
-      if (!currentBoard) onSelectCurrentBoard(board);
-    });
-    socket.on('board-removed', ({ boardId }) => {
-      dispatch(deleteBoard(boardId));
-      if (currentBoard?.id === boardId) onSelectCurrentBoard(null);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, [user?.id, dispatch, currentBoard]);
+  //   const socket = io('http://localhost:3003/boards', {
+  //     transports: ['websocket'],
+  //     query: { userId: user.id }
+  //   });
+  //   socket.on('board-shared', (board) => {
+  //     dispatch(addBoard(board));
+  //     if (!currentBoard) onSelectCurrentBoard(board);
+  //   });
+  //   socket.on('board-removed', ({ boardId }) => {
+  //     dispatch(deleteBoard(boardId));
+  //     if (currentBoard?.id === boardId) onSelectCurrentBoard(null);
+  //   });
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, [user?.id, dispatch, currentBoard]);
 
   const handleCreateBoard = useCallback(
     async (name: string) => {

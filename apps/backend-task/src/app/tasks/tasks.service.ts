@@ -2,20 +2,23 @@ import { JWTUser, User } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Column } from '../columns/entities/column.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
+import { TasksGateway } from './tasks.gateway';
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Column) private columnsRepository: Repository<Column>,
     @InjectRepository(Task)
-    private tasksRepository: Repository<Task>
+    private tasksRepository: Repository<Task>,
+    private taskGateway: TasksGateway
   ) {}
 
   findAll() {
@@ -54,21 +57,33 @@ export class TasksService {
       position: newPosition
     });
 
-    if (dto.assigneeId) {
-      const assignee = await this.tasksRepository.manager
+    if (dto.assigneeIds) {
+      const assignees = await this.tasksRepository.manager
         .getRepository<User>(User)
-        .findOneBy({ id: dto.assigneeId });
-      if (!assignee) throw new NotFoundException('Assignee not found');
-      task.assignee = assignee;
+        .find({ where: { id: In(dto.assigneeIds) } });
+      if (!assignees.length) throw new NotFoundException('Assignee not found');
+      task.assignees = assignees;
     }
+    const newTask = await this.tasksRepository.save(task);
+    if (!newTask)
+      throw new InternalServerErrorException('Failed to create task');
 
-    return this.tasksRepository.save(task);
+    this.taskGateway.notifyTaskCreated(task);
+
+    return {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      position: task.position,
+      columnId: task.columnId,
+      assignees: task.assignees
+    };
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto) {
     const task = await this.tasksRepository.findOne({
       where: { id },
-      relations: ['assignee']
+      relations: ['assignees']
     });
 
     if (!task) throw new NotFoundException('Task not found');
@@ -77,15 +92,15 @@ export class TasksService {
     if (updateTaskDto.description !== undefined)
       task.description = updateTaskDto.description;
 
-    if (updateTaskDto.assigneeId !== undefined) {
-      if (updateTaskDto.assigneeId === null) {
-        task.assignee = null;
+    if (updateTaskDto.assigneeIds !== undefined) {
+      if (updateTaskDto.assigneeIds.length === 0) {
+        task.assignees = [];
       } else {
-        const assignee = await this.tasksRepository.manager
+        const assignees = await this.tasksRepository.manager
           .getRepository(User)
-          .findOneBy({ id: updateTaskDto.assigneeId });
-        if (!assignee) throw new NotFoundException('Assignee not found');
-        task.assignee = assignee;
+          .find({ where: { id: In(updateTaskDto.assigneeIds) } });
+        if (!assignees) throw new NotFoundException('Assignee not found');
+        task.assignees = assignees;
       }
     }
 
@@ -106,7 +121,7 @@ export class TasksService {
     const task = await this.tasksRepository.findOne({
       where: { id: taskId },
       relations: [
-        'assignee',
+        'assignees',
         'column.tasks',
         'column.board',
         'column.board.sharedUsers',
@@ -166,9 +181,8 @@ export class TasksService {
       description: task.description,
       columnId: task.column.id,
       position: task.position,
-      assignee: task.assignee
-        ? { id: task.assignee.id, email: task.assignee.email }
-        : null
+      assignees:
+        task.assignees?.map((u) => ({ id: u.id, email: u.email })) || []
     };
   }
 }

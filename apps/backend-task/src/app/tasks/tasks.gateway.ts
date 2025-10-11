@@ -1,66 +1,43 @@
-import { JWTUser } from '@kanban-board/shared';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ITask } from '@kanban-board/shared';
 import {
-  ConnectedSocket,
-  MessageBody,
-  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { TasksService } from './tasks.service';
+import { OnlineUsersService } from '../shared/online-users.service';
 
-@WebSocketGateway({
-  imports: [ConfigModule],
-  cors: {
-    origin: (
-      origin: string,
-      callback: (err: Error | null, allow?: boolean) => void
-    ) => {
-      const configService = new ConfigService(); // Instantiate ConfigService
-      const allowedOriginsString = configService.get<string>('CORS_ORIGINS');
-      const allowedOrigins = allowedOriginsString
-        ? allowedOriginsString.split(',').map((c) => c.trim())
-        : [];
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  }
-})
-export class TasksGateway {
+@WebSocketGateway(3003, { namespace: 'tasks' })
+export class TasksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private tasksService: TasksService) {}
+  constructor(private onlineUsers: OnlineUsersService) {}
 
-  @SubscribeMessage('createTask')
-  async create(
-    @MessageBody() dto: CreateTaskDto,
-    @ConnectedSocket() client: Socket
-  ) {
-    const jwtUser: JWTUser = client.data.user;
-    const task = await this.tasksService.create(dto.columnId, dto, jwtUser);
-    this.server.emit('taskCreated', task);
-    return task;
+  handleConnection(client: Socket) {
+    const userId = client.handshake.query.userId as string;
+    if (userId) this.onlineUsers.set(userId, client.id);
+    this.server.to(userId).emit('connected');
   }
 
-  @SubscribeMessage('updateTask')
-  async update(@MessageBody() dto: { id: string; task: UpdateTaskDto }) {
-    const task = await this.tasksService.update(dto.id, dto.task);
-    this.server.emit('taskUpdated', task);
-    return task;
+  handleDisconnect(client: Socket) {
+    this.onlineUsers.removeBySocket(client.id);
   }
 
-  @SubscribeMessage('deleteTask')
-  async remove(@MessageBody() id: string) {
-    await this.tasksService.delete(id);
-    this.server.emit('taskDeleted', id);
-    return id;
+  notifyTaskCreated(task: ITask) {
+    task.assignees.forEach((user) => {
+      const socketId = this.onlineUsers.get(user.id);
+      if (socketId) {
+        this.server.to(socketId).emit('taskCreated', {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          position: task.position,
+          columnId: task.columnId,
+          assignees: task.assignees
+        });
+      }
+    });
   }
 }

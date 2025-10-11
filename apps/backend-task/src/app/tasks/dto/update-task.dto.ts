@@ -11,5 +11,5 @@ export class UpdateTaskDto {
 
   @IsOptional()
   @IsUUID()
-  assigneeId?: string;
+  assigneeIds?: string[];
 }

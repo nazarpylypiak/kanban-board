@@ -14,5 +14,5 @@ export class CreateTaskDto {
 
   @IsOptional()
   @IsUUID()
-  assigneeId?: string;
+  assigneeIds?: string[];
 }

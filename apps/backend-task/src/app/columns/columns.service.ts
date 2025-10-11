@@ -33,7 +33,7 @@ export class ColumnsService {
       where: {
         board: { id: boardId }
       },
-      relations: ['tasks', 'tasks.assignee'],
+      relations: ['tasks', 'tasks.assignees'],
       select: ['id', 'name', 'boardId'],
       order: {
         createdAt: 'ASC',

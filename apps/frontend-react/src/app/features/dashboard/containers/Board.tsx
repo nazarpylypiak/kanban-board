@@ -7,6 +7,7 @@ import { RootState, store } from '../../../core/store';
 import { addColumn, setColumns } from '../../../core/store/columnsSlice';
 import { makeSelectTasksByColumn } from '../../../core/store/selectors/taskSelectors';
 import {
+  addTask,
   moveTaskToColumn,
   reorderTaskInColumn,
   setTasks,
@@ -15,6 +16,7 @@ import {
 import { create, getAll } from '../../../shared/services/columns.service';
 import { moveTask } from '../../../shared/services/task.service';
 import AddNewColumn from '../components/AddNewColumn';
+import { useSocket } from '../hooks/useSocket';
 import Column from './column/Column';
 import { isColumnData } from './column/column-data';
 import { isTaskData, isTaskDropTargetData } from './task/task-data';
@@ -23,12 +25,37 @@ interface BoardProps {
   board: IBoard;
 }
 
+interface TaskEvents {
+  taskCreated: ITask;
+}
+
 export default function Board({ board }: BoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const columns = useSelector((state: RootState) => state.columns.data);
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
   const isOwner = user?.id === board.owner.id;
+  const { on } = useSocket<TaskEvents>(
+    'http://localhost:3003/tasks',
+    user ? { userId: user.id, boardId: board.id } : null
+  );
+
+  useEffect(() => {
+    if (!user) return;
+
+    const timer = setTimeout(() => {
+      const unsubscribe = on('taskCreated', (task) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Task created:', task);
+        }
+        dispatch(addTask(task));
+      });
+
+      return unsubscribe;
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [on, dispatch, user]);
 
   useEffect(() => {
     if (!board.id) return;

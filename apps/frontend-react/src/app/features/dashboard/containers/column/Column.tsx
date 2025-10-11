@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { IColumn, IUser } from '@kanban-board/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
@@ -41,10 +41,6 @@ export default function Column({ col, isOwner, user }: ColumnProps) {
   const dispatch = useDispatch();
   const tasks = useSelector(selectTasksByColumn(col.id));
   const users = useSelector((state: RootState) => state.users.data);
-  const filteredUsers = useMemo(
-    () => users.filter(({ id }) => id !== user?.id),
-    [user?.id, users]
-  );
 
   function setIsTaskOver({
     data,
@@ -145,7 +141,8 @@ export default function Column({ col, isOwner, user }: ColumnProps) {
         <div className="mt-2">
           <AddNewTask
             onCreateTask={(task) => handleTaskCreate(task)}
-            users={filteredUsers}
+            users={users}
+            currentUser={user}
           />
         </div>
       )}

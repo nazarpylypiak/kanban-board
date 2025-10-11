@@ -6,5 +6,5 @@ export interface ITask {
   description?: string;
   columnId: string;
   position: number;
-  assignee?: IUser;
+  assignees?: IUser[];
 }

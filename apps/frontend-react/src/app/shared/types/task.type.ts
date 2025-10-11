@@ -1,7 +1,7 @@
 import { ITask } from '@kanban-board/shared';
 
 export type TCreateTask = Omit<ITask, 'columnId' | 'position'> & {
-  assigneeId?: string;
+  assigneeIds?: string[];
 };
 
 export type TUpdateTask = TCreateTask;

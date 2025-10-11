@@ -16,11 +16,10 @@ export default defineConfig(() => ({
       '/api/boards': 'http://localhost:3002',
       '/api/columns': 'http://localhost:3002',
       '/api/tasks': 'http://localhost:3002',
-      '/socket.io': {
-        target: 'http://localhost:3002',
+      '/tasks': {
+        target: 'ws://localhost:3003',
         ws: true,
-        changeOrigin: true,
-        secure: false
+        changeOrigin: true
       }
     }
   },

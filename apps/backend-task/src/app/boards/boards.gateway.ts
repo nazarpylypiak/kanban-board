@@ -1,28 +1,26 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WebSocketGateway,
+  WebSocketServer
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { OnlineUsersService } from '../shared/online-users.service';
 
-@WebSocketGateway(3003, { cors: true })
-export class BoardsGateway {
+@WebSocketGateway(3003, { namespace: 'boards' })
+export class BoardsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  // Map userId => socketId
-  private onlineUsers = new Map<string, string>();
+  constructor(private onlineUsers: OnlineUsersService) {}
 
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
-    if (userId) {
-      this.onlineUsers.set(userId, client.id);
-    }
+    if (userId) this.onlineUsers.set(userId, client.id);
   }
 
   handleDisconnect(client: Socket) {
-    for (const [userId, socketId] of this.onlineUsers.entries()) {
-      if (socketId === client.id) {
-        this.onlineUsers.delete(userId);
-        break;
-      }
-    }
+    this.onlineUsers.removeBySocket(client.id);
   }
 
   notifyBoardShared(board: any) {

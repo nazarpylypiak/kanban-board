@@ -118,10 +118,15 @@ export default function Task({ task, col }: TaskProps) {
             <div className="text-sm text-gray-500">{task.description}</div>
           )}
 
-          {task.assignee && (
+          {task?.assignees?.length && (
             <div className="mt-2 text-xs text-gray-600 flex items-center gap-1">
               <span className="font-medium">Assigned to:</span>
-              <span className="truncate">{task.assignee.email}</span>
+              <span
+                title={task.assignees.map(({ email }) => email).join(', ')}
+                className="truncate"
+              >
+                {task.assignees.map(({ email }) => email).join(', ')}
+              </span>
             </div>
           )}
         </div>
