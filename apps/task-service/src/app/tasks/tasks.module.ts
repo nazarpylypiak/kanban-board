@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Column } from '../columns/entities/column.entity';
 import { Task } from './entities/task.entity';
 import { TasksController } from './tasks.controller';
-import { TasksGateway } from './tasks.gateway';
 import { TasksService } from './tasks.service';
 
 @Module({
@@ -25,6 +24,6 @@ import { TasksService } from './tasks.service';
     RMQModule
   ],
   controllers: [TasksController],
-  providers: [TasksService, TasksGateway]
+  providers: [TasksService]
 })
 export class TasksModule {}
