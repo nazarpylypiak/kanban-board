@@ -1,4 +1,4 @@
-import { IBoard, IColumn, ITask } from '@kanban-board/shared';
+import { IBoard, IColumn } from '@kanban-board/shared';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
 import AddNewColumn from '../components/AddNewColumn';
@@ -9,12 +9,6 @@ import Column from './column/Column';
 
 interface BoardProps {
   board: IBoard;
-}
-
-interface TaskEvents {
-  taskCreated: ITask;
-  taskDeleted: { taskId: string };
-  taskMoved: { taskId: string; columnId: string; position?: number };
 }
 
 export default function Board({ board }: BoardProps) {

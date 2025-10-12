@@ -1,4 +1,9 @@
-import { JWTUser, RabbitmqService, User } from '@kanban-board/shared';
+import {
+  ITaskEvent,
+  JWTUser,
+  RabbitmqService,
+  User
+} from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -11,14 +16,12 @@ import { Column } from '../columns/entities/column.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
-import { TasksGateway } from './tasks.gateway';
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Column) private columnsRepository: Repository<Column>,
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
-    private taskGateway: TasksGateway,
     private readonly rmqService: RabbitmqService
   ) {}
 
@@ -68,15 +71,22 @@ export class TasksService {
       const assignees = await this.tasksRepository.manager
         .getRepository<User>(User)
         .find({ where: { id: In(dto.assigneeIds) } });
-      if (!assignees.length) throw new NotFoundException('Assignee not found');
+      if (assignees.length === 0) task.assignees = [board.owner];
       task.assignees = assignees;
     }
     const newTask = await this.tasksRepository.save(task);
     if (!newTask)
       throw new InternalServerErrorException('Failed to create task');
 
-    this.taskGateway.notifyTaskCreated(task, jwtUser.sub);
-    this.rmqService.publish('kanban_exchange', 'task.created', { task });
+    this.rmqService.publish<ITaskEvent['type']>(
+      'kanban_exchange',
+      'task.created',
+      {
+        task,
+        createdBy: jwtUser.sub,
+        assignedTo: task.assignees?.map((a) => a.id) || []
+      }
+    );
 
     return {
       id: task.id,
@@ -138,7 +148,16 @@ export class TasksService {
     }
     if (!task) throw new NotFoundException('Task not found');
     await this.tasksRepository.delete(id);
-    this.taskGateway.notifyTaskDeleted(task, jwtUser.sub);
+
+    this.rmqService.publish<ITaskEvent['type']>(
+      'kanban_exchange',
+      'task.deleted',
+      {
+        task,
+        createdBy: jwtUser.sub,
+        assignedTo: task.assignees?.map((a) => a.id) || []
+      }
+    );
     return { message: 'Task deleted successfully', id };
   }
 
@@ -207,8 +226,16 @@ export class TasksService {
       task.position = position;
     }
 
-    this.taskGateway.notifyTaskMoved(task, homeColumnId, jwtUser.sub);
-
+    this.rmqService.publish<ITaskEvent['type']>(
+      'kanban_exchange',
+      'task.moved',
+      {
+        task,
+        homeColumnId,
+        createdBy: jwtUser.sub,
+        assignedTo: task.assignees?.map((a) => a.id) || []
+      }
+    );
     return {
       id: task.id,
       title: task.title,

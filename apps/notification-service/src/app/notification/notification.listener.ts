@@ -13,8 +13,9 @@ export class NotificationListener {
     routingKey: 'task.*',
     queue: 'notification_queue'
   })
-  async handleTaskEvent(event: any) {
-    this.logger.log(`📬 Received event: ${event.type}`);
-    await this.notificationService.handleEvent(event);
+  async handleTaskEvent(event: any, amqpMsg: any) {
+    const eventType = amqpMsg.fields.routingKey;
+    this.logger.log(`📬 Received event: ${eventType}`);
+    await this.notificationService.handleEvent({ ...event, type: eventType });
   }
 }

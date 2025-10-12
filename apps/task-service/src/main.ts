@@ -1,4 +1,5 @@
 import cookie, { FastifyCookieOptions } from '@fastify/cookie';
+import { SocketIOAdapter } from '@kanban-board/shared';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -7,7 +8,6 @@ import {
   NestFastifyApplication
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app/app.module';
-import { SocketIOAdapter } from './app/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(

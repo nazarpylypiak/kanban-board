@@ -1,24 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ namespace: 'notifications' })
+@WebSocketGateway(3005)
 @Injectable()
-export class NotificationGateway {
+export class NotificationGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly logger = new Logger(NotificationGateway.name);
   @WebSocketServer() server: Server;
 
-  sendToUser(userId: string, payload: any) {
-    this.server.to(userId).emit('notification', payload);
+  handleConnection(client: Socket) {
+    client.emit('connected');
+  }
+
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Client ${client.id} disconnected`);
   }
 
   @SubscribeMessage('subscribe')
-  handleSubscribe(@MessageBody() data: { userId: string }) {
-    const socket = this.server.sockets.sockets.get(data.userId);
-    socket?.join(data.userId);
+  handleJoinUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.join(`notify:${data.userId}`);
+    this.logger.log(`📥 User joined room notify:${data.userId}`);
+  }
+
+  sendToUser(userId: string, payload: any) {
+    const roomName = `notify:${userId}`;
+    this.server.to(roomName).emit('notification', payload);
   }
 }

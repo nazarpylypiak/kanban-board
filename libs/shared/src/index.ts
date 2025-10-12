@@ -1,3 +1,4 @@
+export * from './lib/adapters/socket-io.adapter';
 export * from './lib/decorators';
 export * from './lib/dtos';
 export * from './lib/entities';

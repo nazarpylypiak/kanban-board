@@ -11,7 +11,8 @@
   "include": [
     "src/**/*.ts",
     "../../libs/shared/src/lib/entities/board.entity.ts",
-    "../../libs/shared/src/lib/entities/task.entity.ts"
+    "../../libs/shared/src/lib/entities/task.entity.ts",
+    "../../libs/shared/src/lib/adapters/socket-io.adapter.ts"
   ],
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

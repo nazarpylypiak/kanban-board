@@ -29,7 +29,11 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publish(exchange: string, routingKey: string, message: any) {
+  async publish<T extends string>(
+    exchange: string,
+    routingKey: T,
+    message: any
+  ) {
     if (!this.channel) {
       this.logger.error('Channel not initialized, message not sent.');
       return;

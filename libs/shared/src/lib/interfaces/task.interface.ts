@@ -9,3 +9,17 @@ export interface ITask {
   assignees?: IUser[];
   owner: IUser;
 }
+
+export type ITaskEventType =
+  | 'task.created'
+  | 'task.updated'
+  | 'task.deleted'
+  | 'task.moved';
+export interface ITaskEvent {
+  type: ITaskEventType;
+  task: ITask;
+  homeColumnId?: string;
+  createdBy: string;
+  assignedTo?: string[];
+  timestamp?: string;
+}

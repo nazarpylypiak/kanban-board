@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../core/store';
 import { clearAuth, setUser } from '../../core/store/authSlice';
 import { logout } from '../../features/auth/services/auth.service';
+import { socket } from '../../socket';
 import { getProfile } from '../services/user.service';
 
 export default function TopBar() {
@@ -21,6 +22,8 @@ export default function TopBar() {
       const fetchUser = async () => {
         try {
           const data = await getProfile();
+          socket.emit('subscribe', { userId: data.id });
+
           dispatch(setUser(data));
         } catch (err) {
           console.error('Failed to load profile', err);
@@ -28,6 +31,10 @@ export default function TopBar() {
       };
       fetchUser();
     }
+
+    return () => {
+      socket.emit('leaveTasks', { userId: user?.id });
+    };
   }, [accessToken, dispatch]);
 
   const handleLogout = async () => {

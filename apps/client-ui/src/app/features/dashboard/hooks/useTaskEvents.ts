@@ -1,12 +1,11 @@
-import { ITask, IUser } from '@kanban-board/shared';
+import { ITask, ITaskEvent, IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
   addTask,
   deleteTask,
   moveTaskToOtherColumn,
-  reorderTaskInSameColumn,
-  updateTask
+  reorderTaskInSameColumn
 } from '../../../core/store/tasks/tasksSlice';
 import { socket } from '../../../socket';
 
@@ -15,24 +14,6 @@ export function useTaskEvents(user: IUser | null) {
 
   useEffect(() => {
     if (!user) return;
-
-    socket.emit('joinTasks', { userId: user.id });
-
-    const handleTaskCreated = (task: ITask) => {
-      console.log('Task created', task.id);
-      dispatch(addTask(task));
-    };
-
-    const handleTaskUpdated = (task: ITask) => {
-      console.log('Task updated', task.id);
-      dispatch(updateTask(task));
-    };
-
-    const handleTaskDeleted = ({ taskId }: { taskId: string }) => {
-      console.log('Task deleted', taskId);
-
-      dispatch(deleteTask(taskId));
-    };
 
     const handleTaskMoved = ({
       task,
@@ -66,17 +47,31 @@ export function useTaskEvents(user: IUser | null) {
       }
     };
 
-    socket.on('taskCreated', handleTaskCreated);
-    socket.on('taskUpdated', handleTaskUpdated);
-    socket.on('taskDeleted', handleTaskDeleted);
-    socket.on('taskMoved', handleTaskMoved);
+    const handleNotification = (notification: ITaskEvent) => {
+      switch (notification.type) {
+        case 'task.created':
+          dispatch(addTask(notification.task));
+          break;
+        case 'task.deleted':
+          if (!notification.task.id) return;
+          dispatch(deleteTask(notification.task.id));
+          break;
+        case 'task.moved':
+          if (!notification.homeColumnId) return;
+          handleTaskMoved({
+            task: notification.task,
+            homeColumnId: notification.homeColumnId
+          });
+
+          break;
+        default:
+      }
+    };
+
+    socket.on('notification', handleNotification);
 
     return () => {
-      socket.off('taskCreated', handleTaskCreated);
-      socket.off('taskUpdated', handleTaskUpdated);
-      socket.off('taskDeleted', handleTaskDeleted);
-      socket.off('taskMoved', handleTaskMoved);
-      socket.emit('leaveTasks', { userId: user.id });
+      socket.off('notification', handleNotification);
     };
   }, [user, dispatch]);
 }

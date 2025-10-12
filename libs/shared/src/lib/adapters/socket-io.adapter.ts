@@ -10,7 +10,7 @@ export class SocketIOAdapter extends IoAdapter {
     super(app);
   }
 
-  createIOServer(port: number, options?: ServerOptions) {
+  override createIOServer(port: number, options?: ServerOptions) {
     const server = super.createIOServer(port, {
       ...options,
       cors: {
@@ -18,6 +18,7 @@ export class SocketIOAdapter extends IoAdapter {
         credentials: true
       }
     });
+
     return server;
   }
 }

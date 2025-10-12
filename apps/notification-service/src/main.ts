@@ -1,3 +1,4 @@
+import { SocketIOAdapter } from '@kanban-board/shared';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -20,6 +21,8 @@ async function bootstrap() {
     .get<string>('CORS_ORIGINS')
     ?.split(',')
     .map((url) => url.trim());
+
+  app.useWebSocketAdapter(new SocketIOAdapter(app, origins));
 
   app.setGlobalPrefix(globalPrefix);
 
