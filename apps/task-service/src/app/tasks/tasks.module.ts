@@ -1,4 +1,4 @@
-import { User } from '@kanban-board/shared';
+import { RMQModule, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
@@ -21,7 +21,8 @@ import { TasksService } from './tasks.service';
           expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '1h'
         }
       })
-    })
+    }),
+    RMQModule
   ],
   controllers: [TasksController],
   providers: [TasksService, TasksGateway]
