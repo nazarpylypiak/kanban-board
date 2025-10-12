@@ -25,6 +25,9 @@ export class Task {
   @JoinTable()
   assignees?: User[];
 
+  @TypeOrmColumn('simple-array', { nullable: true })
+  assigneeEmails: string[];
+
   @ManyToOne(() => User, { nullable: true, eager: true })
   owner: User;
 

@@ -7,7 +7,7 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter;
 
-  constructor(config: ConfigService) {
+  constructor(private config: ConfigService) {
     this.transporter = nodemailer.createTransport({
       host: config.get<string>('MAIL_HOST') || 'smtp.mailtrap.io',
       port: Number(config.get<string>('MAIL_PORT')) || 2525,

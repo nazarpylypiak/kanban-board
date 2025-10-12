@@ -46,8 +46,8 @@ export class NotificationService {
       this.logger.log(`WebSocket notification sent to user ${userId}`);
 
       // Send email if assignee email exists
-      const assigneeEmail = task?.assigneeEmail;
-      if (assigneeEmail) {
+      const emails = task.assigneeEmails || [];
+      for (const email of emails) {
         const subject = `Task ${type}: ${task.title}`;
         const text = `
           Hi,
@@ -55,8 +55,8 @@ export class NotificationService {
           Description: ${description || 'No description'}
           Check your Kanban board for details.
         `;
-        await this.mailService.sendMail(assigneeEmail, subject, text);
-        this.logger.log(`Email notification sent to ${assigneeEmail}`);
+        await this.mailService.sendMail(email, subject, text);
+        this.logger.log(`Email notification sent to ${email}`);
       }
     }
   }

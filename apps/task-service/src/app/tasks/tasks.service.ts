@@ -57,7 +57,9 @@ export class TasksService {
     const owner = await this.tasksRepository.manager
       .getRepository(User)
       .findOne({ where: { id: jwtUser.sub } });
+
     if (!owner) throw new NotFoundException('Owner not found');
+
     const task = this.tasksRepository.create({
       ...dto,
       column,
@@ -73,7 +75,9 @@ export class TasksService {
         .find({ where: { id: In(dto.assigneeIds) } });
       if (assignees.length === 0) task.assignees = [board.owner];
       task.assignees = assignees;
+      task.assigneeEmails = task.assignees.map((u) => u.email);
     }
+
     const newTask = await this.tasksRepository.save(task);
     if (!newTask)
       throw new InternalServerErrorException('Failed to create task');
