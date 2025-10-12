@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug backend-auth with Nx",
+      "name": "Debug auth-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend-auth"],
+      "runtimeArgs": ["nx", "serve", "auth-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
@@ -15,16 +15,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/backend-auth/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/auth-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug backend-user with Nx",
+      "name": "Debug user-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend-user"],
+      "runtimeArgs": ["nx", "serve", "user-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9230"
       },
@@ -33,16 +33,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/backend-user/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/user-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug backend-task with Nx",
+      "name": "Debug task-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend-task"],
+      "runtimeArgs": ["nx", "serve", "task-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9231"
       },
@@ -51,16 +51,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/backend-task/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/task-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug backend-notification with Nx",
+      "name": "Debug notification-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend-notification"],
+      "runtimeArgs": ["nx", "serve", "notification-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9232"
       },
@@ -69,16 +69,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/backend-notification/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/notification-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug backend-analytics with Nx",
+      "name": "Debug analytics-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "backend-analytics"],
+      "runtimeArgs": ["nx", "serve", "analytics-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9233"
       },
@@ -87,7 +87,7 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/backend-analytics/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/analytics-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

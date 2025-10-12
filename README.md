@@ -103,13 +103,13 @@ docker-compose up -d
 4. Serve frontend and backend services:
 
 ```bash
-nx serve frontend-react
-nx serve frontend-angular
-nx serve backend-auth
-nx serve backend-user
-nx serve backend-task
-nx serve backend-notification
-nx serve backend-analytics
+nx serve client-ui
+nx serve admin-ui
+nx serve auth-service
+nx serve user-service
+nx serve task-service
+nx serve notification-service
+nx serve analytics-service
 ```
 
 ---
@@ -127,13 +127,13 @@ nx serve backend-analytics
 
 ```
 apps/
-  backend-auth/
-  backend-user/
-  backend-task/
-  backend-notification/
-  backend-analytics/
-  frontend-react/
-  frontend-angular/
+  auth-service/
+  user-service/
+  task-service/
+  notification-service/
+  analytics-service/
+  client-ui/
+  admin-ui/
 libs/
   shared/
 ```

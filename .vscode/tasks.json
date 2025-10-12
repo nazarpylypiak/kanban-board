@@ -10,7 +10,7 @@
         "run-many",
         "-t",
         "serve",
-        "--exclude=apps/backend-analytics,apps/backend-notification"
+        "--exclude=apps/analytics-service,apps/notification-service"
       ],
       "options": {
         "env": {
