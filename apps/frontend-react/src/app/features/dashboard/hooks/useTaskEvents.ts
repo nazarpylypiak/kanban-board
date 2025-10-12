@@ -1,15 +1,19 @@
 import { ITask, IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../core/store';
 import {
   addTask,
   deleteTask,
+  moveTaskToOtherColumn,
+  reorderTaskInSameColumn,
   updateTask
-} from '../../../core/store/tasksSlice';
+} from '../../../core/store/tasks/tasksSlice';
 import { socket } from '../../../socket';
 
 export function useTaskEvents(user: IUser | null) {
   const dispatch = useDispatch();
+  const tasks = useSelector((state: RootState) => state.tasks.data);
 
   useEffect(() => {
     if (!user) return;
@@ -35,9 +39,36 @@ export function useTaskEvents(user: IUser | null) {
       dispatch(deleteTask(taskId));
     };
 
-    const handleTaskMoved = (task: ITask) => {
+    const handleTaskMoved = ({
+      task,
+      homeColumnId
+    }: {
+      task: ITask;
+      homeColumnId: string;
+    }) => {
+      if (!task?.id) return;
+      const columnId = task.columnId;
       console.log('Task moved');
-      dispatch(updateTask(task));
+
+      if (homeColumnId !== columnId) {
+        dispatch(
+          moveTaskToOtherColumn({
+            taskId: task.id,
+            homeColumnId: homeColumnId,
+            destinationColumnId: columnId,
+            position: task.position
+          })
+        );
+      } else {
+        // reorder in same column
+        dispatch(
+          reorderTaskInSameColumn({
+            taskId: task.id,
+            newPosition: task.position,
+            destinationColumnId: columnId
+          })
+        );
+      }
     };
 
     socket.on('taskCreated', handleTaskCreated);

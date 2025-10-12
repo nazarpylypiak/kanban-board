@@ -1,6 +1,6 @@
 import { IColumn } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-interface ColumnsState {
+export interface ColumnsState {
   data: IColumn[];
   loading: boolean;
   error: string | null;
@@ -12,7 +12,7 @@ const initialState: ColumnsState = {
   error: null
 };
 
-const columnSlice = createSlice({
+const columnsSlice = createSlice({
   name: 'columns',
   initialState,
   reducers: {
@@ -35,6 +35,6 @@ const columnSlice = createSlice({
 });
 
 export const { setColumns, addColumn, updateColumn, deleteColumn } =
-  columnSlice.actions;
+  columnsSlice.actions;
 
-export default columnSlice.reducer;
+export const columnsReducer = columnsSlice.reducer;

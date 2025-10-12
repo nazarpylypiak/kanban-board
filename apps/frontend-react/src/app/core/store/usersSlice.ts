@@ -1,7 +1,7 @@
 import { IUser } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface UsersState {
+export interface UsersState {
   data: IUser[];
   loading: boolean;
   error: string | null;
@@ -24,4 +24,4 @@ const usersSlice = createSlice({
 });
 
 export const { setUsers } = usersSlice.actions;
-export default usersSlice.reducer;
+export const usersReducer = usersSlice.reducer;

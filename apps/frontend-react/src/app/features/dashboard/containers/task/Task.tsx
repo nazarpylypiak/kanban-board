@@ -23,7 +23,7 @@ import { createPortal } from 'react-dom';
 import { FaTrash } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
-import { deleteTask as deleteTaskSlice } from '../../../../core/store/tasksSlice';
+import { deleteTask as deleteTaskSlice } from '../../../../core/store/tasks/tasksSlice';
 import { getIsDropIndicatorHidden } from '../../../../shared/helpres';
 import { deleteTask } from '../../../../shared/services/task.service';
 import { ConfirmModal } from '../../modals/ConfirmModal';

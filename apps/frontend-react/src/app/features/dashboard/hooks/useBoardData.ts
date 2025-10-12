@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addColumn, setColumns } from '../../../core/store/columnsSlice';
-import { setTasks } from '../../../core/store/tasksSlice';
+import { setTasks } from '../../../core/store/tasks/tasksSlice';
 import { create, getAll } from '../../../shared/services/columns.service';
 
 export const useBoardData = (boardId: string) => {

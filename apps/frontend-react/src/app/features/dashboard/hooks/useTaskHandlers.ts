@@ -4,7 +4,7 @@ import {
   setTasks,
   updateTask,
   updateTasksInColumn
-} from '../../../core/store/tasksSlice';
+} from '../../../core/store/tasks/tasksSlice';
 import { moveTask } from '../../../shared/services/task.service';
 
 export const useTaskHandlers = () => {

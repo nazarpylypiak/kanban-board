@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   Column as TypeOrmColumn
 } from 'typeorm';
+import { Board } from '../../boards/entities/board.entity';
 import { Column } from '../../columns/entities/column.entity';
 
 @Entity('tasks')
@@ -26,6 +27,12 @@ export class Task {
 
   @ManyToOne(() => User, { nullable: true, eager: true })
   owner: User;
+
+  @ManyToOne(() => Board, (board) => board.tasks, {
+    onDelete: 'CASCADE',
+    eager: true
+  })
+  board: Board;
 
   @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
   column: Column;

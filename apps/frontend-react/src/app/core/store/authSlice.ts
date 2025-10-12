@@ -1,7 +1,7 @@
 import { IBoard, IUser, User } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface AuthState {
+export interface AuthState {
   accessToken: string | null;
   loading: boolean;
   isLoggedIn: boolean;
@@ -52,4 +52,4 @@ export const {
   setUser,
   clearAuth
 } = authSlice.actions;
-export default authSlice.reducer;
+export const authReducer = authSlice.reducer;

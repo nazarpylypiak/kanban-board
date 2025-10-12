@@ -9,6 +9,7 @@ import {
   Column as TypeOrmColumn
 } from 'typeorm';
 import { Column } from '../../columns/entities/column.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 @Entity('boards')
 export class Board {
@@ -27,4 +28,7 @@ export class Board {
 
   @OneToMany(() => Column, (column) => column.board, { cascade: true })
   columns: Column[];
+
+  @OneToMany(() => Task, (task) => task.board, { cascade: true })
+  tasks: Task[];
 }

@@ -1,7 +1,7 @@
 import { IBoard } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface BoardsState {
+export interface BoardsState {
   data: IBoard[];
   loading: boolean;
   error: string | null;
@@ -59,4 +59,4 @@ export const {
   setSelectedBoard
 } = boardsSlice.actions;
 
-export default boardsSlice.reducer;
+export const boardsReducer = boardsSlice.reducer;

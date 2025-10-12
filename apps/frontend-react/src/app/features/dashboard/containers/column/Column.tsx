@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
-import { addTask } from '../../../../core/store/tasksSlice';
+import { addTask } from '../../../../core/store/tasks/tasksSlice';
 import { create } from '../../../../shared/services/task.service';
 import { TCreateTask } from '../../../../shared/types/task.type';
 import AddNewTask from '../../components/AddNewTask';

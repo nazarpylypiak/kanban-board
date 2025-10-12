@@ -34,7 +34,7 @@ export class TasksService {
   async create(columnId: string, dto: CreateTaskDto, jwtUser: JWTUser) {
     const column = await this.columnsRepository.findOne({
       where: { id: columnId },
-      relations: ['tasks', 'board', 'board.owner']
+      relations: ['tasks', 'board', 'board.owner', 'board.sharedUsers']
     });
     if (!column) throw new NotFoundException('Column not found');
 
@@ -59,7 +59,8 @@ export class TasksService {
       column,
       columnId,
       position: newPosition,
-      owner
+      owner,
+      board
     });
 
     if (dto.assigneeIds) {
@@ -73,7 +74,7 @@ export class TasksService {
     if (!newTask)
       throw new InternalServerErrorException('Failed to create task');
 
-    this.taskGateway.notifyTaskCreated(task);
+    this.taskGateway.notifyTaskCreated(task, jwtUser.sub);
 
     return {
       id: task.id,
@@ -82,6 +83,7 @@ export class TasksService {
       position: task.position,
       columnId: task.columnId,
       assignees: task.assignees,
+      boardId: board.id,
       owner: {
         id: owner.id,
         email: owner.email
@@ -119,7 +121,13 @@ export class TasksService {
   async delete(id: string, jwtUser: JWTUser) {
     const task = await this.tasksRepository.findOne({
       where: { id },
-      relations: ['assignees', 'owner']
+      relations: [
+        'assignees',
+        'owner',
+        'board',
+        'board.owner',
+        'board.sharedUsers'
+      ]
     });
     if (task.owner.id !== jwtUser.sub && jwtUser.role !== 'admin') {
       throw new ForbiddenException(
@@ -128,7 +136,7 @@ export class TasksService {
     }
     if (!task) throw new NotFoundException('Task not found');
     await this.tasksRepository.delete(id);
-    this.taskGateway.notifyTaskDeleted(task);
+    this.taskGateway.notifyTaskDeleted(task, jwtUser.sub);
     return { message: 'Task deleted successfully', id };
   }
 
@@ -144,15 +152,16 @@ export class TasksService {
         'assignees',
         'owner',
         'column.tasks',
-        'column.board',
-        'column.board.sharedUsers',
-        'column.board.owner'
+        'board',
+        'board.sharedUsers',
+        'board.owner'
       ]
     });
+    const homeColumnId = task.columnId;
 
     if (!task) throw new NotFoundException('Task not found');
 
-    const board = task.column.board;
+    const board = task.board;
     if (
       jwtUser?.role !== 'admin' &&
       !board.sharedUsers?.some(({ id }) => id === jwtUser.sub)
@@ -196,7 +205,7 @@ export class TasksService {
       task.position = position;
     }
 
-    this.taskGateway.notifyTaskMoved(task);
+    this.taskGateway.notifyTaskMoved(task, homeColumnId, jwtUser.sub);
 
     return {
       id: task.id,
