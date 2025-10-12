@@ -1,8 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import cookie, { FastifyCookieOptions } from '@fastify/cookie';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -47,7 +42,7 @@ async function bootstrap() {
   );
 
   const port = configService.get<number>('PORT') || 3002;
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );

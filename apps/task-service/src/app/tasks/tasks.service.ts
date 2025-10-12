@@ -1,4 +1,4 @@
-import { JWTUser, User } from '@kanban-board/shared';
+import { JWTUser, RabbitmqService, User } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -18,7 +18,8 @@ export class TasksService {
     @InjectRepository(Column) private columnsRepository: Repository<Column>,
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
-    private taskGateway: TasksGateway
+    private taskGateway: TasksGateway,
+    private readonly rmqService: RabbitmqService
   ) {}
 
   findAll() {
@@ -75,6 +76,7 @@ export class TasksService {
       throw new InternalServerErrorException('Failed to create task');
 
     this.taskGateway.notifyTaskCreated(task, jwtUser.sub);
+    this.rmqService.publish('kanban_exchange', 'task.created', { task });
 
     return {
       id: task.id,

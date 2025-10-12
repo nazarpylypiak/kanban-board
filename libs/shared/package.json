@@ -6,6 +6,12 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
+    "amqplib": "^0.10.9",
+    "nodemailer": "^7.0.9",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.2",
+    "@types/amqplib": "^0.10.7"
   }
 }
