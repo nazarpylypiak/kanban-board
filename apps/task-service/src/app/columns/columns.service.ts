@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UpdateBoardDTo } from '../boards/dto/update-board.dto';
 import { Board } from '../boards/entities/board.entity';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { Column } from './entities/column.entity';
@@ -66,5 +67,13 @@ export class ColumnsService {
       name: newColumn.name,
       boardId: newColumn.boardId
     };
+  }
+
+  async update(id: string, dto: UpdateBoardDTo) {
+    const column = await this.columnRepository.findOne({ where: { id } });
+    if (!column) throw new NotFoundException('Column not fonud');
+
+    Object.assign(column, dto);
+    return this.columnRepository.save(column);
   }
 }

@@ -43,6 +43,12 @@ export class Task {
   @TypeOrmColumn()
   columnId: string;
 
+  @TypeOrmColumn({ default: 'pending' })
+  status: 'pending' | 'in-progress' | 'completed';
+
+  @TypeOrmColumn({ type: 'timestamp', nullable: true })
+  completedAt?: Date;
+
   @TypeOrmColumn({ type: 'int', default: 0 })
   position: number;
 }

@@ -204,6 +204,13 @@ export class TasksService {
       task.column = newColumn;
       task.columnId = newColumn.id;
 
+      // ✅ Mark as completed if moved to a "Done" column
+      if (newColumn.isDone && !task.completedAt) {
+        task.completedAt = new Date();
+      } else if (!newColumn.isDone) {
+        task.completedAt = null;
+      }
+
       // Reassign position in new column
       const maxPosition = newColumn.tasks.length
         ? Math.max(...newColumn.tasks.map((t) => t.position))
@@ -237,7 +244,12 @@ export class TasksService {
         task,
         homeColumnId,
         createdBy: jwtUser.sub,
-        assignedTo: task.assignees?.map((a) => a.id) || []
+        assignedTo: [
+          ...new Set([
+            ...(task.assignees?.map((a) => a.id) || []),
+            board.owner.id
+          ])
+        ]
       }
     );
     return {

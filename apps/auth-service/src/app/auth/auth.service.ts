@@ -6,7 +6,7 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
@@ -79,15 +79,12 @@ export class AuthService {
       {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN')
-      }
+      } as JwtSignOptions
     );
-    const refreshToken = this.jwtService.sign(
-      { sub: user.id },
-      {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN')
-      }
-    );
+    const refreshToken = this.jwtService.sign({ sub: user.id }, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN')
+    } as JwtSignOptions);
     return { accessToken, refreshToken };
   }
 

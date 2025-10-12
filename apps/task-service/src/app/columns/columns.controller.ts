@@ -4,12 +4,14 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
   UseGuards
 } from '@nestjs/common';
 import { ColumnsService } from './columns.service';
+import { UpdateColumnDto } from './dto/update-column.dto';
 
 @Controller('columns')
 export class ColumnsController {
@@ -32,5 +34,10 @@ export class ColumnsController {
   ) {
     const user = req.jwtUser;
     return this.columnsService.create({ boardId, name }, user);
+  }
+
+  @Patch(':id')
+  updateColumn(@Param('id') id: string, @Body() dto: UpdateColumnDto) {
+    return this.columnsService.update(id, dto);
   }
 }

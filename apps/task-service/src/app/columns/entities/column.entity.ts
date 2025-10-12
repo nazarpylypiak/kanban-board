@@ -27,6 +27,9 @@ export class Column {
   @OneToMany(() => Task, (task) => task.column)
   tasks: Task[];
 
+  @TypeOrmColumn({ default: false })
+  isDone: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

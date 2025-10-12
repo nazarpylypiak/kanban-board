@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID
+} from 'class-validator';
 export class CreateColumnDto {
   @IsString()
   @IsNotEmpty()
@@ -6,4 +12,8 @@ export class CreateColumnDto {
 
   @IsUUID()
   boardId: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isDone?: boolean;
 }
