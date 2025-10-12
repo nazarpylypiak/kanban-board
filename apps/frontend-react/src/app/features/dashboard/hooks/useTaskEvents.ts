@@ -1,7 +1,6 @@
 import { ITask, IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../core/store';
+import { useDispatch } from 'react-redux';
 import {
   addTask,
   deleteTask,
@@ -13,13 +12,9 @@ import { socket } from '../../../socket';
 
 export function useTaskEvents(user: IUser | null) {
   const dispatch = useDispatch();
-  const tasks = useSelector((state: RootState) => state.tasks.data);
 
   useEffect(() => {
     if (!user) return;
-    if (!socket.connected) {
-      socket.connect();
-    }
 
     socket.emit('joinTasks', { userId: user.id });
 
@@ -81,9 +76,7 @@ export function useTaskEvents(user: IUser | null) {
       socket.off('taskUpdated', handleTaskUpdated);
       socket.off('taskDeleted', handleTaskDeleted);
       socket.off('taskMoved', handleTaskMoved);
-      socket.emit('leaveTasks', { userId: user.id }, () => {
-        socket.disconnect();
-      });
+      socket.emit('leaveTasks', { userId: user.id });
     };
   }, [user, dispatch]);
 }

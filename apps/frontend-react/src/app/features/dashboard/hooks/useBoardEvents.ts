@@ -9,9 +9,6 @@ export function useBoardEvents(user: IUser | null) {
 
   useEffect(() => {
     if (!user) return;
-    if (!socket.connected) {
-      socket.connect();
-    }
 
     socket.emit('joinBoards', { userId: user.id });
 
@@ -30,9 +27,7 @@ export function useBoardEvents(user: IUser | null) {
     return () => {
       socket.off('boardShared', handleBoardShared);
       socket.off('boardUnshared', handleBoardUnshared);
-      socket.emit('leaveBoards', { userId: user.id }, () => {
-        socket.disconnect();
-      });
+      socket.emit('leaveBoards', { userId: user.id });
     };
   }, [user, dispatch]);
 }
