@@ -38,6 +38,7 @@ export default function Task({ task, column, index }: TaskProps) {
   return (
     <>
       <div className="relative">
+        {task.completedAt ?? 'not completed'}
         <div
           ref={ref}
           className={`${state.type === 'is-dragging' ? 'opacity-40' : ''} p-3 bg-gray-50 rounded shadow-sm hover:bg-gray-100 cursor-grab`}

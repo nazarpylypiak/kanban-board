@@ -5,4 +5,5 @@ export interface IColumn {
   name: string;
   boardId: string;
   tasks: ITask[];
+  isDone?: boolean;
 }

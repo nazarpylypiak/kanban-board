@@ -8,6 +8,7 @@ export interface ITask {
   position: number;
   assignees?: IUser[];
   owner: IUser;
+  completedAt: string | null;
 }
 
 export type ITaskEventType =

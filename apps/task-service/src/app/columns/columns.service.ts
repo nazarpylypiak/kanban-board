@@ -35,7 +35,7 @@ export class ColumnsService {
         board: { id: boardId }
       },
       relations: ['tasks', 'tasks.assignees'],
-      select: ['id', 'name', 'boardId'],
+      select: ['id', 'name', 'boardId', 'isDone'],
       order: {
         createdAt: 'ASC',
         tasks: {

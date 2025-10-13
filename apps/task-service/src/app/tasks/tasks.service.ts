@@ -8,6 +8,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +19,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 @Injectable()
 export class TasksService {
+  private readonly logger = new Logger(TasksService.name);
   constructor(
     @InjectRepository(Column) private columnsRepository: Repository<Column>,
     @InjectRepository(Task)
@@ -182,59 +184,76 @@ export class TasksService {
         'board.owner'
       ]
     });
-    const homeColumnId = task.columnId;
 
     if (!task) throw new NotFoundException('Task not found');
 
+    const homeColumnId = task.columnId;
     const board = task.board;
-    if (
-      jwtUser?.role !== 'admin' &&
-      !board.sharedUsers?.some(({ id }) => id === jwtUser.sub)
-    ) {
-      throw new ForbiddenException('No permission');
-    }
 
-    // Moving to a new column
+    // Permission check
+    const hasAccess =
+      jwtUser?.role === 'admin' ||
+      board.sharedUsers?.some(({ id }) => id === jwtUser.sub);
+    if (!hasAccess) throw new ForbiddenException('No permission');
+
+    // MOVE TO NEW COLUMN
     if (columnId && columnId !== task.columnId) {
+      const oldColumn = task.column;
       const newColumn = await this.columnsRepository.findOne({
         where: { id: columnId },
         relations: ['tasks']
       });
       if (!newColumn) throw new NotFoundException('Target column not found');
+
+      // Update column reference
       task.column = newColumn;
       task.columnId = newColumn.id;
 
-      // ✅ Mark as completed if moved to a "Done" column
+      // Handle completedAt status based on column type
       if (newColumn.isDone && !task.completedAt) {
         task.completedAt = new Date();
       } else if (!newColumn.isDone) {
         task.completedAt = null;
       }
 
-      // Reassign position in new column
-      const maxPosition = newColumn.tasks.length
-        ? Math.max(...newColumn.tasks.map((t) => t.position))
-        : -1;
-      task.position = maxPosition + 1;
+      // Insert into new column (at given position or at bottom)
+      const newColumnTasks = [...newColumn.tasks].sort(
+        (a, b) => a.position - b.position
+      );
+      const insertPosition =
+        typeof position === 'number'
+          ? Math.min(Math.max(position, 0), newColumnTasks.length)
+          : newColumnTasks.length;
+      newColumnTasks.splice(insertPosition, 0, task);
 
-      // Reorder old column tasks
-      const oldColumnTasks = task.column.tasks
-        .filter((t) => t.id !== task.id)
-        .sort((a, b) => a.position - b.position);
-      oldColumnTasks.forEach((t, i) => (t.position = i));
-      await this.tasksRepository.save(oldColumnTasks);
+      // Reindex all tasks in new column
+      this.reindexTasks(newColumnTasks);
+      await this.tasksRepository.save(newColumnTasks);
+
+      // Reindex old column tasks
+      if (oldColumn?.tasks) {
+        const oldColumnTasks = oldColumn.tasks
+          .filter((t) => t.id !== task.id)
+          .sort((a, b) => a.position - b.position);
+        this.reindexTasks(oldColumnTasks);
+        await this.tasksRepository.save(oldColumnTasks);
+      }
     }
 
-    // Reordering in the same column
-    if (position !== undefined && (!columnId || columnId === task.columnId)) {
-      const tasksInColumn = task.column.tasks
+    // REORDER IN SAME COLUMN
+    else if (position !== undefined) {
+      const column = task.column;
+      const tasksInColumn = column.tasks
         .filter((t) => t.id !== task.id)
         .sort((a, b) => a.position - b.position);
 
-      tasksInColumn.splice(position, 0, task);
-      tasksInColumn.forEach((t, i) => (t.position = i));
+      const newPosition = Math.min(Math.max(position, 0), tasksInColumn.length);
+      tasksInColumn.splice(newPosition, 0, task);
+
+      this.reindexTasks(tasksInColumn);
       await this.tasksRepository.save(tasksInColumn);
-      task.position = position;
+
+      task.position = newPosition;
     }
 
     this.rmqService.publish<ITaskEvent['type']>(
@@ -243,7 +262,7 @@ export class TasksService {
       {
         task,
         homeColumnId,
-        createdBy: jwtUser.sub,
+        createdBy: jwtUser?.sub,
         assignedTo: [
           ...new Set([
             ...(task.assignees?.map((a) => a.id) || []),
@@ -252,12 +271,14 @@ export class TasksService {
         ]
       }
     );
+
     return {
       id: task.id,
       title: task.title,
       description: task.description,
       columnId: task.column.id,
       position: task.position,
+      completedAt: task.completedAt,
       assignees:
         task.assignees?.map((u) => ({ id: u.id, email: u.email })) || [],
       owner: {
@@ -265,5 +286,9 @@ export class TasksService {
         email: task.owner.email
       }
     };
+  }
+
+  private reindexTasks(tasks: Task[]) {
+    tasks.forEach((t, i) => (t.position = i));
   }
 }

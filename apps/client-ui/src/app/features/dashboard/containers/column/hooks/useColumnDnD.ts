@@ -14,7 +14,7 @@ import {
   isTaskDropTargetData,
   TaskData
 } from '../../../containers/task/task-data';
-import { ColumnState } from '../../../types/columnState';
+import { ColumnState } from '../types/columnState';
 
 interface Props {
   column: IColumn;
