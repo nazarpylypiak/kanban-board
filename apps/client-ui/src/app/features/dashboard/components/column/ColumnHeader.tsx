@@ -24,7 +24,7 @@ export default function ColumnHeader({ title, isDone, onRuleAdded }: Props) {
   };
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="font-bold mb-2">{title}</h2>
         <Button
           id="basic-button"

@@ -1,7 +1,13 @@
 import { ITask } from '@kanban-board/shared';
 import { useDispatch } from 'react-redux';
-import { deleteTask as deleteTaskSlice } from '../../../../../core/store/tasks';
-import { deleteTask } from '../../../../../shared/services/task.service';
+import {
+  deleteTask as deleteTaskSlice,
+  updateTask as updateTaskSlice
+} from '../../../../../core/store/tasks';
+import {
+  deleteTask,
+  updateTask
+} from '../../../../../shared/services/task.service';
 
 interface Props {
   task: ITask;
@@ -30,5 +36,24 @@ export const useTaskHandlers = ({ task, setShowConfirm }: Props) => {
     setShowConfirm(false);
   };
 
-  return { handleCancelDelete, handleConfirmDelete, handleDeleteClick };
+  const handleComplete = async (completed: boolean) => {
+    if (!task?.id) return;
+    const newTask: ITask = {
+      ...task,
+      completedAt: completed ? new Date().toISOString() : null
+    };
+    dispatch(updateTaskSlice(newTask));
+    try {
+      await updateTask(task.id, newTask);
+    } catch (e) {
+      console.error('Fail to update task', e);
+    }
+  };
+
+  return {
+    handleCancelDelete,
+    handleConfirmDelete,
+    handleDeleteClick,
+    handleComplete
+  };
 };
