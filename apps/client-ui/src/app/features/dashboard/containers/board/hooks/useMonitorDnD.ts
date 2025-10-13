@@ -4,14 +4,17 @@ import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/ad
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 import { IColumn } from '@kanban-board/shared';
 import { useEffect } from 'react';
-import { store } from '../../../core/store';
-import { makeSelectTasksByColumn } from '../../../core/store/selectors/taskSelectors';
-import { getIsDropIndicatorHidden } from '../../../shared/helpres';
-import { isColumnData } from '../containers/column/column-data';
-import { isTaskData, isTaskDropTargetData } from '../containers/task/task-data';
+import { store } from '../../../../../core/store';
+import { makeSelectTasksByColumn } from '../../../../../core/store/selectors/taskSelectors';
+import { getIsDropIndicatorHidden } from '../../../../../shared/helpres';
+import { isColumnData } from '../../../containers/column/column-data';
+import {
+  isTaskData,
+  isTaskDropTargetData
+} from '../../../containers/task/task-data';
 import { useTaskHandlers } from './useTaskHandlers';
 
-export const useTaskDnD = (columns: IColumn[]) => {
+export const useMonitorDnD = (columns: IColumn[]) => {
   const { handleReorderInSameColumn, handleMoveToColumn } = useTaskHandlers();
 
   useEffect(() => {

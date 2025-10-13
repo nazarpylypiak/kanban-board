@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../core/store';
-import Board from '../containers/Board';
-import BoardSelector from '../containers/BoardSelector';
+import Board from '../containers/board/Board';
+import BoardSelector from '../containers/board/BoardSelector';
 
 export default function DashboardPage() {
   const selectedBoard = useSelector(

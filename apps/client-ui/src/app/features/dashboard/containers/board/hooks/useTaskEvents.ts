@@ -6,8 +6,8 @@ import {
   deleteTask,
   moveTaskToOtherColumn,
   reorderTaskInSameColumn
-} from '../../../core/store/tasks/tasksSlice';
-import { socket } from '../../../socket';
+} from '../../../../../core/store/tasks/tasksSlice';
+import { socket } from '../../../../../socket';
 
 export function useTaskEvents(user: IUser | null) {
   const dispatch = useDispatch();
@@ -24,7 +24,6 @@ export function useTaskEvents(user: IUser | null) {
     }) => {
       if (!task?.id) return;
       const columnId = task.columnId;
-      console.log('Task moved');
 
       if (homeColumnId !== columnId) {
         dispatch(

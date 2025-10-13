@@ -1,11 +1,9 @@
 import { IBoard, IColumn } from '@kanban-board/shared';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../core/store';
-import AddNewColumn from '../components/AddNewColumn';
-import { useBoardData } from '../hooks/useBoardData';
-import { useTaskDnD } from '../hooks/useTaskDnD';
-import { useTaskEvents } from '../hooks/useTaskEvents';
-import Column from './column/Column';
+import { RootState } from '../../../../core/store';
+import AddNewColumn from '../../components/AddNewColumn';
+import Column from '../column/Column';
+import { useBoardData, useMonitorDnD, useTaskEvents } from './hooks';
 
 interface BoardProps {
   board: IBoard;
@@ -18,7 +16,7 @@ export default function Board({ board }: BoardProps) {
   const isOwner = user?.id === board.owner.id;
 
   useTaskEvents(user);
-  useTaskDnD(columns);
+  useMonitorDnD(columns);
 
   return (
     <main
@@ -27,8 +25,8 @@ export default function Board({ board }: BoardProps) {
     >
       <div className="flex gap-4 items-start">
         {columns.length > 0 &&
-          columns.map((col: IColumn) => (
-            <Column key={col.id} col={col} isOwner={isOwner} user={user} />
+          columns.map((c: IColumn) => (
+            <Column key={c.id} column={c} isOwner={isOwner} user={user} />
           ))}
 
         {isOwner && (

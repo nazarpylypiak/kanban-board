@@ -1,158 +1,39 @@
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-  type Edge
-} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import {
-  draggable,
-  dropTargetForElements,
-  ElementDropTargetEventBasePayload
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview';
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
+import { type Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { IColumn, ITask } from '@kanban-board/shared';
-import {
-  CSSProperties,
-  HTMLAttributes,
-  useEffect,
-  useRef,
-  useState
-} from 'react';
+import { CSSProperties, HTMLAttributes, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FaTrash } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
-import { deleteTask as deleteTaskSlice } from '../../../../core/store/tasks/tasksSlice';
-import { getIsDropIndicatorHidden } from '../../../../shared/helpres';
-import { deleteTask } from '../../../../shared/services/task.service';
 import { ConfirmModal } from '../../modals/ConfirmModal';
-import { getTaskData, getTaskDropTargetData, isTaskData } from './task-data';
-
-type TaskState =
-  | { type: 'idle' }
-  | { type: 'preview'; container: HTMLElement }
-  | { type: 'is-dragging' }
-  | { type: 'is-dragging-over'; closestEdge: Edge | null };
+import { useTaskDnD } from './hooks/useTaskDnD';
+import { useTaskHandlers } from './hooks/useTaskHandlers';
+import { TaskState } from './task-data';
 
 interface TaskProps {
+  column: IColumn;
   task: ITask;
-  col: IColumn;
   index: number;
 }
 
 const idle: TaskState = { type: 'idle' };
 
-export default function Task({ task, col, index }: TaskProps) {
+export default function Task({ task, column, index }: TaskProps) {
   const [state, setState] = useState<TaskState>(idle);
   const [showConfirm, setShowConfirm] = useState(false);
   const user = useSelector((state: RootState) => state.auth.user);
-  const ref = useRef<HTMLDivElement | null>(null);
-  const dispatch = useDispatch();
   const isOwner = user?.id === task.owner.id;
 
-  useEffect(() => {
-    const element = ref.current;
+  const { ref } = useTaskDnD({
+    column,
+    task,
+    index,
+    onStateChange: setState,
+    idle
+  });
 
-    const onChange = ({ source, self }: ElementDropTargetEventBasePayload) => {
-      const closestEdge = extractClosestEdge(self.data);
-      const sourceIndex = source.data.index as number;
-
-      const isDropIndicatorHidden = getIsDropIndicatorHidden(
-        index,
-        sourceIndex,
-        closestEdge
-      );
-      if (isDropIndicatorHidden) {
-        setState({ type: 'is-dragging-over', closestEdge: null });
-        return;
-      }
-      setState((current) => {
-        if (
-          current.type === 'is-dragging-over' &&
-          current.closestEdge === closestEdge
-        ) {
-          return current;
-        }
-        return {
-          type: 'is-dragging-over',
-          closestEdge
-        };
-      });
-    };
-
-    if (element) {
-      return combine(
-        draggable({
-          element,
-          getInitialData: () => getTaskData(task, col, index),
-          onGenerateDragPreview: ({ nativeSetDragImage }) => {
-            setCustomNativeDragPreview({
-              nativeSetDragImage,
-              getOffset: pointerOutsideOfPreview({
-                x: '16px',
-                y: '8px'
-              }),
-              render({ container }) {
-                setState({ type: 'preview', container });
-              }
-            });
-          },
-          onDragStart: () => setState({ type: 'is-dragging' }),
-          onDrop: () => setState(idle)
-        }),
-        dropTargetForElements({
-          element,
-          getIsSticky: () => true,
-          canDrop: ({ source }) => {
-            if (source.element === element) return false;
-
-            return isTaskData(source.data);
-          },
-          getData: ({ input }) => {
-            const data = getTaskDropTargetData({
-              task,
-              columnId: col.id,
-              index
-            });
-            return attachClosestEdge(data, {
-              element,
-              input,
-              allowedEdges: ['top', 'bottom']
-            });
-          },
-          onDragEnter: onChange,
-          onDrag: onChange,
-          onDragLeave: () => {
-            setState(idle);
-          },
-          onDrop() {
-            setState(idle);
-          }
-        })
-      );
-    }
-  }, [task, col]);
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowConfirm(true); // open modal
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!task.id) return;
-    try {
-      await deleteTask(task.id);
-      setShowConfirm(false);
-      dispatch(deleteTaskSlice(task.id));
-    } catch (e) {
-      console.error('Failure to delete task', e);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setShowConfirm(false);
-  };
+  const { handleCancelDelete, handleConfirmDelete, handleDeleteClick } =
+    useTaskHandlers({ task, setShowConfirm });
 
   return (
     <>

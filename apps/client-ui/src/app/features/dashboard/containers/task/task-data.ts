@@ -1,5 +1,5 @@
+import { type Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { IColumn, ITask } from '@kanban-board/shared';
-
 export const taskKey = Symbol('task');
 export type TaskData = {
   [taskKey]: true;
@@ -7,6 +7,12 @@ export type TaskData = {
   columnId: string;
   rect: DOMRect;
 };
+
+export type TaskState =
+  | { type: 'idle' }
+  | { type: 'preview'; container: HTMLElement }
+  | { type: 'is-dragging' }
+  | { type: 'is-dragging-over'; closestEdge: Edge | null };
 
 export function getTaskData(task: ITask, column: IColumn, index: number) {
   return { [taskKey]: true, task, columnId: column.id, index };

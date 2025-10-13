@@ -1,8 +1,8 @@
 import { IBoard, IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addBoard, deleteBoard } from '../../../core/store/boardsSlice';
-import { socket } from '../../../socket';
+import { addBoard, deleteBoard } from '../../../../../core/store/boardsSlice';
+import { socket } from '../../../../../socket';
 
 export function useBoardEvents(user: IUser | null) {
   const dispatch = useDispatch();

@@ -1,10 +1,13 @@
 import { IBoard, IUser } from '@kanban-board/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../core/store';
-import { setSelectedBoard, updateBoard } from '../../../core/store/boardsSlice';
-import { share } from '../../../shared/services/boards.service';
-import ShareBoardModal from '../modals/ShareBoardModal';
+import { RootState } from '../../../../core/store';
+import {
+  setSelectedBoard,
+  updateBoard
+} from '../../../../core/store/boardsSlice';
+import { share } from '../../../../shared/services/boards.service';
+import ShareBoardModal from '../../modals/ShareBoardModal';
 
 interface Props {
   user: IUser | null;

@@ -4,7 +4,7 @@ import { TCreateTask, TUpdateTask } from '../types/task.type';
 
 const tasksApi = createApi('/api/tasks');
 
-export const create = async (columnId: string, task: TCreateTask) => {
+export const createTask = async (columnId: string, task: TCreateTask) => {
   return await tasksApi.post<ITask>(columnId, task);
 };
 

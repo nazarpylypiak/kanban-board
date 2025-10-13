@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { addColumn, setColumns } from '../../../core/store/columnsSlice';
-import { setTasks } from '../../../core/store/tasks/tasksSlice';
-import { create, getAll } from '../../../shared/services/columns.service';
+import { addColumn, setColumns } from '../../../../../core/store/columnsSlice';
+import { setTasks } from '../../../../../core/store/tasks/tasksSlice';
+import {
+  createColumn,
+  getAllColumns
+} from '../../../../../shared/services/columns.service';
 
 export const useBoardData = (boardId: string) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,7 +15,7 @@ export const useBoardData = (boardId: string) => {
     if (!boardId) return;
 
     const loadBoardData = async () => {
-      const res = await getAll(boardId);
+      const res = await getAllColumns(boardId);
       const allTasks = res.data.flatMap((col) =>
         (col.tasks || []).map((task) => ({ ...task, columnId: col.id }))
       );
@@ -25,7 +28,7 @@ export const useBoardData = (boardId: string) => {
 
   const handleAddColumn = useCallback(
     async (name: string) => {
-      const res = await create(boardId, name);
+      const res = await createColumn(boardId, name);
       dispatch(addColumn({ ...res.data, boardId }));
 
       setTimeout(() => {

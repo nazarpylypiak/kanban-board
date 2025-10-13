@@ -1,13 +1,16 @@
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../core/store';
-import { addBoard, setBoards } from '../../../core/store/boardsSlice';
-import { setUsers } from '../../../core/store/usersSlice';
-import { create, getMyBoards } from '../../../shared/services/boards.service';
-import { getAllUsers } from '../../../shared/services/user.service';
-import AddNewBoard from '../components/AddNewBoard';
-import { useBoardEvents } from '../hooks/useBoardEvents';
+import { RootState } from '../../../../core/store';
+import { addBoard, setBoards } from '../../../../core/store/boardsSlice';
+import { setUsers } from '../../../../core/store/usersSlice';
+import {
+  create,
+  getMyBoards
+} from '../../../../shared/services/boards.service';
+import { getAllUsers } from '../../../../shared/services/user.service';
+import AddNewBoard from '../../components/AddNewBoard';
 import BoardDropdown from './BoardDropdown';
+import { useBoardEvents } from './hooks/useBoardEvents';
 
 export default function BoardSelector() {
   const user = useSelector((state: RootState) => state.auth.user);
