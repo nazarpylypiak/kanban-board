@@ -40,6 +40,14 @@ export class BoardsController {
     return this.boardsService.findOne(id);
   }
 
+  @Get(':boardId/users')
+  findBoardUsers(
+    @Param('boardId') boardId: string,
+    @Request() req: AuthenticatedRequest
+  ) {
+    return this.boardsService.findBoardUsers(boardId, req.jwtUser);
+  }
+
   @Post()
   create(@Body() dto: CreateBoardDto, @Request() req: AuthenticatedRequest) {
     const ownerId = req.jwtUser.sub;

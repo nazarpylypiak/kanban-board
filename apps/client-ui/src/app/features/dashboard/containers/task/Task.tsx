@@ -24,7 +24,7 @@ export default function Task({ task, column, index }: TaskProps) {
   const [state, setState] = useState<TaskState>(idle);
   const [showConfirm, setShowConfirm] = useState(false);
   const user = useSelector((state: RootState) => state.auth.user);
-  const isOwner = user?.id === task.owner.id;
+  const isOwner = user?.id === task.ownerId;
   const [showActions, setShowActions] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
 

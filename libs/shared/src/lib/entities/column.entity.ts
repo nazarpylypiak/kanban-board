@@ -7,32 +7,32 @@ import {
   Column as TypeOrmColumn,
   UpdateDateColumn
 } from 'typeorm';
-import { Board } from '../../boards/entities/board.entity';
-import { Task } from '../../tasks/entities/task.entity';
+import { Board } from './board.entity';
+import { Task } from './task.entity';
 
 @Entity('columns')
 export class Column {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @TypeOrmColumn()
-  name: string;
-
-  @TypeOrmColumn()
-  boardId: string;
+  name!: string;
 
   @ManyToOne(() => Board, (board) => board.columns, { onDelete: 'CASCADE' })
-  board: Board;
+  board!: Board;
+
+  @TypeOrmColumn()
+  boardId!: string;
 
   @OneToMany(() => Task, (task) => task.column)
-  tasks: Task[];
+  tasks!: Task[];
 
   @TypeOrmColumn({ default: false })
-  isDone: boolean;
+  isDone!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

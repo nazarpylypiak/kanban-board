@@ -1,4 +1,3 @@
-import { User } from '@kanban-board/shared';
 import {
   Entity,
   JoinTable,
@@ -7,48 +6,68 @@ import {
   PrimaryGeneratedColumn,
   Column as TypeOrmColumn
 } from 'typeorm';
-import { Board } from '../../boards/entities/board.entity';
-import { Column } from '../../columns/entities/column.entity';
+import { Board } from './board.entity';
+import { Column } from './column.entity';
+import { User } from './user.entity';
 
 @Entity('tasks')
 export class Task {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @TypeOrmColumn()
-  title: string;
+  title!: string;
 
   @TypeOrmColumn({ nullable: true })
-  description: string;
+  description?: string;
 
   @ManyToMany(() => User, { nullable: true })
   @JoinTable()
   assignees?: User[];
 
   @TypeOrmColumn('simple-array', { nullable: true })
-  assigneeEmails: string[];
+  assigneeIds?: string[];
+
+  @TypeOrmColumn('simple-array', { nullable: true })
+  assigneeEmails!: string[];
 
   @ManyToOne(() => User, { nullable: true, eager: true })
-  owner: User;
+  owner!: User;
+
+  @TypeOrmColumn()
+  ownerId!: string;
 
   @ManyToOne(() => Board, (board) => board.tasks, {
     onDelete: 'CASCADE',
     eager: true
   })
-  board: Board;
-
-  @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
-  column: Column;
+  board!: Board;
 
   @TypeOrmColumn()
-  columnId: string;
+  boardId!: string;
 
-  @TypeOrmColumn({ default: 'pending' })
-  status: 'pending' | 'in-progress' | 'completed';
+  @ManyToOne(() => Column, (column) => column.tasks, { onDelete: 'CASCADE' })
+  column!: Column;
+
+  @TypeOrmColumn()
+  columnId!: string;
 
   @TypeOrmColumn({ type: 'timestamp', nullable: true })
   completedAt?: Date;
 
+  @TypeOrmColumn({ default: false })
+  isDone!: boolean;
+
   @TypeOrmColumn({ type: 'int', default: 0 })
-  position: number;
+  position!: number;
+
+  @TypeOrmColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt!: Date;
+
+  @TypeOrmColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP'
+  })
+  updatedAt!: Date;
 }

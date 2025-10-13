@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { authReducer } from './authSlice';
-import { boardsReducer } from './boardsSlice';
+import { boardsReducer } from './boards/boardsSlice';
 import { columnsReducer } from './columnsSlice';
 import { tasksReducer } from './tasks';
 import { usersReducer } from './usersSlice';

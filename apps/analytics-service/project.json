@@ -52,7 +52,9 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "analytics-service:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": false,
+        "inspect": "inspect",
+        "port": 9233
       },
       "configurations": {
         "development": {

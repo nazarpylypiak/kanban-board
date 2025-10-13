@@ -1,4 +1,4 @@
-import { IBoard } from '@kanban-board/shared';
+import { IBoard, IUser } from '@kanban-board/shared';
 import { createApi } from '../../core/services/api';
 import { ICreateBoard, IUpdateBoard } from '../types/board.interface';
 
@@ -10,6 +10,10 @@ export const getMyBoards = async () => {
 
 export const getAll = async (ownerId: string) => {
   return await boardsApi.get<IBoard[]>('', { params: { ownerId } });
+};
+
+export const getBoardUsers = async (boardId: string) => {
+  return await boardsApi.get<IUser[]>(`${boardId}/users`);
 };
 
 export const getOne = (id: string) => {

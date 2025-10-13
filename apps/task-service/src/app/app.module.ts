@@ -1,12 +1,9 @@
-import { User } from '@kanban-board/shared';
+import { Board, Column, Task, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardsModule } from './boards/boards.module';
-import { Board } from './boards/entities/board.entity';
 import { ColumnsModule } from './columns/columns.module';
-import { Column } from './columns/entities/column.entity';
-import { Task } from './tasks/entities/task.entity';
 import { TasksModule } from './tasks/tasks.module';
 
 @Module({

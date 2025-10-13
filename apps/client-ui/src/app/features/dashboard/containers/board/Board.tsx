@@ -3,7 +3,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import AddNewColumn from '../../components/AddNewColumn';
 import Column from '../column/Column';
-import { useBoardData, useMonitorDnD, useTaskEvents } from './hooks';
+import {
+  useBoardData,
+  useBoardUsers,
+  useMonitorDnD,
+  useTaskEvents
+} from './hooks';
 
 interface BoardProps {
   board: IBoard;
@@ -13,8 +18,9 @@ export default function Board({ board }: BoardProps) {
   const columns = useSelector((state: RootState) => state.columns.data);
   const user = useSelector((state: RootState) => state.auth.user);
   const { containerRef, handleAddColumn } = useBoardData(board.id);
-  const isOwner = user?.id === board.owner.id;
+  const isOwner = user?.id === board.ownerId;
 
+  useBoardUsers({ boardId: board.id });
   useTaskEvents(user);
   useMonitorDnD(columns);
 

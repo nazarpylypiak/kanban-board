@@ -21,7 +21,7 @@ export default function AddNewTask({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateTask({ title, description, assigneeIds });
+    onCreateTask({ title, description, assigneeIds, isDone: false });
     setTitle('');
     setDescription('');
     setOpen(false);
@@ -60,7 +60,7 @@ export default function AddNewTask({
                   isMulti
                   options={users.map((u) => ({
                     value: u.id,
-                    label: currentUser.id === u.id ? 'me' : u.email
+                    label: currentUser?.id === u.id ? 'me' : u.email
                   }))}
                   value={users
                     .filter((u) => assigneeIds.includes(u.id))

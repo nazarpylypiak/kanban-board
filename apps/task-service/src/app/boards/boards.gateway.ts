@@ -1,3 +1,4 @@
+import { Board } from '@kanban-board/shared';
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,7 +9,6 @@ import {
   WebSocketServer
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Board } from './entities/board.entity';
 
 @WebSocketGateway(3003)
 export class BoardsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -42,7 +42,7 @@ export class BoardsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   notifyBoardShared(board: Board) {
     board.sharedUsers.forEach((user) => {
-      if (user.id !== board.owner.id) {
+      if (user.id !== board.ownerId) {
         this.server.to(`board:${user.id}`).emit('boardShared', board);
       }
     });

@@ -1,7 +1,8 @@
-import { User } from '@kanban-board/shared';
+import { Board, Column, Task, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AnalyticsModule } from './analytics/analytics.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,10 +18,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: config.get<string>('POSTGRES_USER'),
         password: config.get<string>('POSTGRES_PASSWORD'),
         database: config.get<string>('POSTGRES_DB'),
-        entities: [User],
+        entities: [User, Task, Column, Board],
+
         synchronize: config.get<string>('NODE_ENV') === 'development'
       })
-    })
+    }),
+    AnalyticsModule
   ]
 })
 export class AppModule {}

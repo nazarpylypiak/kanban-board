@@ -8,27 +8,33 @@ import {
   PrimaryGeneratedColumn,
   Column as TypeOrmColumn
 } from 'typeorm';
-import { Column } from '../../columns/entities/column.entity';
-import { Task } from '../../tasks/entities/task.entity';
+import { Column } from './column.entity';
+import { Task } from './task.entity';
 
 @Entity('boards')
 export class Board {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @TypeOrmColumn()
-  name: string;
+  name!: string;
 
   @ManyToOne(() => User, { nullable: true })
   owner?: User;
 
+  @TypeOrmColumn()
+  ownerId!: string;
+
   @ManyToMany(() => User)
   @JoinTable()
-  sharedUsers: User[];
+  sharedUsers!: User[];
+
+  @TypeOrmColumn('simple-array', { nullable: true })
+  sharedUserIds?: string[];
 
   @OneToMany(() => Column, (column) => column.board, { cascade: true })
-  columns: Column[];
+  columns!: Column[];
 
   @OneToMany(() => Task, (task) => task.board, { cascade: true })
-  tasks: Task[];
+  tasks!: Task[];
 }

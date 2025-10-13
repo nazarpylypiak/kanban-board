@@ -1,4 +1,4 @@
-import { User, UserRole } from '@kanban-board/shared';
+import { RefreshToken, User, UserRole } from '@kanban-board/shared';
 import {
   BadRequestException,
   ForbiddenException,
@@ -12,7 +12,6 @@ import * as bcrypt from 'bcryptjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { Repository } from 'typeorm';
 import { LoginDto, RegisterDto } from './dto';
-import { RefreshToken } from './entities/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +29,7 @@ export class AuthService {
       where: { email: dto.email }
     });
     if (existingUser) throw new BadRequestException('Email already in use');
+
     const hashed = await bcrypt.hash(dto.password, 10);
     const user = this.userRepository.create({
       email: dto.email,
@@ -57,7 +57,7 @@ export class AuthService {
     const refreshTokenEntity = this.refreshTokenRepository.create({
       token: hashedRefreshToken,
       user,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 днів
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
     await this.refreshTokenRepository.save(refreshTokenEntity);
 

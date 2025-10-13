@@ -15,7 +15,7 @@ export default function ShareBoardModal({
   onShare
 }: ShareBoardModalProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
-    board.sharedUsers?.map((u) => u.id) || []
+    board.sharedUserIds || []
   );
 
   const toggleUser = (userId: string) => {

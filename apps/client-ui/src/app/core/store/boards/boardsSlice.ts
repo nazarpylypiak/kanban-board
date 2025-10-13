@@ -1,4 +1,4 @@
-import { IBoard } from '@kanban-board/shared';
+import { IBoard, IUser } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface BoardsState {
@@ -6,13 +6,17 @@ export interface BoardsState {
   loading: boolean;
   error: string | null;
   selectedBoard: IBoard | null;
+  boardUsers: {
+    [boardId: string]: IUser[];
+  };
 }
 
 const initialState: BoardsState = {
   data: [],
   loading: false,
   error: null,
-  selectedBoard: null
+  selectedBoard: null,
+  boardUsers: {}
 };
 
 const boardsSlice = createSlice({
@@ -47,6 +51,12 @@ const boardsSlice = createSlice({
     },
     setSelectedBoard: (state, action: PayloadAction<IBoard | null>) => {
       state.selectedBoard = action.payload;
+    },
+    setBoardUsers: (
+      state,
+      action: PayloadAction<{ boardId: string; users: IUser[] }>
+    ) => {
+      state.boardUsers[action.payload.boardId] = action.payload.users;
     }
   }
 });
@@ -56,7 +66,8 @@ export const {
   updateBoard,
   addBoard,
   deleteBoard,
-  setSelectedBoard
+  setSelectedBoard,
+  setBoardUsers
 } = boardsSlice.actions;
 
 export const boardsReducer = boardsSlice.reducer;

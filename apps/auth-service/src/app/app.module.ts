@@ -1,9 +1,8 @@
-import { User } from '@kanban-board/shared';
+import { RefreshToken, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { RefreshToken } from './auth/entities/refresh-token.entity';
 
 @Module({
   imports: [

@@ -1,14 +1,31 @@
+import { IBoard } from './board.interface';
+import { IColumn } from './column.interface';
 import { IUser } from './user.interface';
 
 export interface ITask {
-  id?: string;
+  id: string;
   title: string;
-  description?: string;
+  description?: string | null;
+
+  assignees?: IUser[] | null;
+  assigneeIds?: string[] | null;
+  assigneeEmails?: string[] | null;
+
+  owner?: IUser | null;
+  ownerId: string;
+
+  board?: IBoard | null;
+  boardId: string;
+
+  column?: IColumn | null;
   columnId: string;
+
+  completedAt?: string | null;
+  isDone: boolean;
+
   position: number;
-  assignees?: IUser[];
-  owner: IUser;
-  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type ITaskEventType =

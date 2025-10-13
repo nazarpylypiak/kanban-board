@@ -1,13 +1,11 @@
-import { User } from '@kanban-board/shared';
+import { Board, Column, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Column } from '../columns/entities/column.entity';
 import { BoardsController } from './boards.controller';
 import { BoardsGateway } from './boards.gateway';
 import { BoardsService } from './boards.service';
-import { Board } from './entities/board.entity';
 
 @Module({
   imports: [

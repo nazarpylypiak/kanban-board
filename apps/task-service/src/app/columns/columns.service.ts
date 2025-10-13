@@ -1,4 +1,4 @@
-import { JWTUser } from '@kanban-board/shared';
+import { Board, Column, IColumn, JWTUser } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -7,9 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateBoardDTo } from '../boards/dto/update-board.dto';
-import { Board } from '../boards/entities/board.entity';
 import { CreateColumnDto } from './dto/create-column.dto';
-import { Column } from './entities/column.entity';
 
 @Injectable()
 export class ColumnsService {
@@ -45,28 +43,34 @@ export class ColumnsService {
     });
   }
 
-  async create(dto: CreateColumnDto, user: JWTUser) {
-    const board = await this.boardRepository.findOne({
-      where: { id: dto.boardId },
-      relations: ['owner']
+  async create(dto: CreateColumnDto, jwtUser: JWTUser) {
+    const board = await this.boardRepository.findOneBy({
+      id: dto.boardId
     });
 
     if (!board) throw new NotFoundException('Board not found');
 
-    if (user.role !== 'admin' && board.owner.id !== user.sub) {
+    const isAdmin = jwtUser.role === 'admin';
+    const isOwner = board.ownerId === jwtUser.sub;
+    if (!isAdmin && !isOwner) {
       throw new ForbiddenException('You do not have permission to add columns');
     }
     const column = this.columnRepository.create({
       name: dto.name,
       board
     });
-    const newColumn = await this.columnRepository.save(column);
+    const savedColumn = await this.columnRepository.save(column);
+
+    await this.boardRepository.save(board);
 
     return {
-      id: newColumn.id,
-      name: newColumn.name,
-      boardId: newColumn.boardId
-    };
+      id: savedColumn.id,
+      name: savedColumn.name,
+      boardId: savedColumn.boardId,
+      isDone: savedColumn.isDone,
+      createdAt: savedColumn.createdAt,
+      updatedAt: savedColumn.updatedAt
+    } satisfies IColumn;
   }
 
   async update(id: string, dto: UpdateBoardDTo) {

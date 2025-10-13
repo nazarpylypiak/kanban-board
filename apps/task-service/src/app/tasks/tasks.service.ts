@@ -1,10 +1,14 @@
 import {
+  Column,
+  ITask,
   ITaskEvent,
   JWTUser,
   RabbitmqService,
+  Task,
   User
 } from '@kanban-board/shared';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -13,17 +17,21 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Column } from '../columns/entities/column.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { Task } from './entities/task.entity';
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
   constructor(
-    @InjectRepository(Column) private columnsRepository: Repository<Column>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+
+    @InjectRepository(Column)
+    private readonly columnsRepository: Repository<Column>,
+
     @InjectRepository(Task)
-    private tasksRepository: Repository<Task>,
+    private readonly tasksRepository: Repository<Task>,
+
     private readonly rmqService: RabbitmqService
   ) {}
 
@@ -40,73 +48,108 @@ export class TasksService {
   async create(columnId: string, dto: CreateTaskDto, jwtUser: JWTUser) {
     const column = await this.columnsRepository.findOne({
       where: { id: columnId },
-      relations: ['tasks', 'board', 'board.owner', 'board.sharedUsers']
+      relations: ['board']
     });
     if (!column) throw new NotFoundException('Column not found');
 
     const board = column.board;
     if (!board) throw new NotFoundException('Board not found');
 
-    if (jwtUser.role !== 'admin' && board.owner.id !== jwtUser.sub) {
+    const isAdmin = jwtUser.role === 'admin';
+    const isOwner = board.ownerId === jwtUser.sub;
+    const isShared = board.sharedUsers?.some((u) => u.id === jwtUser.sub);
+
+    if (!isOwner && !isAdmin && !isShared) {
       throw new ForbiddenException('You do not have permission to add tasks');
     }
 
-    const newPosition =
-      column.tasks?.length > 0
-        ? Math.max(...column.tasks.map(({ position }) => position)) + 1
-        : 0;
+    const lastTask = await this.tasksRepository.findOne({
+      where: { column: { id: columnId } },
+      order: { position: 'DESC' },
+      select: ['id', 'position']
+    });
+    const newPosition = (lastTask?.position ?? -1) + 1;
 
-    const owner = await this.tasksRepository.manager
-      .getRepository(User)
-      .findOne({ where: { id: jwtUser.sub } });
+    const owner = await this.usersRepository.findOne({
+      where: { id: jwtUser.sub },
+      select: ['id', 'email']
+    });
 
     if (!owner) throw new NotFoundException('Owner not found');
 
-    const task = this.tasksRepository.create({
-      ...dto,
-      column,
-      columnId,
-      position: newPosition,
-      owner,
-      board
-    });
+    let assignees: User[] = [];
+    if (dto.assigneeIds?.length) {
+      const validAssigneeIds = [board.ownerId, ...(board.sharedUserIds || [])];
 
-    if (dto.assigneeIds) {
-      const assignees = await this.tasksRepository.manager
-        .getRepository<User>(User)
-        .find({ where: { id: In(dto.assigneeIds) } });
-      if (assignees.length === 0) task.assignees = [board.owner];
-      task.assignees = assignees;
-      task.assigneeEmails = task.assignees.map((u) => u.email);
+      const invalidIds = dto.assigneeIds.filter(
+        (id) => !validAssigneeIds.includes(id)
+      );
+      if (invalidIds.length > 0) {
+        throw new BadRequestException(
+          'Some assignees do not have access to this board'
+        );
+      }
+
+      assignees = await this.usersRepository.find({
+        where: { id: In(dto.assigneeIds) },
+        select: ['id', 'email']
+      });
     }
 
-    const newTask = await this.tasksRepository.save(task);
-    if (!newTask)
-      throw new InternalServerErrorException('Failed to create task');
+    if (!assignees.length) assignees = [owner];
 
-    this.rmqService.publish<ITaskEvent['type']>(
-      'kanban_exchange',
-      'task.created',
-      {
-        task,
-        createdBy: jwtUser.sub,
-        assignedTo: task.assignees?.map((a) => a.id) || []
-      }
-    );
+    const task = this.tasksRepository.create({
+      title: dto.title,
+      description: dto.description,
+      owner,
+      board,
+      column,
+      assignees,
+      assigneeEmails: assignees.map((u) => u.email),
+      position: newPosition
+    });
+
+    try {
+      await this.tasksRepository.save(task);
+    } catch (err) {
+      const errMsg = 'Failed to create task';
+      this.logger.error(errMsg, err);
+      throw new InternalServerErrorException(errMsg);
+    }
+
+    this.rmqService
+      .publish('kanban_exchange', 'task.created', {
+        task: {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          columnId: task.columnId,
+          boardId: task.boardId,
+          position: task.position,
+          assignedTo: assignees.map((a) => a.id)
+        },
+        createdBy: jwtUser.sub
+      })
+      .catch((err) => {
+        this.logger.error('Failed to publish task.created event', err);
+      });
 
     return {
       id: task.id,
       title: task.title,
       description: task.description,
-      position: task.position,
-      columnId: task.columnId,
-      assignees: task.assignees,
+
+      assigneeIds: task.assignees.map(({ id }) => id),
+      ownerId: owner.id,
       boardId: board.id,
-      owner: {
-        id: owner.id,
-        email: owner.email
-      }
-    };
+      columnId: task.columnId,
+
+      isDone: task.isDone,
+
+      position: task.position,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString()
+    } satisfies ITask;
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto) {
@@ -212,8 +255,10 @@ export class TasksService {
       // Handle completedAt status based on column type
       if (newColumn.isDone && !task.completedAt) {
         task.completedAt = new Date();
+        task.isDone = true;
       } else if (!newColumn.isDone) {
         task.completedAt = null;
+        task.isDone = false;
       }
 
       // Insert into new column (at given position or at bottom)

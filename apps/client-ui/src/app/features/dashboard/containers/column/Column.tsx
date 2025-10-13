@@ -1,10 +1,10 @@
 import { IColumn, IUser } from '@kanban-board/shared';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../../core/store';
 import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
 import AddNewTask from '../../components/AddNewTask';
 
+import { RootState } from '../../../../core/store';
 import ColumnHeader from '../../components/column/ColumnHeader';
 import TaskComponent from '../task/Task';
 import { useColumnDnD, useColumnHandlers } from './hooks';
@@ -21,9 +21,11 @@ const idle = { type: 'idle' } satisfies ColumnState;
 export default function Column({ column, isOwner, user }: ColumnProps) {
   const [state, setState] = useState<ColumnState>(idle);
   const tasks = useSelector(selectTasksByColumn(column.id));
-  const users = useSelector((state: RootState) => state.users.data);
+  const boardUsers = useSelector((state: RootState) => state.boards.boardUsers);
 
-  const { handleTaskCreate, handleRuleAdd } = useColumnHandlers({ column });
+  const { handleTaskCreate, handleRuleAdd } = useColumnHandlers({
+    column
+  });
   const { ref, scrollableRef } = useColumnDnD({
     column,
     onStateChange: setState,
@@ -54,7 +56,7 @@ export default function Column({ column, isOwner, user }: ColumnProps) {
         <div className="mt-2">
           <AddNewTask
             onCreateTask={(task) => handleTaskCreate(column.id, task)}
-            users={users}
+            users={boardUsers[column.boardId] ?? []}
             currentUser={user}
           />
         </div>

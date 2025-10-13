@@ -5,7 +5,7 @@ import { RootState } from '../../../../core/store';
 import {
   setSelectedBoard,
   updateBoard
-} from '../../../../core/store/boardsSlice';
+} from '../../../../core/store/boards/boardsSlice';
 import { share } from '../../../../shared/services/boards.service';
 import ShareBoardModal from '../../modals/ShareBoardModal';
 
@@ -80,7 +80,7 @@ export default function BoardDropdown({ user }: Props) {
               >
                 {board.name} {board.owner?.id === user?.id ? '(Owner)' : ''}
               </span>
-              {board.owner?.id === user?.id && (
+              {board.ownerId === user?.id && (
                 <button
                   onClick={() => setSharePopupOpen(!sharePopupOpen)}
                   className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
