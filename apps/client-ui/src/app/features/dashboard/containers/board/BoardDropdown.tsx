@@ -1,5 +1,5 @@
 import { IBoard, IUser } from '@kanban-board/shared';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import {
@@ -16,9 +16,10 @@ interface Props {
 export default function BoardDropdown({ user }: Props) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [popupOpen, setPopupOpen] = useState(false);
-  const [sharePopupOpen, setSharePopupOpen] = useState(false);
+  const [sharePopupId, setSharePopupId] = useState<string | null>(null);
   const boards = useSelector((state: RootState) => state.boards.data);
   const users = useSelector((state: RootState) => state.users.data);
+  const isAdmin = user?.role === 'admin';
   const currentBoard = useSelector(
     (state: RootState) => state.boards.selectedBoard
   );
@@ -40,6 +41,11 @@ export default function BoardDropdown({ user }: Props) {
     } catch (e) {
       console.error('Sharing error: ', e);
     }
+  };
+
+  const handleShareButton = (e: MouseEvent, boardId: string) => {
+    e.stopPropagation();
+    setSharePopupId(boardId);
   };
 
   useEffect(() => {
@@ -78,24 +84,41 @@ export default function BoardDropdown({ user }: Props) {
                 className="flex-1 h-full"
                 onClick={() => handleBoardSelect(board)}
               >
-                {board.name} {board.owner?.id === user?.id ? '(Owner)' : ''}
+                {board.name} {/* Shared Users */}
+                <span className="flex-1 text-sm text-gray-700">
+                  {board.sharedUsers?.length
+                    ? board.sharedUsers.map(({ id, email }) => (
+                        <span
+                          key={id}
+                          className="mr-1 px-1.5 py-0.5 text-xs bg-gray-200 rounded-full"
+                        >
+                          {email}
+                        </span>
+                      ))
+                    : '—'}
+                </span>
               </span>
               {board.ownerId === user?.id && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-semibold text-white bg-blue-500 rounded-full">
+                  Owner
+                </span>
+              )}
+              {(board.ownerId === user?.id || isAdmin) && (
                 <button
-                  onClick={() => setSharePopupOpen(!sharePopupOpen)}
+                  onClick={(e) => handleShareButton(e, board.id)}
                   className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
                 >
                   Share
                 </button>
               )}
-              {sharePopupOpen && (
+              {sharePopupId === board.id && (
                 <ShareBoardModal
                   board={board}
                   users={filteredUsers}
                   onShare={(boardId, userIds) =>
                     handleShareBoard(boardId, userIds)
                   }
-                  onClose={() => setSharePopupOpen(false)}
+                  onClose={() => setSharePopupId(null)}
                 />
               )}
             </div>

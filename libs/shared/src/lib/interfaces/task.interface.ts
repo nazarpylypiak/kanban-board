@@ -33,14 +33,3 @@ export type TTaskEventType =
   | 'task.updated'
   | 'task.deleted'
   | 'task.moved';
-
-export interface ITaskEventPayload {
-  task: ITask;
-  homeColumnId?: string;
-  createdBy: string;
-}
-
-export interface ITaskUserEventPayload extends ITaskEventPayload {
-  timestamp: string;
-  eventType: TTaskEventType;
-}

@@ -64,7 +64,7 @@ export default function Task({ task, column, index }: TaskProps) {
             <div className="w-6 h-6 mr-2 flex items-center justify-center">
               <div
                 className={`transform transition-all duration-200 ease-in-out ${
-                  showCompleted || task.completedAt
+                  showCompleted || task.isDone
                     ? 'opacity-100 scale-100'
                     : 'opacity-0 scale-50'
                 }`}

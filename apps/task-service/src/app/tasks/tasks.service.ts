@@ -123,7 +123,7 @@ export class TasksService {
       description: task.description,
 
       assignees: task.assignees,
-      assigneeIds: task.assignees.map(({ id }) => id),
+      assigneeIds: task.assigneeIds,
       ownerId: owner.id,
       boardId: board.id,
       columnId: task.columnId,
@@ -137,8 +137,9 @@ export class TasksService {
 
     this.rmqService
       .publish('kanban_exchange', 'task.created', {
-        task: taskRes,
-        createdBy: jwtUser.sub
+        payload: { task: taskRes },
+        createdBy: jwtUser.sub,
+        recipientIds: task.assigneeIds
       })
       .catch((err) => {
         this.logger.error('Failed to publish task.created event', err);
@@ -206,8 +207,9 @@ export class TasksService {
     };
     this.rmqService
       .publish<TTaskEventType>('kanban_exchange', 'task.updated', {
-        task: taskRes,
-        createdBy: jwtUser.sub
+        payload: { task: taskRes },
+        createdBy: jwtUser.sub,
+        recipientIds: taskRes.assigneeIds
       })
       .catch((err) => {
         this.logger.error('Failed to publish task.created event', err);
@@ -236,9 +238,9 @@ export class TasksService {
     await this.tasksRepository.delete(id);
 
     this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.deleted', {
-      task,
+      payload: { task },
       createdBy: jwtUser.sub,
-      assignedTo: task.assignees?.map((a) => a.id) || []
+      recipientIds: task.assigneeIds
     });
     return { message: 'Task deleted successfully', id };
   }
@@ -349,9 +351,9 @@ export class TasksService {
     };
 
     this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
-      task: taskRes,
-      homeColumnId,
-      createdBy: jwtUser?.sub
+      payload: { task: taskRes, homeColumnId },
+      createdBy: jwtUser?.sub,
+      recipientIds: task.assigneeIds
     });
 
     return taskRes;

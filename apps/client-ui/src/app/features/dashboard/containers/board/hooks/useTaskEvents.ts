@@ -1,4 +1,10 @@
-import { ITask, ITaskUserEventPayload, IUser } from '@kanban-board/shared';
+import {
+  ITask,
+  IUser,
+  IUserNotificationEvent,
+  TBoardEventType,
+  TTaskEventType
+} from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
@@ -29,7 +35,7 @@ export function useTaskEvents(user: IUser | null) {
       if (homeColumnId !== columnId) {
         dispatch(
           moveTaskToOtherColumn({
-            taskId: task.id,
+            task: task,
             homeColumnId: homeColumnId,
             destinationColumnId: columnId,
             position: task.position
@@ -47,28 +53,46 @@ export function useTaskEvents(user: IUser | null) {
       }
     };
 
-    const handleNotification = (notification: ITaskUserEventPayload) => {
-      switch (notification.eventType) {
-        case 'task.created':
-          dispatch(addTask(notification.task));
-          break;
-        case 'task.updated':
-          if (!notification.task.id) return;
-          dispatch(updateTask(notification.task));
-          break;
-        case 'task.deleted':
-          if (!notification.task.id) return;
-          dispatch(deleteTask(notification.task.id));
-          break;
-        case 'task.moved':
-          if (!notification.homeColumnId) return;
-          handleTaskMoved({
-            task: notification.task,
-            homeColumnId: notification.homeColumnId
-          });
+    const handleNotification = (notification: IUserNotificationEvent) => {
+      if (notification.eventType.includes('task.')) {
+        const task = notification.payload.task as ITask;
+        switch (notification.eventType as TTaskEventType) {
+          case 'task.created':
+            dispatch(addTask(task));
+            break;
+          case 'task.updated':
+            if (!task.id) return;
+            dispatch(updateTask(task));
+            break;
+          case 'task.deleted':
+            if (!task.id) return;
+            dispatch(deleteTask(task.id));
+            break;
+          case 'task.moved':
+            if (
+              !notification.payload.homeColumnId ||
+              typeof notification.payload.homeColumnId !== 'string'
+            )
+              return;
+            handleTaskMoved({
+              task,
+              homeColumnId: notification.payload.homeColumnId
+            });
 
-          break;
-        default:
+            break;
+          default:
+        }
+      } else if (notification.eventType.includes('board.')) {
+        console.log(notification);
+        switch (notification.eventType as TBoardEventType) {
+          case 'board.shared':
+            console.log('Board shared');
+            break;
+          case 'board.unshared':
+            console.log('Board unshared');
+            break;
+          default:
+        }
       }
     };
 

@@ -1,4 +1,4 @@
-import { Board, Column, User } from '@kanban-board/shared';
+import { Board, Column, RMQModule, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
@@ -20,7 +20,8 @@ import { BoardsService } from './boards.service';
             expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '1h'
           }
         }) as JwtSignOptions
-    })
+    }),
+    RMQModule
   ],
   controllers: [BoardsController],
   providers: [BoardsService, BoardsGateway],

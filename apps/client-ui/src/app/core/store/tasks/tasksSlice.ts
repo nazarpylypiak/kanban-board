@@ -42,15 +42,15 @@ const tasksSlice = createSlice({
     moveTaskToOtherColumn(
       state,
       action: PayloadAction<{
-        taskId: string;
+        task: ITask;
         homeColumnId: string;
         destinationColumnId: string;
         position: number;
       }>
     ) {
-      const { taskId, homeColumnId, destinationColumnId, position } =
+      const { task, homeColumnId, destinationColumnId, position } =
         action.payload;
-      const task = state.data.find((t) => t.id === taskId);
+      // const storedTask = state.data.find((t) => t.id === task.id);
       if (!task) return;
 
       const homeTasks = state.data

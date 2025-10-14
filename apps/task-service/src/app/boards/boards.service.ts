@@ -1,4 +1,4 @@
-import { Board, IBoard, JWTUser, User } from '@kanban-board/shared';
+import { Board, JWTUser, RabbitmqService, User } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
@@ -15,18 +15,27 @@ export class BoardsService {
   constructor(
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly boardsGateway: BoardsGateway
+    private readonly boardsGateway: BoardsGateway,
+
+    private readonly rmqService: RabbitmqService
   ) {}
 
-  async findAllForUser(userId: string) {
-    return this.boardRepository
+  async findAllForUser(userId: string, role: 'admin' | 'user') {
+    const query = this.boardRepository
       .createQueryBuilder('board')
-      .where('board.ownerId = :userId', { userId })
-      .orWhere(
-        `:userId::uuid = ANY(string_to_array(board.sharedUserIds, ',')::uuid[])`,
-        { userId }
-      )
-      .getMany();
+      .leftJoinAndSelect('board.sharedUsers', 'sharedUsers');
+
+    if (role === 'admin') {
+      return query.getMany();
+    } else {
+      return query
+        .where('board.ownerId = :userId', { userId })
+        .orWhere(
+          `:userId::uuid = ANY(string_to_array(board.sharedUserIds, ',')::uuid[])`,
+          { userId }
+        )
+        .getMany();
+    }
   }
 
   findAll() {
@@ -116,6 +125,8 @@ export class BoardsService {
     if (!board) throw new NotFoundException('Board not found');
     const isAdmin = currentUser.role === 'admin';
     const isOwner = board.ownerId === currentUser.sub;
+    console.log(board.ownerId);
+    console.log(currentUser.sub);
     if (!isOwner && !isAdmin) throw new ForbiddenException('No permission');
 
     const removedUsers: string[] =
@@ -127,19 +138,25 @@ export class BoardsService {
 
     const savedBoard = await this.boardRepository.save(board);
 
-    this.boardsGateway.notifyBoardShared(board);
-
-    // Notify removed users
-
-    removedUsers.forEach((id) => {
-      this.boardsGateway.notifyBoardUnshared(board.id, id);
+    // Notify users
+    this.rmqService.publish('kanban_exchange', 'board.shared', {
+      payload: { board },
+      createdBy: currentUser?.sub,
+      recipientIds: board.sharedUserIds
     });
+    if (removedUsers?.length > 0) {
+      this.rmqService.publish('kanban_exchange', 'board.unshared', {
+        payload: { board },
+        createdBy: currentUser?.sub,
+        recipientIds: removedUsers
+      });
+    }
 
     return {
       id: savedBoard.id,
       name: savedBoard.name,
       ownerId: savedBoard.ownerId,
       sharedUserIds: savedBoard.sharedUsers.map(({ id }) => id)
-    } satisfies IBoard;
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { ITaskUserEventPayload } from '@kanban-board/shared';
+import { IUserNotificationEvent } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -36,8 +36,8 @@ export class NotificationGateway
     this.logger.log(`📥 User joined room notify:${data.userId}`);
   }
 
-  sendToUser(userId: string, payload: ITaskUserEventPayload) {
+  sendToUser(userId: string, event: IUserNotificationEvent) {
     const roomName = `notify:${userId}`;
-    this.server.to(roomName).emit('notification', payload);
+    this.server.to(roomName).emit('notification', event);
   }
 }

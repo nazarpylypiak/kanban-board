@@ -15,3 +15,5 @@ export interface IBoard {
 
   tasks?: ITask[] | null;
 }
+
+export type TBoardEventType = 'board.shared' | 'board.unshared';

@@ -1,7 +1,7 @@
 import {
-  ITaskEventPayload,
-  MailService,
-  TTaskEventType
+  ITask,
+  IUserNotificationEvent,
+  MailService
 } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
@@ -15,46 +15,45 @@ export class NotificationService {
     private readonly mailService: MailService
   ) {}
 
-  async handleTaskEvent(event: {
-    payload: ITaskEventPayload;
-    eventType: TTaskEventType;
-  }) {
-    const { payload, eventType } = event;
+  async handleEvent(event: IUserNotificationEvent) {
+    const { payload, eventType, createdBy, recipientIds, recepientEmails } =
+      event;
 
-    if (!payload.task) {
-      this.logger.warn('Received event without task payload');
+    if (!payload) {
+      this.logger.warn('Received event without payload');
       return;
     }
-    const { assigneeIds } = payload.task;
     // Ensure assignedTo is always an array
-    const recipients = Array.isArray(assigneeIds) ? assigneeIds : [assigneeIds];
-    const recipientsToNotify = recipients.filter(
-      (userId) => userId !== payload.createdBy
+    const recipientIdsArr = Array.isArray(recipientIds)
+      ? recipientIds
+      : [recipientIds];
+    const recipientsToNotify = recipientIdsArr.filter(
+      (userId) => userId !== createdBy
     );
 
     for (const userId of recipientsToNotify) {
       // Send WebSocket notification
 
       this.gateway.sendToUser(userId, {
-        ...payload,
-        timestamp: new Date().toISOString(),
-        eventType
+        ...event,
+        timestamp: new Date().toISOString()
       });
       this.logger.log(`WebSocket notification sent to user ${userId}`);
-
-      // Send email if assignee email exists
-      // const emails = task.assigneeEmails || [];
-      // for (const email of emails) {
-      //   const subject = `Task ${type}: ${task.title}`;
-      //   const text = `
-      //     Hi,
-      //     Task "${task.title}" has been ${type}.
-      //     Description: ${description || 'No description'}
-      //     Check your Kanban board for details.
-      //   `;
-      //   await this.mailService.sendMail(email, subject, text);
-      //   this.logger.log(`Email notification sent to ${email}`);
-      // }
+    }
+    // Send email if assignee email exists
+    if (payload.task) {
+      for (const email of recepientEmails || []) {
+        const { title, description } = payload.task as ITask;
+        const subject = `Task ${eventType}: ${title}`;
+        const text = `
+          Hi,
+          Task "${title}" has been ${eventType}.
+          Description: ${description || 'No description'}
+          Check your Kanban board for details.
+        `;
+        await this.mailService.sendMail(email, subject, text);
+        this.logger.log(`Email notification sent to ${email}`);
+      }
     }
   }
 

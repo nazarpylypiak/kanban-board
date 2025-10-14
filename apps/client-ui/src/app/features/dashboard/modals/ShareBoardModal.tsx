@@ -14,6 +14,7 @@ export default function ShareBoardModal({
   onClose,
   onShare
 }: ShareBoardModalProps) {
+  console.log(board);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
     board.sharedUserIds || []
   );

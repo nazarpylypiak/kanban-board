@@ -23,7 +23,7 @@ export class BoardsController {
 
   @Get('my-boards')
   async getBoards(@Req() req: AuthenticatedRequest) {
-    return this.boardsService.findAllForUser(req.jwtUser.sub);
+    return this.boardsService.findAllForUser(req.jwtUser.sub, req.jwtUser.role);
   }
 
   @Get()

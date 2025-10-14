@@ -14,7 +14,7 @@ export class EventsListener implements OnModuleInit {
     channel.consume('task_events', async (msg) => {
       if (!msg) return;
       const event = JSON.parse(msg.content.toString());
-      await this.notificationService.handleTaskEvent(event);
+      await this.notificationService.handleEvent(event);
       channel.ack(msg);
     });
   }

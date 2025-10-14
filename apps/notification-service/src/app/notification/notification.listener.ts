@@ -1,5 +1,5 @@
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { ITaskEventPayload, TTaskEventType } from '@kanban-board/shared';
+import { IRabbitMessage, TTaskEventType } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 
@@ -24,21 +24,10 @@ export class NotificationListener {
     routingKey: 'task.*',
     queue: 'notification_queue'
   })
-  async handleTaskEvent(payload: ITaskEventPayload, amqpMsg: AmqpRawMessage) {
+  async handleTaskEvent(payload: IRabbitMessage, amqpMsg: AmqpRawMessage) {
     const eventType = amqpMsg.fields.routingKey as TTaskEventType;
-    this.logger.log(`📬 Received event: ${eventType}`);
+    this.logger.log(`📬 Received task event: ${eventType}`);
 
-    await this.notificationService.handleTaskEvent({ payload, eventType });
+    await this.notificationService.handleEvent({ ...payload, eventType });
   }
-
-  // @RabbitSubscribe({
-  //   exchange: 'kanban_exchange',
-  //   routingKey: 'board.*',
-  //   queue: 'notification_queue'
-  // })
-  // async handleBoardEvent(event: any, amqpMsg: any) {
-  //   const eventType = amqpMsg.fields.routingKey;
-  //   this.logger.log(`📬 Received event: ${eventType}`);
-  // await this.notificationService.handleEvent({ payload: event, eventType });
-  // }
 }
