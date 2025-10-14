@@ -25,7 +25,6 @@ export class NotificationService {
       this.logger.warn('Received event without task payload');
       return;
     }
-
     const { assigneeIds } = payload.task;
     // Ensure assignedTo is always an array
     const recipients = Array.isArray(assigneeIds) ? assigneeIds : [assigneeIds];
@@ -35,6 +34,7 @@ export class NotificationService {
 
     for (const userId of recipientsToNotify) {
       // Send WebSocket notification
+
       this.gateway.sendToUser(userId, {
         ...payload,
         timestamp: new Date().toISOString(),

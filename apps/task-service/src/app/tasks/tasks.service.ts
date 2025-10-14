@@ -1,6 +1,5 @@
 import {
   Column,
-  ITask,
   JWTUser,
   RabbitmqService,
   Task,
@@ -118,28 +117,12 @@ export class TasksService {
       throw new InternalServerErrorException(errMsg);
     }
 
-    this.rmqService
-      .publish('kanban_exchange', 'task.created', {
-        task: {
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          columnId: task.columnId,
-          boardId: task.boardId,
-          position: task.position,
-          assigneeIds: assignees.map((a) => a.id)
-        } as ITask,
-        createdBy: jwtUser.sub
-      })
-      .catch((err) => {
-        this.logger.error('Failed to publish task.created event', err);
-      });
-
-    return {
+    const taskRes = {
       id: task.id,
       title: task.title,
       description: task.description,
 
+      assignees: task.assignees,
       assigneeIds: task.assignees.map(({ id }) => id),
       ownerId: owner.id,
       boardId: board.id,
@@ -148,18 +131,30 @@ export class TasksService {
       isDone: task.isDone,
 
       position: task.position,
-      createdAt: task.createdAt.toISOString(),
-      updatedAt: task.updatedAt.toISOString()
-    } satisfies ITask;
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    };
+
+    this.rmqService
+      .publish('kanban_exchange', 'task.created', {
+        task: taskRes,
+        createdBy: jwtUser.sub
+      })
+      .catch((err) => {
+        this.logger.error('Failed to publish task.created event', err);
+      });
+
+    return taskRes;
   }
 
-  async update(taskId: string, updateTaskDto: UpdateTaskDto) {
+  async update(taskId: string, updateTaskDto: UpdateTaskDto, jwtUser: JWTUser) {
     const task = await this.tasksRepository
       .createQueryBuilder('task')
       .leftJoinAndSelect('task.assignees', 'assignee')
       .leftJoinAndSelect('task.owner', 'owner')
       .select([
         'task.id',
+        'task.title',
         'task.description',
         'task.isDone',
         'task.ownerId',
@@ -204,7 +199,21 @@ export class TasksService {
       }
     }
 
-    return this.tasksRepository.save(task);
+    const savedTask = await this.tasksRepository.save(task);
+    const taskRes = {
+      ...savedTask,
+      assigneeIds: savedTask.assignees.map(({ id }) => id)
+    };
+    this.rmqService
+      .publish<TTaskEventType>('kanban_exchange', 'task.updated', {
+        task: taskRes,
+        createdBy: jwtUser.sub
+      })
+      .catch((err) => {
+        this.logger.error('Failed to publish task.created event', err);
+      });
+
+    return taskRes;
   }
 
   async delete(id: string, jwtUser: JWTUser) {
@@ -322,15 +331,7 @@ export class TasksService {
       task.position = newPosition;
     }
 
-    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
-      task: {
-        ...task,
-        homeColumnId
-      },
-      createdBy: jwtUser?.sub
-    });
-
-    return {
+    const taskRes = {
       id: task.id,
       title: task.title,
       description: task.description,
@@ -340,11 +341,20 @@ export class TasksService {
       completedAt: task.completedAt,
       assignees:
         task.assignees?.map((u) => ({ id: u.id, email: u.email })) || [],
+      assigneeIds: task.assignees.map(({ id }) => id),
       owner: {
         id: task.owner.id,
         email: task.owner.email
       }
     };
+
+    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
+      task: taskRes,
+      homeColumnId,
+      createdBy: jwtUser?.sub
+    });
+
+    return taskRes;
   }
 
   private reindexTasks(tasks: Task[]) {

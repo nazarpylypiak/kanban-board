@@ -86,7 +86,7 @@ export default function Task({ task, column, index }: TaskProps) {
 
             <div
               className={`font-semibold flex-1 ${
-                task.completedAt ? 'line-through text-gray-400' : ''
+                task.isDone ? 'line-through text-gray-400' : ''
               }`}
             >
               {task.title}

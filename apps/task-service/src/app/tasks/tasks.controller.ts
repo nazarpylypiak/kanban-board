@@ -40,8 +40,12 @@ export class TasksController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateTaskTdo: UpdateTaskDto) {
-    return this.tasksService.update(id, updateTaskTdo);
+  update(
+    @Param('id') id: string,
+    @Body() updateTaskTdo: UpdateTaskDto,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.tasksService.update(id, updateTaskTdo, req.jwtUser);
   }
 
   @Delete(':id')

@@ -38,7 +38,6 @@ export const useTaskHandlers = ({ task, setShowConfirm }: Props) => {
   };
 
   const handleComplete = async (completed: boolean) => {
-    console.log(completed);
     if (!task?.id) return;
     const updatdeTask: ITask = {
       ...task,

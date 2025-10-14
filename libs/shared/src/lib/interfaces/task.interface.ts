@@ -36,6 +36,7 @@ export type TTaskEventType =
 
 export interface ITaskEventPayload {
   task: ITask;
+  homeColumnId?: string;
   createdBy: string;
 }
 

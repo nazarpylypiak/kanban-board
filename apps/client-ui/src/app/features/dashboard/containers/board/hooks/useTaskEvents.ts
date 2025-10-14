@@ -5,7 +5,8 @@ import {
   addTask,
   deleteTask,
   moveTaskToOtherColumn,
-  reorderTaskInSameColumn
+  reorderTaskInSameColumn,
+  updateTask
 } from '../../../../../core/store/tasks/tasksSlice';
 import { socket } from '../../../../../socket';
 
@@ -47,22 +48,24 @@ export function useTaskEvents(user: IUser | null) {
     };
 
     const handleNotification = (notification: ITaskUserEventPayload) => {
-      console.log(notification);
       switch (notification.eventType) {
         case 'task.created':
           dispatch(addTask(notification.task));
+          break;
+        case 'task.updated':
+          if (!notification.task.id) return;
+          dispatch(updateTask(notification.task));
           break;
         case 'task.deleted':
           if (!notification.task.id) return;
           dispatch(deleteTask(notification.task.id));
           break;
         case 'task.moved':
-          console.log(notification);
-          // if (!notification.homeColumnId) return;
-          // handleTaskMoved({
-          //   task: notification.task,
-          //   homeColumnId: notification.homeColumnId
-          // });
+          if (!notification.homeColumnId) return;
+          handleTaskMoved({
+            task: notification.task,
+            homeColumnId: notification.homeColumnId
+          });
 
           break;
         default:
