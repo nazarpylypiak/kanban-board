@@ -1,4 +1,4 @@
-import { ITask, ITaskEvent, IUser } from '@kanban-board/shared';
+import { ITask, ITaskUserEventPayload, IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
@@ -46,8 +46,9 @@ export function useTaskEvents(user: IUser | null) {
       }
     };
 
-    const handleNotification = (notification: ITaskEvent) => {
-      switch (notification.type) {
+    const handleNotification = (notification: ITaskUserEventPayload) => {
+      console.log(notification);
+      switch (notification.eventType) {
         case 'task.created':
           dispatch(addTask(notification.task));
           break;
@@ -56,11 +57,12 @@ export function useTaskEvents(user: IUser | null) {
           dispatch(deleteTask(notification.task.id));
           break;
         case 'task.moved':
-          if (!notification.homeColumnId) return;
-          handleTaskMoved({
-            task: notification.task,
-            homeColumnId: notification.homeColumnId
-          });
+          console.log(notification);
+          // if (!notification.homeColumnId) return;
+          // handleTaskMoved({
+          //   task: notification.task,
+          //   homeColumnId: notification.homeColumnId
+          // });
 
           break;
         default:

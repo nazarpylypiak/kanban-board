@@ -21,48 +21,31 @@ export class ColumnsService {
   }
 
   async findBoardColumns(boardId: string, jwtUser: JWTUser) {
+    const userId = jwtUser.sub;
+    const isAdmin = jwtUser.role === 'admin';
+
     const board = await this.boardRepository
       .createQueryBuilder('board')
       .leftJoinAndSelect('board.columns', 'column')
-      .leftJoinAndSelect('board.sharedUsers', 'sharedUser')
-      .leftJoinAndSelect('column.tasks', 'task')
+      .leftJoinAndSelect(
+        'column.tasks',
+        'task',
+        isAdmin
+          ? '1=1'
+          : `task.id IN (
+        SELECT ta."tasksId"
+        FROM tasks_assignees_users ta
+        WHERE ta."usersId" = :userId
+      )`
+      )
       .leftJoinAndSelect('task.assignees', 'assignee')
-      .select([
-        'board.id',
-        'board.name',
-        'board.ownerId',
-        'sharedUser.id',
-        'column.id',
-        'column.name',
-        'column.isDone',
-        'column.createdAt',
-        'column.updatedAt',
-        'column.boardId',
-        'task.id',
-        'task.title',
-        'task.description',
-        'task.isDone',
-        'task.ownerId',
-        'task.boardId',
-        'task.columnId',
-        'task.createdAt',
-        'task.updatedAt',
-        'assignee'
-      ])
       .where('board.id = :boardId', { boardId })
+      .setParameter('userId', userId)
       .orderBy('column.createdAt', 'ASC')
+      .addOrderBy('task.createdAt', 'ASC')
       .getOne();
 
     if (!board) throw new NotFoundException('Board not found');
-
-    const isOwner = board.ownerId === jwtUser.sub;
-    const isAdmin = jwtUser.role === 'admin';
-    const isShared = board.sharedUsers?.some((u) => u.id === jwtUser.sub);
-
-    if (!isOwner && !isAdmin && !isShared)
-      throw new ForbiddenException(
-        'You do not have permission to view board columns'
-      );
 
     return board.columns;
   }

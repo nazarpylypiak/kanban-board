@@ -28,16 +28,18 @@ export interface ITask {
   updatedAt: string;
 }
 
-export type ITaskEventType =
+export type TTaskEventType =
   | 'task.created'
   | 'task.updated'
   | 'task.deleted'
   | 'task.moved';
-export interface ITaskEvent {
-  type: ITaskEventType;
+
+export interface ITaskEventPayload {
   task: ITask;
-  homeColumnId?: string;
   createdBy: string;
-  assignedTo?: string[];
-  timestamp?: string;
+}
+
+export interface ITaskUserEventPayload extends ITaskEventPayload {
+  timestamp: string;
+  eventType: TTaskEventType;
 }

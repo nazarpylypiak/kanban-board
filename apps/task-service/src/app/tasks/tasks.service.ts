@@ -1,10 +1,10 @@
 import {
   Column,
   ITask,
-  ITaskEvent,
   JWTUser,
   RabbitmqService,
   Task,
+  TTaskEventType,
   User
 } from '@kanban-board/shared';
 import {
@@ -127,8 +127,8 @@ export class TasksService {
           columnId: task.columnId,
           boardId: task.boardId,
           position: task.position,
-          assignedTo: assignees.map((a) => a.id)
-        },
+          assigneeIds: assignees.map((a) => a.id)
+        } as ITask,
         createdBy: jwtUser.sub
       })
       .catch((err) => {
@@ -226,15 +226,11 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not found');
     await this.tasksRepository.delete(id);
 
-    this.rmqService.publish<ITaskEvent['type']>(
-      'kanban_exchange',
-      'task.deleted',
-      {
-        task,
-        createdBy: jwtUser.sub,
-        assignedTo: task.assignees?.map((a) => a.id) || []
-      }
-    );
+    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.deleted', {
+      task,
+      createdBy: jwtUser.sub,
+      assignedTo: task.assignees?.map((a) => a.id) || []
+    });
     return { message: 'Task deleted successfully', id };
   }
 
@@ -326,21 +322,13 @@ export class TasksService {
       task.position = newPosition;
     }
 
-    this.rmqService.publish<ITaskEvent['type']>(
-      'kanban_exchange',
-      'task.moved',
-      {
-        task,
-        homeColumnId,
-        createdBy: jwtUser?.sub,
-        assignedTo: [
-          ...new Set([
-            ...(task.assignees?.map((a) => a.id) || []),
-            board.owner.id
-          ])
-        ]
-      }
-    );
+    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
+      task: {
+        ...task,
+        homeColumnId
+      },
+      createdBy: jwtUser?.sub
+    });
 
     return {
       id: task.id,
