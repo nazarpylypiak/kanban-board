@@ -4,7 +4,7 @@ import { addColumn, setColumns } from '../../../../../core/store/columnsSlice';
 import { setTasks } from '../../../../../core/store/tasks/tasksSlice';
 import {
   createColumn,
-  getAllColumns
+  getBoardColumns
 } from '../../../../../shared/services/columns.service';
 
 export const useBoardData = (boardId: string) => {
@@ -15,7 +15,7 @@ export const useBoardData = (boardId: string) => {
     if (!boardId) return;
 
     const loadBoardData = async () => {
-      const res = await getAllColumns(boardId);
+      const res = await getBoardColumns(boardId);
       const allTasks = res.data.flatMap((col) =>
         (col.tasks || []).map((task) => ({ ...task, columnId: col.id }))
       );
@@ -28,7 +28,7 @@ export const useBoardData = (boardId: string) => {
 
   const handleAddColumn = useCallback(
     async (name: string) => {
-      const res = await createColumn(boardId, name);
+      const res = await createColumn(boardId, { name });
       dispatch(addColumn({ ...res.data, boardId }));
 
       setTimeout(() => {

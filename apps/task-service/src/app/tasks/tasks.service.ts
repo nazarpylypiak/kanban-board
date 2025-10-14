@@ -105,6 +105,7 @@ export class TasksService {
       board,
       column,
       assignees,
+      assigneeIds: assignees.map(({ id }) => id),
       assigneeEmails: assignees.map((u) => u.email),
       position: newPosition
     });
@@ -152,27 +153,54 @@ export class TasksService {
     } satisfies ITask;
   }
 
-  async update(id: string, updateTaskDto: UpdateTaskDto) {
-    const task = await this.tasksRepository.findOne({
-      where: { id },
-      relations: ['assignees', 'owner']
-    });
+  async update(taskId: string, updateTaskDto: UpdateTaskDto) {
+    const task = await this.tasksRepository
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.assignees', 'assignee')
+      .leftJoinAndSelect('task.owner', 'owner')
+      .select([
+        'task.id',
+        'task.description',
+        'task.isDone',
+        'task.ownerId',
+        'task.boardId',
+        'task.columnId',
+        'task.createdAt',
+        'task.updatedAt',
+        'task.position',
+        'assignee'
+      ])
+      .where('task.id = :taskId', { taskId })
+      .getOne();
 
     if (!task) throw new NotFoundException('Task not found');
 
+    // Update simple fields
     if (updateTaskDto.title !== undefined) task.title = updateTaskDto.title;
-    if (updateTaskDto.description !== undefined)
+    if (updateTaskDto.description !== undefined) {
       task.description = updateTaskDto.description;
+    }
 
+    // update completed;
+    task.isDone = updateTaskDto.isDone;
+    task.completedAt = task.isDone ? new Date() : null;
+
+    // Update assignees if provided
     if (updateTaskDto.assigneeIds !== undefined) {
-      if (updateTaskDto.assigneeIds.length === 0) {
-        task.assignees = [];
-      } else {
-        const assignees = await this.tasksRepository.manager
-          .getRepository(User)
-          .find({ where: { id: In(updateTaskDto.assigneeIds) } });
-        if (!assignees) throw new NotFoundException('Assignee not found');
+      if (updateTaskDto.assigneeIds?.length) {
+        const assignees = await this.usersRepository.find({
+          where: { id: In(updateTaskDto.assigneeIds) }
+        });
+
+        // Check if all requested assignees were found
+        if (assignees.length !== updateTaskDto.assigneeIds.length) {
+          throw new NotFoundException('One or more assignees not found');
+        }
+
         task.assignees = assignees;
+        task.assigneeIds = assignees.map(({ id }) => id);
+      } else {
+        task.assignees = [];
       }
     }
 
@@ -216,17 +244,17 @@ export class TasksService {
     position?: number,
     jwtUser?: JWTUser
   ) {
-    const task = await this.tasksRepository.findOne({
-      where: { id: taskId },
-      relations: [
-        'assignees',
-        'owner',
-        'column.tasks',
-        'board',
-        'board.sharedUsers',
-        'board.owner'
-      ]
-    });
+    const task = await this.tasksRepository
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.assignees', 'assignee')
+      .leftJoinAndSelect('task.owner', 'owner')
+      .leftJoinAndSelect('task.column', 'column')
+      .leftJoinAndSelect('column.tasks', 'columnTask')
+      .leftJoinAndSelect('task.board', 'board')
+      .leftJoinAndSelect('board.sharedUsers', 'sharedUser')
+      .leftJoinAndSelect('board.owner', 'boardOwner')
+      .where('task.id = :taskId', { taskId })
+      .getOne();
 
     if (!task) throw new NotFoundException('Task not found');
 
@@ -253,12 +281,9 @@ export class TasksService {
       task.columnId = newColumn.id;
 
       // Handle completedAt status based on column type
-      if (newColumn.isDone && !task.completedAt) {
+      if (newColumn.isDone && !task.isDone) {
         task.completedAt = new Date();
         task.isDone = true;
-      } else if (!newColumn.isDone) {
-        task.completedAt = null;
-        task.isDone = false;
       }
 
       // Insert into new column (at given position or at bottom)
@@ -323,6 +348,7 @@ export class TasksService {
       description: task.description,
       columnId: task.column.id,
       position: task.position,
+      isDone: task.isDone,
       completedAt: task.completedAt,
       assignees:
         task.assignees?.map((u) => ({ id: u.id, email: u.email })) || [],

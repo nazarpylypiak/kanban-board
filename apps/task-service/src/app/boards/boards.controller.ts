@@ -10,7 +10,6 @@ import {
   Put,
   Query,
   Req,
-  Request,
   UseGuards
 } from '@nestjs/common';
 import { BoardsService } from './boards.service';
@@ -43,13 +42,13 @@ export class BoardsController {
   @Get(':boardId/users')
   findBoardUsers(
     @Param('boardId') boardId: string,
-    @Request() req: AuthenticatedRequest
+    @Req() req: AuthenticatedRequest
   ) {
     return this.boardsService.findBoardUsers(boardId, req.jwtUser);
   }
 
   @Post()
-  create(@Body() dto: CreateBoardDto, @Request() req: AuthenticatedRequest) {
+  create(@Body() dto: CreateBoardDto, @Req() req: AuthenticatedRequest) {
     const ownerId = req.jwtUser.sub;
     return this.boardsService.create(ownerId, dto);
   }
@@ -65,7 +64,6 @@ export class BoardsController {
   }
 
   @Patch(':boardId/share')
-  @UseGuards(JwtAuthGuard)
   shareBoard(
     @Param('boardId') boardId: string,
     @Body() dto: ShareBoardDto,

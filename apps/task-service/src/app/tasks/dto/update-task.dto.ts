@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class UpdateTaskDto {
   @IsOptional()
@@ -12,4 +12,8 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsUUID()
   assigneeIds?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  isDone?: boolean;
 }

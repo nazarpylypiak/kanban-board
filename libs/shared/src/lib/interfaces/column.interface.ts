@@ -12,6 +12,6 @@ export interface IColumn {
 
   isDone: boolean;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

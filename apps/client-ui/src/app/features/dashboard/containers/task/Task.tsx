@@ -71,7 +71,7 @@ export default function Task({ task, column, index }: TaskProps) {
               >
                 <Checkbox
                   onChange={(e) => handleComplete(e.target.checked)}
-                  checked={!!task.completedAt}
+                  checked={!!task.isDone}
                   icon={
                     <span className="w-5 h-5 border-2 border-gray-400 rounded-full block" />
                   }

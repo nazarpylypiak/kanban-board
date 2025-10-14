@@ -4,7 +4,7 @@ import { RootState } from '../../../../core/store';
 import { addBoard, setBoards } from '../../../../core/store/boards/boardsSlice';
 import { setUsers } from '../../../../core/store/usersSlice';
 import {
-  create,
+  createBoard,
   getMyBoards
 } from '../../../../shared/services/boards.service';
 import { getAllUsers } from '../../../../shared/services/user.service';
@@ -46,8 +46,12 @@ export default function BoardSelector() {
 
   const handleCreateBoard = useCallback(
     async (name: string) => {
-      const newBoard = await create({ name });
-      dispatch(addBoard(newBoard));
+      try {
+        const newBoard = await createBoard({ name });
+        dispatch(addBoard(newBoard));
+      } catch (e) {
+        console.error('Failed to create board', e);
+      }
     },
     [dispatch]
   );

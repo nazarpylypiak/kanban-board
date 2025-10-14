@@ -8,6 +8,7 @@ import {
   deleteTask,
   updateTask
 } from '../../../../../shared/services/task.service';
+import { TUpdateTask } from '../../../../../shared/types/task.type';
 
 interface Props {
   task: ITask;
@@ -37,15 +38,17 @@ export const useTaskHandlers = ({ task, setShowConfirm }: Props) => {
   };
 
   const handleComplete = async (completed: boolean) => {
+    console.log(completed);
     if (!task?.id) return;
-    const newTask: ITask = {
+    const updatdeTask: ITask = {
       ...task,
-      completedAt: completed ? new Date().toISOString() : null
+      isDone: completed
     };
-    dispatch(updateTaskSlice(newTask));
+    dispatch(updateTaskSlice(updatdeTask));
     try {
-      await updateTask(task.id, newTask);
+      await updateTask(task.id, { isDone: completed } as TUpdateTask);
     } catch (e) {
+      dispatch(updateTaskSlice(task));
       console.error('Fail to update task', e);
     }
   };

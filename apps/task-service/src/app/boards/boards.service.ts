@@ -52,7 +52,7 @@ export class BoardsService {
 
     const isOwner = board.ownerId === jwtUser.sub;
     const isAdmin = jwtUser.role === 'admin';
-    const isShared = board.sharedUsers.some((u) => u.id === jwtUser.sub);
+    const isShared = board.sharedUsers?.some((u) => u.id === jwtUser.sub);
 
     if (!isOwner && !isAdmin && !isShared)
       throw new ForbiddenException(
@@ -62,8 +62,7 @@ export class BoardsService {
     const filteredUsers = board.sharedUsers.filter(
       ({ id }) => id !== board.owner.id
     );
-    console.log(filteredUsers);
-    console.log(board.owner);
+
     return [...filteredUsers, board.owner].map(({ id, email, role }) => ({
       id,
       email,

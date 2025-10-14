@@ -12,24 +12,29 @@ export const getAll = async (ownerId: string) => {
   return await boardsApi.get<IBoard[]>('', { params: { ownerId } });
 };
 
-export const getBoardUsers = async (boardId: string) => {
-  return await boardsApi.get<IUser[]>(`${boardId}/users`);
-};
-
 export const getOne = (id: string) => {
   return boardsApi.get(id);
 };
 
-export const create = async (board: ICreateBoard) => {
+export const getBoardUsers = async (boardId: string) => {
+  return await boardsApi.get<IUser[]>(`${boardId}/users`);
+};
+
+export const createBoard = async (board: ICreateBoard) => {
   const newBoard = await boardsApi.post<IBoard>('', board);
   return newBoard.data;
 };
 
-export const update = async (id: string, board: IUpdateBoard) => {
+export const updateBoard = async (id: string, board: IUpdateBoard) => {
   const newBoard = await boardsApi.put<IBoard>(id, board);
   return newBoard.data;
 };
 
-export const share = (boardId: string, userIds: string[]) => {
+export const deleteBoard = async (id: string) => {
+  const res = await boardsApi.delete(id);
+  return res.data;
+};
+
+export const shareBoard = (boardId: string, userIds: string[]) => {
   return boardsApi.patch(`${boardId}/share`, { userIds });
 };

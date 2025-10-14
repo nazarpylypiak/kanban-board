@@ -17,33 +17,57 @@ export class ColumnsService {
   ) {}
 
   findAll() {
-    return this.columnRepository.find({
-      relations: ['tasks'],
-      order: {
-        tasks: {
-          position: 'ASC'
-        }
-      }
-    });
+    return this.columnRepository.find();
   }
 
-  findAllByBoardId(boardId: string) {
-    return this.columnRepository.find({
-      where: {
-        board: { id: boardId }
-      },
-      relations: ['tasks', 'tasks.assignees'],
-      select: ['id', 'name', 'boardId', 'isDone'],
-      order: {
-        createdAt: 'ASC',
-        tasks: {
-          position: 'ASC'
-        }
-      }
-    });
+  async findBoardColumns(boardId: string, jwtUser: JWTUser) {
+    const board = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoinAndSelect('board.columns', 'column')
+      .leftJoinAndSelect('board.sharedUsers', 'sharedUser')
+      .leftJoinAndSelect('column.tasks', 'task')
+      .leftJoinAndSelect('task.assignees', 'assignee')
+      .select([
+        'board.id',
+        'board.name',
+        'board.ownerId',
+        'sharedUser.id',
+        'column.id',
+        'column.name',
+        'column.isDone',
+        'column.createdAt',
+        'column.updatedAt',
+        'column.boardId',
+        'task.id',
+        'task.title',
+        'task.description',
+        'task.isDone',
+        'task.ownerId',
+        'task.boardId',
+        'task.columnId',
+        'task.createdAt',
+        'task.updatedAt',
+        'assignee'
+      ])
+      .where('board.id = :boardId', { boardId })
+      .orderBy('column.createdAt', 'ASC')
+      .getOne();
+
+    if (!board) throw new NotFoundException('Board not found');
+
+    const isOwner = board.ownerId === jwtUser.sub;
+    const isAdmin = jwtUser.role === 'admin';
+    const isShared = board.sharedUsers?.some((u) => u.id === jwtUser.sub);
+
+    if (!isOwner && !isAdmin && !isShared)
+      throw new ForbiddenException(
+        'You do not have permission to view board columns'
+      );
+
+    return board.columns;
   }
 
-  async create(dto: CreateColumnDto, jwtUser: JWTUser) {
+  async createBoardColumn(dto: CreateColumnDto, jwtUser: JWTUser) {
     const board = await this.boardRepository.findOneBy({
       id: dto.boardId
     });
@@ -68,16 +92,35 @@ export class ColumnsService {
       name: savedColumn.name,
       boardId: savedColumn.boardId,
       isDone: savedColumn.isDone,
-      createdAt: savedColumn.createdAt,
-      updatedAt: savedColumn.updatedAt
+      createdAt: savedColumn.createdAt.toISOString(),
+      updatedAt: savedColumn.updatedAt.toISOString()
     } satisfies IColumn;
   }
 
-  async update(id: string, dto: UpdateBoardDTo) {
-    const column = await this.columnRepository.findOne({ where: { id } });
+  async update(columnId: string, dto: UpdateBoardDTo, jwtUser: JWTUser) {
+    const column = await this.columnRepository
+      .createQueryBuilder('column')
+      .leftJoinAndSelect('column.board', 'board')
+      .where('column.id = :columnId', { columnId })
+      .select([
+        'column.id',
+        'board.ownerId',
+        'column.name',
+        'column.isDone',
+        'column.createdAt',
+        'column.updatedAt'
+      ])
+      .getOne();
     if (!column) throw new NotFoundException('Column not fonud');
+    const isAdmin = jwtUser.role === 'admin';
+    const isOwner = column.board.ownerId === jwtUser.sub;
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException(
+        'You do not have permission to update column'
+      );
+    }
 
     Object.assign(column, dto);
-    return this.columnRepository.save(column);
+    return await this.columnRepository.save(column);
   }
 }

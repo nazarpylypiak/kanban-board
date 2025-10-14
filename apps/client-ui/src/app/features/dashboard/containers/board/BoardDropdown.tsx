@@ -6,7 +6,7 @@ import {
   setSelectedBoard,
   updateBoard
 } from '../../../../core/store/boards/boardsSlice';
-import { share } from '../../../../shared/services/boards.service';
+import { shareBoard } from '../../../../shared/services/boards.service';
 import ShareBoardModal from '../../modals/ShareBoardModal';
 
 interface Props {
@@ -35,7 +35,7 @@ export default function BoardDropdown({ user }: Props) {
 
   const handleShareBoard = async (boardId: string, userIds: string[]) => {
     try {
-      const res = await share(boardId, userIds);
+      const res = await shareBoard(boardId, userIds);
       dispatch(updateBoard(res.data));
     } catch (e) {
       console.error('Sharing error: ', e);

@@ -5,7 +5,7 @@
       "label": "NX Serve Many (exclude analytics/notification)",
       "type": "shell",
       "command": "npx",
-      "args": ["nx", "run-many", "-t", "serve"],
+      "args": ["nx", "run-many", "-t", "serve", "--verbose"],
       "options": {
         "env": {
           "NX_TASKS_RUNNER_OUTPUT_STYLE": "dynamic"

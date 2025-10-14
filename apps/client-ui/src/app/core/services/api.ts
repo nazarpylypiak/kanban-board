@@ -1,16 +1,19 @@
 import axios from 'axios';
 import { refreshToken } from '../../features/auth/services/auth.service';
+
 import { store } from '../store';
 import { clearAuth, setAccessToken } from '../store/authSlice';
 
-export const createApi = (baseURL: string) => {
+export const createApi = (baseURL: string, listenerApi?: any) => {
+  const dispatch = listenerApi?.dispatch || store.dispatch;
+  const getState = listenerApi?.getState || store.getState;
   const instance = axios.create({
     baseURL,
     withCredentials: true
   });
 
   instance.interceptors.request.use((config) => {
-    const token = store.getState().auth.accessToken;
+    const token = getState().auth.accessToken;
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -29,12 +32,12 @@ export const createApi = (baseURL: string) => {
           const data = await refreshToken();
           const newAccessToken = data.accessToken;
 
-          store.dispatch(setAccessToken(newAccessToken));
+          dispatch(setAccessToken(newAccessToken));
 
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
           return instance(originalRequest);
         } catch (err) {
-          store.dispatch(clearAuth());
+          dispatch(clearAuth());
           return Promise.reject(err);
         }
       }

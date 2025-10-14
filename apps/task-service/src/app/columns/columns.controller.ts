@@ -6,38 +6,49 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   Req,
   UseGuards
 } from '@nestjs/common';
 import { ColumnsService } from './columns.service';
+import { CreateColumnDto } from './dto/create-column.dto';
 import { UpdateColumnDto } from './dto/update-column.dto';
 
-@Controller('columns')
+@UseGuards(JwtAuthGuard)
+@Controller()
 export class ColumnsController {
   constructor(private columnsService: ColumnsService) {}
 
-  @Get()
-  findAll(@Query('boardId') boardId: string) {
-    if (boardId) {
-      return this.columnsService.findAllByBoardId(boardId);
-    }
+  @Get('columns')
+  findAll() {
     return this.columnsService.findAll();
   }
 
-  @Post(':boardId')
-  @UseGuards(JwtAuthGuard)
-  create(
+  @Get('boards/:boardId/columns')
+  findBoardColumns(
     @Param('boardId') boardId: string,
-    @Body('name') name: string,
     @Req() req: AuthenticatedRequest
   ) {
-    const user = req.jwtUser;
-    return this.columnsService.create({ boardId, name }, user);
+    return this.columnsService.findBoardColumns(boardId, req.jwtUser);
   }
 
-  @Patch(':id')
-  updateColumn(@Param('id') id: string, @Body() dto: UpdateColumnDto) {
-    return this.columnsService.update(id, dto);
+  @Post('boards/:boardId/columns')
+  create(
+    @Param('boardId') boardId: string,
+    @Body() dto: CreateColumnDto,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.columnsService.createBoardColumn(
+      { ...dto, boardId },
+      req.jwtUser
+    );
+  }
+
+  @Patch('columns/:columnId')
+  updateColumn(
+    @Param('columnId') columnId: string,
+    @Body() dto: UpdateColumnDto,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.columnsService.update(columnId, dto, req.jwtUser);
   }
 }
