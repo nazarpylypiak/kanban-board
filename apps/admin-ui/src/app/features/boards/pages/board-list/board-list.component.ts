@@ -1,6 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { RouterLink } from '@angular/router';
 import { IBoard } from '@kanban-board/shared';
 import { Store } from '@ngrx/store';
 import { filter } from 'rxjs';
@@ -16,7 +17,7 @@ import { CreateBoardDialogComponent } from '../../dialogs/create-board-dialog/cr
 
 @Component({
   selector: 'app-board-list',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink],
   templateUrl: './board-list.component.html',
   styleUrl: './board-list.component.scss'
 })

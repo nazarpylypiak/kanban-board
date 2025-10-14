@@ -22,5 +22,11 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/api/analytics": {
+    "target": "http://localhost:3006",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }
