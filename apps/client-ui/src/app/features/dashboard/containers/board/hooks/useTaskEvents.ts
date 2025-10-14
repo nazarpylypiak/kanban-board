@@ -1,4 +1,5 @@
 import {
+  IBoard,
   ITask,
   IUser,
   IUserNotificationEvent,
@@ -7,6 +8,10 @@ import {
 } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import {
+  addBoard,
+  deleteBoard
+} from '../../../../../core/store/boards/boardsSlice';
 import {
   addTask,
   deleteTask,
@@ -54,6 +59,7 @@ export function useTaskEvents(user: IUser | null) {
     };
 
     const handleNotification = (notification: IUserNotificationEvent) => {
+      console.log(notification);
       if (notification.eventType.includes('task.')) {
         const task = notification.payload.task as ITask;
         switch (notification.eventType as TTaskEventType) {
@@ -85,12 +91,18 @@ export function useTaskEvents(user: IUser | null) {
       } else if (notification.eventType.includes('board.')) {
         console.log(notification);
         switch (notification.eventType as TBoardEventType) {
-          case 'board.shared':
-            console.log('Board shared');
+          case 'board.shared': {
+            const { board } = notification.payload as { board: IBoard };
+
+            dispatch(addBoard(board));
             break;
-          case 'board.unshared':
-            console.log('Board unshared');
+          }
+          case 'board.deleted':
+          case 'board.unshared': {
+            const { boardId } = notification.payload as { boardId: string };
+            dispatch(deleteBoard(boardId));
             break;
+          }
           default:
         }
       }

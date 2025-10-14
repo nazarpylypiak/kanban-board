@@ -23,9 +23,22 @@ const boardsSlice = createSlice({
   name: 'boards',
   initialState,
   reducers: {
-    setBoards: (state, action: PayloadAction<IBoard[]>) => {
-      state.data = action.payload;
-      state.selectedBoard = state.data.length ? state.data[0] : null;
+    setBoards: (
+      state,
+      action: PayloadAction<{
+        boards: IBoard[];
+        selectedBoardId?: string | null;
+      }>
+    ) => {
+      state.data = action.payload.boards;
+      if (action.payload.selectedBoardId) {
+        const saved = state.data.find(
+          (b) => b.id === action.payload.selectedBoardId
+        );
+        state.selectedBoard = saved || null;
+      } else {
+        state.selectedBoard = state.data.length ? state.data[0] : null;
+      }
     },
     addBoard: (state, action: PayloadAction<IBoard>) => {
       const exists = state.data.some((b) => b.id === action.payload.id);

@@ -1,4 +1,4 @@
-import { IBoard, IUser, User } from '@kanban-board/shared';
+import {} from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface AuthState {

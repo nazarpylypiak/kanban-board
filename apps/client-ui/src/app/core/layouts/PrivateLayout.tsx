@@ -1,19 +1,40 @@
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
-import TopBar from '../../shared/components/TopBar';
+import AppBar from '../../shared/containers/AppBar';
+import { getProfile } from '../../shared/services/user.service';
+import { socket } from '../../socket';
 import { RootState } from '../store';
+import { setUser } from '../store/authSlice';
 
 export default function PrivateLayout() {
+  const dispatch = useDispatch();
   const { accessToken, loading } = useSelector(
     (state: RootState) => state.auth
   );
+
+  useEffect(() => {
+    if (accessToken) {
+      const fetchUser = async () => {
+        try {
+          const res = await getProfile();
+          socket.emit('subscribe', { userId: res.data.id });
+
+          dispatch(setUser(res.data));
+        } catch (err) {
+          console.error('Failed to load profile', err);
+        }
+      };
+      fetchUser();
+    }
+  }, [accessToken, dispatch]);
 
   if (loading) return <div>Loading...</div>;
   if (!accessToken) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex flex-col h-screen min-h-screen bg-gray-100 p-8">
-      <TopBar />
+    <div className=" flex flex-col h-screen min-h-screen bg-gray-100 p-8 gap-y-4">
+      <AppBar />
       <Outlet />
     </div>
   );

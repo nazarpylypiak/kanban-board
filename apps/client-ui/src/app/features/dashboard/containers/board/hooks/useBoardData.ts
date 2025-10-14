@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addColumn, setColumns } from '../../../../../core/store/columnsSlice';
 import { setTasks } from '../../../../../core/store/tasks/tasksSlice';
+import { setUsers } from '../../../../../core/store/usersSlice';
 import {
   createColumn,
   getBoardColumns
 } from '../../../../../shared/services/columns.service';
+import { getAllUsers } from '../../../../../shared/services/user.service';
 
 export const useBoardData = (boardId: string) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,6 +26,17 @@ export const useBoardData = (boardId: string) => {
     };
 
     loadBoardData();
+  }, [boardId, dispatch]);
+
+  useEffect(() => {
+    if (!boardId) return;
+
+    const loadUsers = async () => {
+      const res = await getAllUsers();
+      dispatch(setUsers(res.data));
+    };
+
+    loadUsers();
   }, [boardId, dispatch]);
 
   const handleAddColumn = useCallback(

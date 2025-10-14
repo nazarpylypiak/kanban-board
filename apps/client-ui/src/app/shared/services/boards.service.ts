@@ -21,8 +21,7 @@ export const getBoardUsers = async (boardId: string) => {
 };
 
 export const createBoard = async (board: ICreateBoard) => {
-  const newBoard = await boardsApi.post<IBoard>('', board);
-  return newBoard.data;
+  return boardsApi.post<IBoard>('', board);
 };
 
 export const updateBoard = async (id: string, board: IUpdateBoard) => {
@@ -30,9 +29,8 @@ export const updateBoard = async (id: string, board: IUpdateBoard) => {
   return newBoard.data;
 };
 
-export const deleteBoard = async (id: string) => {
-  const res = await boardsApi.delete(id);
-  return res.data;
+export const deleteBoard = (id: string) => {
+  return boardsApi.delete(id);
 };
 
 export const shareBoard = (boardId: string, userIds: string[]) => {

@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import PrivateLayout from '../core/layouts/PrivateLayout';
 import LoginPage from '../features/auth/pages/LoginPage';
 import RegisterPage from '../features/auth/pages/RegisterPage';
-import DashboardPage from '../features/dashboard/pages/DashboardPage';
+import DashboardPage from '../features/dashboard/DashboardPage';
 
 export function AppRoutes() {
   return (

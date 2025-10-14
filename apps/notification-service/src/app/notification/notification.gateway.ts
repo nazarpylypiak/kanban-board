@@ -37,6 +37,7 @@ export class NotificationGateway
   }
 
   sendToUser(userId: string, event: IUserNotificationEvent) {
+    this.logger.debug(userId, event);
     const roomName = `notify:${userId}`;
     this.server.to(roomName).emit('notification', event);
   }

@@ -3,12 +3,10 @@ import { createApi } from '../../core/services/api';
 
 const apiUser = createApi('/api/users');
 
-export const getProfile = async () => {
-  const res = await apiUser.get('/profile');
-  return res.data;
+export const getProfile = () => {
+  return apiUser.get('/profile');
 };
 
-export const getAllUsers = async () => {
-  const res = await apiUser.get<IUser[]>('');
-  return res.data;
+export const getAllUsers = () => {
+  return apiUser.get<IUser[]>('');
 };

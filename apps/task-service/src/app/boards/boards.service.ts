@@ -125,8 +125,7 @@ export class BoardsService {
     if (!board) throw new NotFoundException('Board not found');
     const isAdmin = currentUser.role === 'admin';
     const isOwner = board.ownerId === currentUser.sub;
-    console.log(board.ownerId);
-    console.log(currentUser.sub);
+
     if (!isOwner && !isAdmin) throw new ForbiddenException('No permission');
 
     const removedUsers: string[] =
@@ -139,6 +138,7 @@ export class BoardsService {
     const savedBoard = await this.boardRepository.save(board);
 
     // Notify users
+
     this.rmqService.publish('kanban_exchange', 'board.shared', {
       payload: { board },
       createdBy: currentUser?.sub,
@@ -146,7 +146,7 @@ export class BoardsService {
     });
     if (removedUsers?.length > 0) {
       this.rmqService.publish('kanban_exchange', 'board.unshared', {
-        payload: { board },
+        payload: { boardId },
         createdBy: currentUser?.sub,
         recipientIds: removedUsers
       });

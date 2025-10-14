@@ -11,7 +11,7 @@ interface AmqpRawMessage {
     exchange: string;
     redelivered: boolean;
   };
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
 }
 @Injectable()
 export class NotificationListener {
