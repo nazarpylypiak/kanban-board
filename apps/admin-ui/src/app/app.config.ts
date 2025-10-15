@@ -11,6 +11,8 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { AnalyticsEffects } from './core/store/analytics/analytics.effects';
+import { analyticsReducer } from './core/store/analytics/analytics.reducer';
 import { authReducer } from './core/store/auth/auth.reducer';
 import { BoardsEffects } from './core/store/boards/boards.effects';
 import { boardsReducer } from './core/store/boards/boards.reducer';
@@ -21,8 +23,12 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideStore({ auth: authReducer, boards: boardsReducer }),
-    provideEffects([BoardsEffects]),
+    provideStore({
+      auth: authReducer,
+      boards: boardsReducer,
+      analytics: analyticsReducer
+    }),
+    provideEffects([BoardsEffects, AnalyticsEffects]),
     provideStoreDevtools({ maxAge: 25 }),
     provideCharts(withDefaultRegisterables())
   ]
