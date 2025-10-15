@@ -84,7 +84,7 @@ export default function BoardDropdown({ user }: Props) {
                 className="flex-1 h-full"
                 onClick={() => handleBoardSelect(board)}
               >
-                {board.name} {/* Shared Users */}
+                {board.name}
                 <span className="flex-1 text-sm text-gray-700">
                   {board.sharedUsers?.length
                     ? board.sharedUsers.map(({ id, email }) => (

@@ -35,7 +35,7 @@ export default function Column({ column, isOwner, user }: ColumnProps) {
   return (
     <div
       ref={ref}
-      className={`${getColumnStateStyles(state.type)} w-64 bg-white rounded shadow p-4 flex flex-col h-full`}
+      className={`flex flex-col w-72 bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-4 h-full transition-all hover:shadow-md ${getColumnStateStyles(state.type)}`}
     >
       <ColumnHeader
         title={column.name}
@@ -45,15 +45,26 @@ export default function Column({ column, isOwner, user }: ColumnProps) {
 
       <div
         ref={scrollableRef}
-        className="overflow-y-auto flex flex-col gap-2 p-2 rounded transition-colors"
+        className="flex-1 overflow-y-auto flex flex-col gap-3 p-2 rounded-md scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 transition-colors"
       >
-        {tasks.map((task, i) => (
-          <TaskComponent index={i} key={task.id} task={task} column={column} />
-        ))}
+        {tasks.length > 0 ? (
+          tasks.map((task, i) => (
+            <TaskComponent
+              key={task.id}
+              index={i}
+              task={task}
+              column={column}
+            />
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center text-gray-400 text-sm py-6 select-none">
+            <span>No tasks</span>
+          </div>
+        )}
       </div>
 
       {isOwner && (
-        <div className="mt-2">
+        <div className="mt-3 pt-2 border-t border-gray-200">
           <AddNewTask
             onCreateTask={(task) => handleTaskCreate(column.id, task)}
             users={boardUsers[column.boardId] ?? []}

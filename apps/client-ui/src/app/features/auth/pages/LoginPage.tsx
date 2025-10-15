@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { setAccessToken, setLoggedIn } from '../../../core/store/authSlice';
 import { login } from '../services/auth.service';
+
+import {
+  Alert,
+  Box,
+  Button,
+  Link,
+  Paper,
+  TextField,
+  Typography
+} from '@mui/material';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -28,48 +38,86 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'grey.100',
+        p: 2
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          maxWidth: 400,
+          width: '100%',
+          p: 4,
+          borderRadius: 3
+        }}
+      >
+        <Typography variant="h4" fontWeight={600} align="center" gutterBottom>
           Login
-        </h2>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          <button
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            fullWidth
+            size="small"
+          />
+
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            fullWidth
+            size="small"
+          />
+
+          <Button
             type="submit"
-            className="mt-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            variant="contained"
+            color="primary"
+            sx={{ mt: 1, py: 1.5 }}
           >
             Login
-          </button>
-        </form>
+          </Button>
+        </Box>
 
-        <p className="mt-4 text-center text-gray-600">
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mt: 3, color: 'text.secondary' }}
+        >
           Don't have an account?{' '}
-          <Link to="/register" className="text-green-600 hover:underline">
+          <Link
+            component={RouterLink}
+            to="/register"
+            underline="hover"
+            color="success.main"
+          >
             Register here
           </Link>
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }

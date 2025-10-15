@@ -33,7 +33,7 @@ export default function PrivateLayout() {
   if (!accessToken) return <Navigate to="/login" replace />;
 
   return (
-    <div className=" flex flex-col h-screen min-h-screen bg-gray-100 p-8 gap-y-4">
+    <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
       <AppBar />
       <Outlet />
     </div>

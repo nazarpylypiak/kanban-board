@@ -13,6 +13,7 @@ export default function useDshboardHandlers(props: Props) {
   const dispatch = useDispatch();
   const handleCreateBoard = async () => {
     try {
+      if (!search.trim()) return;
       const res = await createBoard({ name: search });
       dispatch(addBoard(res.data));
       setSearch('');

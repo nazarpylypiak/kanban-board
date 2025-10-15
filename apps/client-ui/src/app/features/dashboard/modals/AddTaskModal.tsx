@@ -18,6 +18,7 @@ interface Props {
 
 export default function AddTaskModal(props: Props) {
   const { onClose, open, users, boardOwner } = props;
+
   const [error, setError] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
@@ -33,7 +34,7 @@ export default function AddTaskModal(props: Props) {
   const resetForm = () => {
     setTaskName('');
     setDescription('');
-    setAssignees([]);
+    setAssignees(boardOwner?.id ? [boardOwner] : []);
   };
 
   const handleSubmit = () => {
@@ -64,30 +65,33 @@ export default function AddTaskModal(props: Props) {
         paper: {
           sx: {
             minWidth: 500,
-            maxWidth: '80vw'
+            maxWidth: '80vw',
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            p: 2
           }
         }
       }}
     >
-      <DialogTitle>Create New Task</DialogTitle>
+      <DialogTitle fontWeight={600} fontSize="1.25rem">
+        Create New Task
+      </DialogTitle>
 
       <Box
         component="form"
         noValidate
         autoComplete="off"
-        className="flex flex-col gap-4 p-4 bg-white rounded-xl"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}
         onSubmit={(e) => {
           e.preventDefault();
           handleSubmit();
         }}
       >
-        {/* Task name */}
         <TextField
-          id="outlined-basic"
           label="Task name"
           variant="outlined"
           size="small"
-          className="w-full"
+          fullWidth
           value={taskName}
           onChange={(e) => setTaskName(e.target.value)}
           onBlur={() => taskName.trim() && setError(false)}
@@ -95,27 +99,25 @@ export default function AddTaskModal(props: Props) {
           helperText={error ? 'Task name is required' : ''}
         />
 
-        {/* Description */}
         <TextField
-          id="outlined-multiline-static"
           label="Description"
           multiline
           rows={4}
           variant="outlined"
           size="small"
-          className="w-full"
+          fullWidth
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        {/* Assignees */}
+        {/* Selected Assignees */}
         {assignees.length > 0 && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {assignees.map((user) => (
               <Chip
                 key={user.id}
                 label={user.email}
-                color="primary"
+                color="default"
                 variant="outlined"
                 size="small"
                 onDelete={() => handleDelete(user)}
@@ -123,6 +125,7 @@ export default function AddTaskModal(props: Props) {
             ))}
           </Box>
         )}
+
         <Autocomplete
           multiple
           id="share-board-users"
@@ -137,19 +140,19 @@ export default function AddTaskModal(props: Props) {
           renderInput={(params) => (
             <TextField
               {...params}
+              placeholder="Assign users..."
               variant="outlined"
-              placeholder="Share with users..."
               size="small"
-              className="w-full"
+              fullWidth
             />
           )}
         />
 
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" onClick={handleClose}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button variant="outlined" color="inherit" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
             Create
           </Button>
         </Box>

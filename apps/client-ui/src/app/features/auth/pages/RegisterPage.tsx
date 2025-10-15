@@ -1,5 +1,18 @@
+import {
+  Alert,
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  Link,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { register } from '../services/auth.service';
 
 export default function RegisterPage() {
@@ -8,6 +21,8 @@ export default function RegisterPage() {
   const [role, setRole] = useState<'user' | 'admin'>('user');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
+
   const resetForm = () => {
     setEmail('');
     setPassword('');
@@ -17,9 +32,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const data = await register(email, password, role);
+      await register(email, password, role);
       resetForm();
       setError('');
+      setSuccess('Registration successful! You can now login.');
+      navigate('/login');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
       setSuccess('');
@@ -27,62 +44,98 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'grey.100',
+        p: 2
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{ maxWidth: 400, width: '100%', p: 4, borderRadius: 3 }}
+      >
+        <Typography variant="h4" fontWeight={600} align="center" gutterBottom>
           Register
-        </h2>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Role</label>
-            <select
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {success}
+          </Alert>
+        )}
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            fullWidth
+            size="small"
+          />
+
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            fullWidth
+            size="small"
+          />
+
+          <FormControl fullWidth size="small">
+            <InputLabel>Role</InputLabel>
+            <Select
               value={role}
+              label="Role"
               onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          {success && (
-            <p className="text-green-500 text-sm text-center">{success}</p>
-          )}
-          <button
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
             type="submit"
-            className="mt-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            variant="contained"
+            color="success"
+            sx={{ mt: 1, py: 1.5 }}
           >
             Register
-          </button>
-        </form>
+          </Button>
+        </Box>
 
-        <p className="mt-4 text-center text-gray-600">
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mt: 3, color: 'text.secondary' }}
+        >
           Have an account?{' '}
-          <Link to="/login" className="text-green-600 hover:underline">
+          <Link
+            component={RouterLink}
+            to="/login"
+            underline="hover"
+            color="primary"
+          >
             Login here
           </Link>
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }

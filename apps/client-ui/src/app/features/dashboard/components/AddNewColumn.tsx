@@ -1,3 +1,4 @@
+import { Box, Button, TextField } from '@mui/material';
 import { useState } from 'react';
 
 interface Props {
@@ -14,22 +15,49 @@ export default function AddNewColumn({ onAddColumn }: Props) {
   };
 
   return (
-    <div className="flex-shrink-0 w-64 bg-gray-200 p-4 flex flex-col gap-2 rounded shadow">
-      <input
+    <Box
+      sx={{
+        width: 250,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.5,
+        p: 2,
+        bgcolor: 'grey.100',
+        borderRadius: 2,
+        boxShadow: 1
+      }}
+    >
+      <TextField
         value={newColumnName}
         onChange={(e) => setNewColumnName(e.target.value)}
-        type="text"
         placeholder="Enter column name..."
-        className="p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        variant="outlined"
+        size="small"
+        fullWidth
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            bgcolor: 'background.paper'
+          }
+        }}
       />
 
-      <button
+      <Button
         onClick={handleAddColumn}
-        type="button"
-        className="w-full p-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600 transition"
+        variant="contained"
+        fullWidth
+        sx={{
+          bgcolor: 'grey.300',
+          color: 'text.primary',
+          fontWeight: 600,
+          textTransform: 'none',
+          '&:hover': {
+            bgcolor: 'grey.400'
+          }
+        }}
       >
         Add Column
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }

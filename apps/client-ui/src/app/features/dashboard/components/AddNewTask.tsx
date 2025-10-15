@@ -1,6 +1,7 @@
 import { IUser } from '@kanban-board/shared';
 import { useState } from 'react';
 // import Select from 'react-select';
+import { Button } from '@mui/material';
 import { TCreateTask } from '../../../shared/types/task.type';
 import AddTaskModal from '../modals/AddTaskModal';
 interface Props {
@@ -20,15 +21,34 @@ export default function AddNewTask({
     if (task) onCreateTask(task);
     setOpen(false);
   };
+  const handleOpen = (event: any) => {
+    (event.currentTarget as HTMLButtonElement).blur();
+    setOpen(true);
+  };
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="px-3 py-2 bg-blue-600 text-white rounded-md w-full"
+      <Button
+        variant="contained"
+        color="inherit" // Neutral color
+        fullWidth
+        onClick={(e) => handleOpen(e)}
+        sx={{
+          py: 1.5,
+          borderRadius: 2,
+          textTransform: 'none',
+          fontWeight: 600,
+          bgcolor: 'grey.200',
+          color: 'text.primary',
+          boxShadow: 1,
+          '&:hover': {
+            bgcolor: 'grey.300',
+            boxShadow: 2
+          }
+        }}
       >
         + New Task
-      </button>
+      </Button>
 
       <AddTaskModal
         open={open}

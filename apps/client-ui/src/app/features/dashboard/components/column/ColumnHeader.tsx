@@ -1,4 +1,5 @@
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { Box, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
@@ -26,41 +27,60 @@ export default function ColumnHeader({ title, isDone, onRuleAdded }: Props) {
   };
   const isAdmin = useSelector(selectIsAdmin);
   return (
-    <div>
-      <div className="flex justify-between items-center">
-        <h2 className="font-bold mb-2">{title}</h2>
+    <Box>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 1
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={600}>
+          {title}
+        </Typography>
 
         {isAdmin && (
           <Button
-            id="basic-button"
-            aria-controls={open ? 'basic-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
             onClick={handleClick}
+            sx={{
+              minWidth: 0,
+              p: 0.5,
+              color: 'grey.700',
+              '&:hover': { bgcolor: 'grey.100' }
+            }}
           >
             <MoreHorizIcon />
           </Button>
         )}
-      </div>
+      </Box>
+
       <Menu
-        id="basic-menu"
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
         slotProps={{
-          list: {
-            'aria-labelledby': 'basic-button'
+          list: { 'aria-labelledby': 'basic-button' },
+          paper: {
+            sx: {
+              minWidth: 200,
+              borderRadius: 1,
+              bgcolor: 'grey.50',
+              boxShadow: 2
+            }
           }
         }}
       >
         <MenuItem
-          onClick={() => handleToggle({ isDone: !isDone })}
-          value="Task completed"
+          onClick={() => {
+            handleToggle({ isDone: !isDone });
+            handleClose();
+          }}
         >
-          <Checkbox checked={!!isDone} />
-          <ListItemText primary="Make task completed" />
+          <Checkbox checked={!!isDone} sx={{ p: 0, mr: 1 }} />
+          <ListItemText primary="Mark as completed" />
         </MenuItem>
       </Menu>
-    </div>
+    </Box>
   );
 }

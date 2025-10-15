@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 
 interface ShareBoardModalProps {
-  board: IBoard;
+  board: IBoard | null;
   users: IUser[]; // всі користувачі, з ким можна ділитися
   open: boolean;
   onClose: () => void;
@@ -28,7 +28,7 @@ export default function ShareBoardModal({
   onShare
 }: ShareBoardModalProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
-    board.sharedUserIds || []
+    board?.sharedUserIds || []
   );
 
   const toggleUser = (userId: string) => {
@@ -40,13 +40,13 @@ export default function ShareBoardModal({
   };
 
   const handleSave = () => {
-    onShare(board.id, selectedUserIds);
+    if (board?.id) onShare(board.id, selectedUserIds);
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Share "{board.name}"</DialogTitle>
+      <DialogTitle>Share "{board?.name}"</DialogTitle>
       <DialogContent dividers>
         {users.length === 0 ? (
           <Typography variant="body2" color="text.secondary">

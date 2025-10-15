@@ -17,44 +17,33 @@ import { useLogout } from '../hooks/logout';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  borderRadius: 6,
+  backgroundColor: alpha(theme.palette.grey[800], 0.6),
   '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25)
+    backgroundColor: alpha(theme.palette.grey[700], 0.8)
   },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto'
-  },
-  border: '1px solid black',
-
-  // NEW: match button height
   display: 'flex',
   alignItems: 'center',
-  height: 36 // default MUI button height for small/outlined
+  height: 38,
+  width: 250,
+  paddingLeft: theme.spacing(1),
+  border: `1px solid ${theme.palette.grey[600]}`
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
+  marginRight: theme.spacing(1),
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  color: theme.palette.grey[400]
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  width: '100%',
+  flex: 1,
+  fontSize: '0.875rem',
+  color: theme.palette.grey[100],
   '& .MuiInputBase-input': {
-    padding: theme.spacing(0, 1, 0, 0), // vertical padding 0, horizontal padding 1
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    height: '100%',
-    boxSizing: 'border-box'
+    padding: 0
   }
 }));
 
@@ -64,47 +53,59 @@ export default function SearchAppBar() {
   const { handleLogout } = useLogout();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) =>
     setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
   const { handleCreateBoard } = useDshboardHandlers({ setSearch, search });
+
   return (
     <AppBar
-      className="rounded-xl"
       position="static"
-      color="default"
-      elevation={2}
+      elevation={0}
+      sx={{
+        bgcolor: 'grey.900',
+        borderBottom: '1px solid',
+        borderColor: 'grey.800'
+      }}
     >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', mr: 3 }}>
-          <Typography variant="h6" noWrap>
-            Dashboard
+      <Toolbar
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          py: 1
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}
+        >
+          <Typography variant="h5" fontWeight={600} color="grey.100">
+            Kanban Board
           </Typography>
-          <Box sx={{ display: 'flex', mr: 3 }}>
-            <Typography sx={{ mr: 2 }} variant="body2" color="text.secondary">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
+            <Typography variant="body2" color="grey.400">
               {user ? `User: ${user.email}` : 'Loading user...'}
             </Typography>
             <Link
               href="http://localhost:4200"
-              color="primary"
               underline="hover"
               variant="body2"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ fontWeight: 500 }}
+              color="grey.300"
+              sx={{ fontWeight: 600 }}
             >
               Admin Panel
             </Link>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Search>
             <SearchIconWrapper>
-              <SearchIcon />
+              <SearchIcon fontSize="small" />
             </SearchIconWrapper>
             <StyledInputBase
               value={search}
@@ -113,26 +114,42 @@ export default function SearchAppBar() {
               inputProps={{ 'aria-label': 'search' }}
             />
           </Search>
+
           <Button
             id="basic-button"
-            sx={{ mr: 3, height: 36 }}
             variant="outlined"
-            color="inherit"
-            aria-controls={open ? 'basic-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
             onClick={handleClick}
+            sx={{
+              height: 38,
+              px: 3,
+              fontWeight: 600,
+              textTransform: 'none',
+              borderColor: 'grey.700',
+              color: 'grey.200',
+              bgcolor: 'grey.800',
+              '&:hover': {
+                borderColor: 'grey.600',
+                bgcolor: 'grey.700'
+              }
+            }}
           >
             Create
           </Button>
+
           <Menu
-            id="basic-menu"
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
-            slotProps={{
-              list: {
-                'aria-labelledby': 'basic-button'
+            slotProps={{ list: { 'aria-labelledby': 'basic-button' } }}
+            sx={{
+              '& .MuiPaper-root': {
+                bgcolor: 'grey.900',
+                color: 'grey.100',
+                border: '1px solid',
+                borderColor: 'grey.800'
+              },
+              '& .MuiMenuItem-root:hover': {
+                bgcolor: 'grey.800'
               }
             }}
           >
@@ -140,9 +157,15 @@ export default function SearchAppBar() {
           </Menu>
 
           <Button
-            sx={{ height: 36 }}
+            sx={{
+              height: 38,
+              fontWeight: 600,
+              textTransform: 'none',
+              bgcolor: 'grey.700',
+              color: 'grey.100',
+              '&:hover': { bgcolor: 'grey.600' }
+            }}
             variant="contained"
-            color="secondary"
             onClick={handleLogout}
           >
             Logout
