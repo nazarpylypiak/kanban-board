@@ -1,3 +1,4 @@
 {
-  "typescript.preferences.importModuleSpecifier": "relative"
+  "typescript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false
 }

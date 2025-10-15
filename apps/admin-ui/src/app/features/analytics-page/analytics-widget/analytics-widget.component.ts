@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
   inject,
@@ -22,11 +21,6 @@ import {
 } from '../../../core/store/analytics/analytics.selector';
 import { TaskStats } from '../../../shared/services/analytics.service';
 
-interface DataLoading {
-  data: TaskStats | null;
-  loading: boolean;
-  error: string | null;
-}
 @Component({
   selector: 'app-analytics-widget',
   templateUrl: './analytics-widget.component.html',
@@ -48,7 +42,6 @@ export class AnalyticsWidgetComponent implements OnInit {
   // Charts
   statusChartData: ChartData<'bar'> = { labels: [], datasets: [] };
   userChartData: ChartData<'pie'> = { labels: [], datasets: [] };
-  private cdr = inject(ChangeDetectorRef);
 
   vm$ = this.store.select(selectAnalyticsState).pipe(
     map((state) => ({
@@ -66,12 +59,8 @@ export class AnalyticsWidgetComponent implements OnInit {
 
       combineLatest([this.stats$, this.loading$])
         .pipe(
-          filter(([res]) => !!res),
-          tap(([res]) => {
-            console.log(res);
-            this.cdr.markForCheck();
-            this.updateCharts(res!);
-          }),
+          filter((res): res is [TaskStats, boolean] => !!res[0]),
+          tap(([res]) => this.updateCharts(res)),
           takeUntilDestroyed(this.destroyRef)
         )
         .subscribe();
@@ -79,7 +68,6 @@ export class AnalyticsWidgetComponent implements OnInit {
   }
 
   private updateCharts(stats: TaskStats) {
-    // Tasks per status chart
     this.statusChartData = {
       labels: Object.keys(stats.tasksPerStatus),
       datasets: [
@@ -91,7 +79,6 @@ export class AnalyticsWidgetComponent implements OnInit {
       ]
     };
 
-    // Tasks per user chart
     this.userChartData = {
       labels: Object.keys(stats.tasksPerUser),
       datasets: [

@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BoardsGateway } from './boards.gateway';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { ShareBoardDto } from './dto/share-board.dto';
 
@@ -15,7 +14,6 @@ export class BoardsService {
   constructor(
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly boardsGateway: BoardsGateway,
 
     private readonly rmqService: RabbitmqService
   ) {}

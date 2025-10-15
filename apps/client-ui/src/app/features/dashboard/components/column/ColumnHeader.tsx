@@ -5,6 +5,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { MouseEvent, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectIsAdmin } from '../../../../core/store/selectors/authSelectors';
 import { TRules } from '../../containers/column/types/rules.type';
 
 interface Props {
@@ -22,19 +24,23 @@ export default function ColumnHeader({ title, isDone, onRuleAdded }: Props) {
   const handleToggle = (value: TRules) => {
     onRuleAdded(value);
   };
+  const isAdmin = useSelector(selectIsAdmin);
   return (
     <div>
       <div className="flex justify-between items-center">
         <h2 className="font-bold mb-2">{title}</h2>
-        <Button
-          id="basic-button"
-          aria-controls={open ? 'basic-menu' : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
-          onClick={handleClick}
-        >
-          <MoreHorizIcon />
-        </Button>
+
+        {isAdmin && (
+          <Button
+            id="basic-button"
+            aria-controls={open ? 'basic-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+            onClick={handleClick}
+          >
+            <MoreHorizIcon />
+          </Button>
+        )}
       </div>
       <Menu
         id="basic-menu"

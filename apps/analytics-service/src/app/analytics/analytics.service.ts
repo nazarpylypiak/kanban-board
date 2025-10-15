@@ -39,6 +39,8 @@ export class AnalyticsService {
       .addSelect('COUNT(task.id)', 'count')
       .where('task.boardId = :boardId', { boardId })
       .groupBy('column.name')
+      .addGroupBy('column.createdAt')
+      .orderBy('column.createdAt', 'ASC')
       .getRawMany<{ status: string; count: string }>();
 
     const tasksPerStatus: Record<string, number> = {};
