@@ -18,8 +18,7 @@ import { CreateBoardDialogComponent } from '../../dialogs/create-board-dialog/cr
 @Component({
   selector: 'app-board-list',
   imports: [AsyncPipe, RouterLink],
-  templateUrl: './board-list.component.html',
-  styleUrl: './board-list.component.scss'
+  templateUrl: './board-list.component.html'
 })
 export class BoardListComponent {
   private readonly dialog = inject(MatDialog);

@@ -1,23 +1,50 @@
-<div class="boards-container">
-  <h2>Boards</h2>
+<div class="boards-container p-8 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-semibold text-gray-900">Boards</h2>
+    <button
+      (click)="createNewBoard()"
+      class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-700 transition"
+    >
+      + New Board
+    </button>
+  </div>
 
-  <button class="create-btn" (click)="createNewBoard()">
-    Create New Board
-  </button>
-
-  <ul class="boards-list">
+  <!-- Boards List -->
+  <div class="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
     @for (board of boards$ | async; track board.id) {
-      <li class="board-item">
-        <a [routerLink]="'/admin/analytics/' + board.id">
-          <span class="board-name">{{ board.name }}</span>
+      <div
+        class="flex flex-col justify-between bg-white rounded-xl shadow border border-gray-200 p-5 hover:shadow-md transition cursor-pointer"
+      >
+        <a
+          [routerLink]="'/admin/analytics/' + board.id"
+          class="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition"
+        >
+          {{ board.name }}
         </a>
-        <div class="board-actions">
-          <button class="edit-btn" (click)="createNewBoard(board)">Edit</button>
-          <button class="delete-btn" (click)="deleteBoard(board.id)">
+
+        <div class="mt-4 flex justify-between">
+          <button
+            (click)="createNewBoard(board)"
+            class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
+          >
+            Edit
+          </button>
+          <button
+            (click)="deleteBoard(board.id)"
+            class="px-3 py-1 text-sm bg-red-50 text-red-600 rounded hover:bg-red-100 transition"
+          >
             Delete
           </button>
         </div>
-      </li>
+      </div>
     }
-  </ul>
+  </div>
+
+  <!-- Empty state -->
+  @if ((boards$ | async)?.length === 0) {
+    <p class="text-gray-500 mt-12 text-center text-lg">
+      No boards yet. Create your first board!
+    </p>
+  }
 </div>
