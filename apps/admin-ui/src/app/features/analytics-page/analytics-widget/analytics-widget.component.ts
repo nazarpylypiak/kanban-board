@@ -24,7 +24,6 @@ import { TaskStats } from '../../../shared/services/analytics.service';
 @Component({
   selector: 'app-analytics-widget',
   templateUrl: './analytics-widget.component.html',
-  styleUrls: ['./analytics-widget.component.scss'],
   imports: [MatCardModule, CommonModule, BaseChartDirective],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
