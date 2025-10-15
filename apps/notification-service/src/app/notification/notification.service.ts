@@ -23,6 +23,8 @@ export class NotificationService {
       this.logger.warn('Received event without payload');
       return;
     }
+    const { adminIds, ...adminEvent } = event;
+    this.gateway.notifyAdmins(adminIds, adminEvent);
     // Ensure assignedTo is always an array
     const recipientIdsArr = Array.isArray(recipientIds)
       ? recipientIds

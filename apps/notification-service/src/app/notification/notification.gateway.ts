@@ -36,9 +36,30 @@ export class NotificationGateway
     this.logger.log(`📥 User joined room notify:${data.userId}`);
   }
 
+  @SubscribeMessage('subscribeAdmin')
+  handleJoinAdmin(
+    @MessageBody() data: { adminId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.join(`notify:admin:${data.adminId}`);
+    this.logger.log(`📥 Admin joined room notify:admin:${data.adminId}`);
+  }
+
   sendToUser(userId: string, event: IUserNotificationEvent) {
-    this.logger.debug(userId, event);
     const roomName = `notify:${userId}`;
     this.server.to(roomName).emit('notification', event);
+  }
+
+  async notifyAdmins(adminIds: string[] | null, event: IUserNotificationEvent) {
+    if (!adminIds || adminIds.length === 0) {
+      this.logger.warn('No admin IDs provided for notification');
+      return;
+    }
+    for (const adminId of adminIds) {
+      this.server.to(`notify:admin:${adminId}`).emit('notification', {
+        ...event,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 }

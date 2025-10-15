@@ -1,5 +1,13 @@
-import { AuthState } from './auth.reducer';
+import { IUser } from '@kanban-board/shared';
 
-export interface AppState {
-  auth: AuthState;
+export interface AuthState {
+  accessToken: string | null;
+  isLoggedIn: boolean;
+  currentUser: IUser | null;
 }
+
+export const initialState: AuthState = {
+  accessToken: null,
+  isLoggedIn: false,
+  currentUser: null
+};

@@ -1,0 +1,12 @@
+<div class="flex items-end h-full">
+  <canvas
+    baseChart
+    [data]="chartData"
+    [type]="'bar'"
+    [options]="{
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } }
+    }"
+  ></canvas>
+</div>

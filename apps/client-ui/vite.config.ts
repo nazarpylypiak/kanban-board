@@ -17,7 +17,7 @@ export default defineConfig(() => ({
       '/api/columns': 'http://localhost:3002',
       '/api/tasks': 'http://localhost:3002',
       '/tasks': {
-        target: 'ws://localhost:3003',
+        target: 'ws://localhost:3005',
         ws: true,
         changeOrigin: true
       }

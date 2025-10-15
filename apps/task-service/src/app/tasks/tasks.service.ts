@@ -353,7 +353,8 @@ export class TasksService {
     this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
       payload: { task: taskRes, homeColumnId },
       createdBy: jwtUser?.sub,
-      recipientIds: task.assigneeIds
+      recipientIds: task.assigneeIds,
+      adminIds: [board.ownerId]
     });
 
     return taskRes;

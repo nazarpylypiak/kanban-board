@@ -1,5 +1,5 @@
+import { TaskStats } from '@kanban-board/shared';
 import { createActionGroup, props } from '@ngrx/store';
-import { TaskStats } from '../../../shared/services/analytics.service';
 
 export const AnalyticsActions = createActionGroup({
   source: 'Analytics',

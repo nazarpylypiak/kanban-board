@@ -2,11 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { catchError, map, Observable, of } from 'rxjs';
-import {
-  clearTokens,
-  setAccessToken
-} from '../../core/store/auth/auth.actions';
-import { AppState } from '../../core/store/auth/auth.state';
+import { AppState } from '../../core/store/app.state';
+import AuthActions from '../../core/store/auth/auth.actions';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -25,17 +22,19 @@ export class AuthService {
   refreshToken(): Observable<string | null> {
     return this.http.get<{ accessToken: string }>('/api/auth/refresh').pipe(
       map((res) => {
-        this.store.dispatch(setAccessToken({ token: res.accessToken }));
+        this.store.dispatch(
+          AuthActions.setAccessToken({ token: res.accessToken })
+        );
         return res.accessToken;
       }),
       catchError(() => {
-        this.store.dispatch(clearTokens());
+        this.store.dispatch(AuthActions.clearTokens());
         return of(null);
       })
     );
   }
 
   clearTokens() {
-    this.store.dispatch(clearTokens());
+    this.store.dispatch(AuthActions.clearTokens());
   }
 }

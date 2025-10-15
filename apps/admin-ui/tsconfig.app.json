@@ -4,7 +4,10 @@
     "outDir": "../../dist/out-tsc",
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared/src/lib/interfaces/task-stats.interface.ts"
+  ],
   "exclude": [
     "jest.config.ts",
     "src/test-setup.ts",

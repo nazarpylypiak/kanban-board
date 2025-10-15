@@ -13,6 +13,7 @@ import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AnalyticsEffects } from './core/store/analytics/analytics.effects';
 import { analyticsReducer } from './core/store/analytics/analytics.reducer';
+import { AuthEffects } from './core/store/auth/auth.effects';
 import { authReducer } from './core/store/auth/auth.reducer';
 import { BoardsEffects } from './core/store/boards/boards.effects';
 import { boardsReducer } from './core/store/boards/boards.reducer';
@@ -28,7 +29,7 @@ export const appConfig: ApplicationConfig = {
       boards: boardsReducer,
       analytics: analyticsReducer
     }),
-    provideEffects([BoardsEffects, AnalyticsEffects]),
+    provideEffects([BoardsEffects, AnalyticsEffects, AuthEffects]),
     provideStoreDevtools({ maxAge: 25 }),
     provideCharts(withDefaultRegisterables())
   ]

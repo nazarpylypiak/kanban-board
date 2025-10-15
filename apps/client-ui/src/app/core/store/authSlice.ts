@@ -1,4 +1,4 @@
-import { IBoard, IUser, User } from '@kanban-board/shared';
+import { IUser, User } from '@kanban-board/shared';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface AuthState {
@@ -6,16 +6,13 @@ export interface AuthState {
   loading: boolean;
   isLoggedIn: boolean;
   user: IUser | null;
-
-  boards: IBoard[];
 }
 
 const initialState: AuthState = {
   accessToken: null,
   loading: true,
   isLoggedIn: false,
-  user: null,
-  boards: []
+  user: null
 };
 
 const authSlice = createSlice({

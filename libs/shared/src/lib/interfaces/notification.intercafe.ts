@@ -3,6 +3,7 @@ export interface IRabbitMessage {
   createdBy: string;
   recipientIds?: string[];
   recepientEmails?: string[];
+  adminIds?: string[] | null;
 }
 
 export interface IUserNotificationEvent<T = string> extends IRabbitMessage {

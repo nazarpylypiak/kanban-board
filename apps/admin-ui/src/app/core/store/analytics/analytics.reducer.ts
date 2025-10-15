@@ -1,18 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
-import { TaskStats } from '../../../shared/services/analytics.service';
 import { AnalyticsActions } from './analytics.actions';
-
-export interface AnalyticsState {
-  stats: TaskStats | null;
-  loading: boolean;
-  error: any;
-}
-
-export const initialState: AnalyticsState = {
-  stats: null,
-  loading: false,
-  error: null
-};
+import { initialState } from './analytics.state';
 
 export const analyticsReducer = createReducer(
   initialState,

@@ -1,0 +1,11 @@
+<mat-card class="shadow-md rounded-2xl p-4 bg-white">
+  <mat-card-header class="mb-4">
+    <mat-card-title class="text-lg font-semibold text-gray-800">
+      {{ title() }}
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="h-64 flex items-center justify-center">
+    <ng-content></ng-content>
+  </mat-card-content>
+</mat-card>

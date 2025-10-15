@@ -12,4 +12,8 @@ export class UserApiService {
   getAll() {
     return this.http.get<IUser[]>(this.baseUrl);
   }
+
+  getProfile() {
+    return this.http.get<IUser>(`${this.baseUrl}/profile`);
+  }
 }

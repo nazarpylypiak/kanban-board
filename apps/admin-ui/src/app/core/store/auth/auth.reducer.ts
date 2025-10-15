@@ -1,16 +1,24 @@
 import { createReducer, on } from '@ngrx/store';
-import { clearTokens, setAccessToken } from './auth.actions';
-
-export interface AuthState {
-  accessToken: string | null;
-}
-
-export const initialState: AuthState = {
-  accessToken: null
-};
+import AuthActions from './auth.actions';
+import { initialState } from './auth.state';
 
 export const authReducer = createReducer(
   initialState,
-  on(setAccessToken, (state, { token }) => ({ ...state, accessToken: token })),
-  on(clearTokens, () => initialState)
+  on(AuthActions.setAccessToken, (state, { token }) => ({
+    ...state,
+    accessToken: token
+  })),
+  on(AuthActions.clearTokens, () => ({ ...initialState, accessToken: null })),
+  on(AuthActions.setCurrentUser, (state, { currentUser }) => ({
+    ...state,
+    currentUser
+  })),
+  on(AuthActions.clearCurrentUser, () => ({
+    ...initialState,
+    currentUser: null
+  })),
+  on(AuthActions.fetchCurrentUserSuccessfully, (state, { currentUser }) => ({
+    ...state,
+    currentUser
+  }))
 );

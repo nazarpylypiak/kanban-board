@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { AnalyticsState } from './analytics.reducer';
+import { AnalyticsState } from './analytics.state';
 
 export const selectAnalyticsState =
   createFeatureSelector<AnalyticsState>('analytics');

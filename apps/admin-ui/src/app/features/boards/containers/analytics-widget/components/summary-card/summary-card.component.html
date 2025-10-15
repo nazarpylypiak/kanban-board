@@ -1,0 +1,31 @@
+<mat-card
+  class="shadow-lg rounded-2xl p-6 bg-white hover:shadow-xl transition-shadow"
+>
+  <mat-card-title class="text-2xl font-bold mb-4 text-gray-900">
+    Board Analytics
+  </mat-card-title>
+
+  <mat-card-content class="space-y-4">
+    <!-- Total Tasks -->
+    <div class="flex items-center gap-3">
+      <span class="material-icons text-blue-500 text-3xl">assignment</span>
+      <div>
+        <p class="text-gray-600 text-sm">Total Tasks</p>
+        <p class="text-gray-900 font-semibold text-lg">
+          {{ data()?.totalTasks }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Average Completion Time -->
+    <div class="flex items-center gap-3">
+      <span class="material-icons text-green-500 text-3xl">schedule</span>
+      <div>
+        <p class="text-gray-600 text-sm">Average Completion Time</p>
+        <p class="text-gray-900 font-semibold text-lg">
+          {{ data()?.averageCompletionTime | number: '1.1-1' }} hrs
+        </p>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

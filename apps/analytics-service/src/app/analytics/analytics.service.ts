@@ -63,10 +63,12 @@ export class AnalyticsService {
     });
 
     return {
-      totalTasks,
-      averageCompletionTime,
       tasksPerStatus,
-      tasksPerUser
+      tasksPerUser,
+      summary: {
+        averageCompletionTime,
+        totalTasks
+      }
     };
   }
 }

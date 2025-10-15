@@ -1,0 +1,23 @@
+<div class="flex flex-col gap-6 p-4">
+  <!-- Summary Card -->
+  <app-summary-card
+    [data]="(vm$ | async)?.data?.summary ?? null"
+  ></app-summary-card>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Tasks per Status -->
+    <app-chart-widget title="Task per Status">
+      <app-task-per-status
+        [data]="(vm$ | async)?.data?.tasksPerStatus"
+      ></app-task-per-status>
+    </app-chart-widget>
+
+    <!-- Tasks per User -->
+    <app-chart-widget title="Task per User">
+      <app-task-per-user
+        [data]="(vm$ | async)?.data?.tasksPerUser"
+      ></app-task-per-user>
+    </app-chart-widget>
+  </div>
+</div>

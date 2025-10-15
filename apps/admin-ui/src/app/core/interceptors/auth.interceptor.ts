@@ -7,8 +7,8 @@ import {
 import { inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable, firstValueFrom } from 'rxjs';
+import { AppState } from '../store/app.state';
 import { selectAccessToken } from '../store/auth/auth.selectors';
-import { AppState } from '../store/auth/auth.state';
 
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
