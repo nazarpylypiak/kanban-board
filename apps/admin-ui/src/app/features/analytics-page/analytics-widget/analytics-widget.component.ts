@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   inject,
@@ -12,14 +13,20 @@ import { MatCardModule } from '@angular/material/card';
 import { Store } from '@ngrx/store';
 import { ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { filter, tap } from 'rxjs';
+import { combineLatest, filter, map, tap } from 'rxjs';
 import { AnalyticsActions } from '../../../core/store/analytics/analytics.actions';
 import {
   selectAnalyticsLoading,
+  selectAnalyticsState,
   selectAnalyticsStats
 } from '../../../core/store/analytics/analytics.selector';
 import { TaskStats } from '../../../shared/services/analytics.service';
 
+interface DataLoading {
+  data: TaskStats | null;
+  loading: boolean;
+  error: string | null;
+}
 @Component({
   selector: 'app-analytics-widget',
   templateUrl: './analytics-widget.component.html',
@@ -41,6 +48,15 @@ export class AnalyticsWidgetComponent implements OnInit {
   // Charts
   statusChartData: ChartData<'bar'> = { labels: [], datasets: [] };
   userChartData: ChartData<'pie'> = { labels: [], datasets: [] };
+  private cdr = inject(ChangeDetectorRef);
+
+  vm$ = this.store.select(selectAnalyticsState).pipe(
+    map((state) => ({
+      loading: state.loading,
+      data: state.stats,
+      error: state.error
+    }))
+  );
 
   ngOnInit(): void {
     if (this.boardId) {
@@ -48,13 +64,17 @@ export class AnalyticsWidgetComponent implements OnInit {
         AnalyticsActions.loadBoardAnalytics({ boardId: this.boardId })
       );
 
-      this.stats$ = this.store.select(selectAnalyticsStats).pipe(
-        filter((stats): stats is TaskStats => !!stats),
-        takeUntilDestroyed(this.destroyRef),
-        tap((res) => {
-          this.updateCharts(res);
-        })
-      );
+      combineLatest([this.stats$, this.loading$])
+        .pipe(
+          filter(([res]) => !!res),
+          tap(([res]) => {
+            console.log(res);
+            this.cdr.markForCheck();
+            this.updateCharts(res!);
+          }),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe();
     }
   }
 

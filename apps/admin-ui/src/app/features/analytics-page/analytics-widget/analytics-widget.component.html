@@ -1,59 +1,63 @@
-@if (loading$ | async) {
-  <p class="text-gray-500">Loading analytics...</p>
-} @else if (stats$ | async; as stats) {
-  <div class="flex flex-col gap-6 p-4">
-    <!-- Summary Card -->
-    <mat-card class="shadow-md rounded-2xl p-4 bg-white">
-      <mat-card-title class="text-xl font-semibold mb-2 text-gray-800">
-        Board Analytics
-      </mat-card-title>
-      <mat-card-content class="text-gray-700 space-y-2">
-        <p>
-          Total Tasks: <span class="font-medium">{{ stats.totalTasks }}</span>
-        </p>
-        <p>
-          Average Completion Time:
-          <span class="font-medium"
-            >{{ stats.averageCompletionTime | number: '1.1-1' }} hrs</span
-          >
-        </p>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Tasks per Status -->
+@if (vm$ | async; as vm) {
+  @if (vm.loading) {
+    <p class="text-gray-500">Loading analytics...</p>
+  } @else if (vm.error) {
+  } @else {
+    <div class="flex flex-col gap-6 p-4">
+      <!-- Summary Card -->
       <mat-card class="shadow-md rounded-2xl p-4 bg-white">
-        <mat-card-title class="text-lg font-semibold mb-2 text-gray-800">
-          Tasks per Status
+        <mat-card-title class="text-xl font-semibold mb-2 text-gray-800">
+          Board Analytics
         </mat-card-title>
-        <mat-card-content class="h-64 flex items-center justify-center">
-          <canvas
-            baseChart
-            [data]="statusChartData"
-            [type]="'bar'"
-            [options]="{
-              responsive: true,
-              plugins: { legend: { display: false } }
-            }"
-          ></canvas>
+        <mat-card-content class="text-gray-700 space-y-2">
+          <p>
+            Total Tasks:
+            <span class="font-medium">{{ vm.data?.totalTasks }}</span>
+          </p>
+          <p>
+            Average Completion Time:
+            <span class="font-medium"
+              >{{ vm.data?.averageCompletionTime | number: '1.1-1' }} hrs</span
+            >
+          </p>
         </mat-card-content>
       </mat-card>
 
-      <!-- Tasks per User -->
-      <mat-card class="shadow-md rounded-2xl p-4 bg-white">
-        <mat-card-title class="text-lg font-semibold mb-2 text-gray-800">
-          Tasks per User
-        </mat-card-title>
-        <mat-card-content class="h-64 flex items-center justify-center">
-          <canvas
-            baseChart
-            [data]="userChartData"
-            [type]="'pie'"
-            [options]="{ responsive: true }"
-          ></canvas>
-        </mat-card-content>
-      </mat-card>
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Tasks per Status -->
+        <mat-card class="shadow-md rounded-2xl p-4 bg-white">
+          <mat-card-title class="text-lg font-semibold mb-2 text-gray-800">
+            Tasks per Status
+          </mat-card-title>
+          <mat-card-content class="h-64 flex items-center justify-center">
+            <canvas
+              baseChart
+              [data]="statusChartData"
+              [type]="'bar'"
+              [options]="{
+                responsive: true,
+                plugins: { legend: { display: false } }
+              }"
+            ></canvas>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tasks per User -->
+        <mat-card class="shadow-md rounded-2xl p-4 bg-white">
+          <mat-card-title class="text-lg font-semibold mb-2 text-gray-800">
+            Tasks per User
+          </mat-card-title>
+          <mat-card-content class="h-64 flex items-center justify-center">
+            <canvas
+              baseChart
+              [data]="userChartData"
+              [type]="'pie'"
+              [options]="{ responsive: true }"
+            ></canvas>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
-  </div>
+  }
 }

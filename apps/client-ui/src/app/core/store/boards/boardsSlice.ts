@@ -35,7 +35,11 @@ const boardsSlice = createSlice({
         const saved = state.data.find(
           (b) => b.id === action.payload.selectedBoardId
         );
-        state.selectedBoard = saved || null;
+        if (saved) {
+          state.selectedBoard = saved;
+        } else {
+          state.selectedBoard = state.data.length ? state.data[0] : null;
+        }
       } else {
         state.selectedBoard = state.data.length ? state.data[0] : null;
       }
