@@ -28,10 +28,5 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
-  },
-  "/tasks": {
-    "target": "ws://localhost:3005",
-    "ws": true,
-    "changeOrigin": true
   }
 }

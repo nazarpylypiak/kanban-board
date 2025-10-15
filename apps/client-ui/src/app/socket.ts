@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const URL =
-  process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:3005';
+const port = import.meta.env.VITE_SOCKET_PORT || 3005;
+const path = import.meta.env.VITE_SOCKET_PATH || '/socket.io';
 
-export const socket = io(URL);
+export const socket = io('/', { path, port });

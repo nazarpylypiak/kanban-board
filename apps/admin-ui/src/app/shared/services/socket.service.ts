@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { IUserNotificationEvent } from '@kanban-board/shared';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { io, Socket } from 'socket.io-client';
 export class SocketService {
   private socket: Socket;
   constructor() {
-    this.socket = io('http://localhost:3005', {
+    this.socket = io(environment.socketUrl, {
       // auth: {
       //   token: localStorage.getItem('accessToken')
       // }
