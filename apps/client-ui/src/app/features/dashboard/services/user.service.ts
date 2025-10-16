@@ -1,5 +1,5 @@
 import { IUser } from '@kanban-board/shared';
-import { createApi } from '../../core/services/api';
+import { createApi } from '../../../core/services/api';
 
 const apiUser = createApi('/api/users');
 

@@ -2,9 +2,9 @@ import { IColumn } from '@kanban-board/shared';
 import { useDispatch } from 'react-redux';
 import { updateColumn as updateColumnSlice } from '../../../../../core/store/columnsSlice';
 import { addTask } from '../../../../../core/store/tasks';
-import { updateColumn } from '../../../../../shared/services/columns.service';
-import { createTask } from '../../../../../shared/services/task.service';
 import { TCreateTask } from '../../../../../shared/types/task.type';
+import { updateColumn } from '../../../services/columns.service';
+import { createTask } from '../../../services/task.service';
 import { TRules } from '../types/rules.type';
 
 interface Props {

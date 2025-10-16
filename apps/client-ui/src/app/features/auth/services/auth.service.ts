@@ -23,7 +23,7 @@ export const login = async (email: string, password: string) => {
 };
 
 export const refreshToken = async () => {
-  const response = await apiAuth.get('/refresh');
+  const response = await apiAuth.post('/refresh');
   return response.data;
 };
 

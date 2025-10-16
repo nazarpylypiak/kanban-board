@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
+import { getProfile } from '../../features/dashboard/services/user.service';
 import AppBar from '../../shared/containers/AppBar';
-import { getProfile } from '../../shared/services/user.service';
 import { socket } from '../../socket';
 import { RootState } from '../store';
 import { setUser } from '../store/authSlice';

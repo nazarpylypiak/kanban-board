@@ -1,12 +1,10 @@
 import { useDispatch } from 'react-redux';
 import {
+  deleteBoard,
   deleteBoard as deleteBoardSlice,
   updateBoard
 } from '../../../../../core/store/boards/boardsSlice';
-import {
-  deleteBoard,
-  shareBoard
-} from '../../../../../shared/services/boards.service';
+import { shareBoard } from '../../../services/boards.service';
 
 export default function useBoardHandlers() {
   const dispatch = useDispatch();

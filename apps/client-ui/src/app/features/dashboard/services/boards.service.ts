@@ -1,6 +1,9 @@
 import { IBoard, IUser } from '@kanban-board/shared';
-import { createApi } from '../../core/services/api';
-import { ICreateBoard, IUpdateBoard } from '../types/board.interface';
+import { createApi } from '../../../core/services/api';
+import {
+  ICreateBoard,
+  IUpdateBoard
+} from '../../../shared/types/board.interface';
 
 const boardsApi = createApi('/api/boards');
 

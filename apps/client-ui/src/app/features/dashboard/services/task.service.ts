@@ -1,6 +1,6 @@
 import { ITask } from '@kanban-board/shared';
-import { createApi } from '../../core/services/api';
-import { TCreateTask, TUpdateTask } from '../types/task.type';
+import { createApi } from '../../../core/services/api';
+import { TCreateTask, TUpdateTask } from '../../../shared/types/task.type';
 
 const tasksApi = createApi('/api/tasks');
 

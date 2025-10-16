@@ -10,7 +10,9 @@ export class UserApiService {
   private readonly http = inject(HttpClient);
 
   getAll() {
-    return this.http.get<IUser[]>(this.baseUrl);
+    return this.http.get<{ data: IUser[]; limit: number; page: 1; total: 5 }>(
+      this.baseUrl
+    );
   }
 
   getProfile() {

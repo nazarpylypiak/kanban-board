@@ -1,14 +1,12 @@
 import { ITask } from '@kanban-board/shared';
 import { useDispatch } from 'react-redux';
 import {
+  deleteTask,
   deleteTask as deleteTaskSlice,
   updateTask as updateTaskSlice
 } from '../../../../../core/store/tasks';
-import {
-  deleteTask,
-  updateTask
-} from '../../../../../shared/services/task.service';
 import { TUpdateTask } from '../../../../../shared/types/task.type';
+import { updateTask } from '../../../services/task.service';
 
 interface Props {
   task: ITask;

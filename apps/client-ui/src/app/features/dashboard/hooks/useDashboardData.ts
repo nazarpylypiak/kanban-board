@@ -2,7 +2,7 @@ import { IUser } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setBoards } from '../../../core/store/boards/boardsSlice';
-import { getMyBoards } from '../../../shared/services/boards.service';
+import { getMyBoards } from '../services/boards.service';
 
 interface Props {
   user: IUser | null;

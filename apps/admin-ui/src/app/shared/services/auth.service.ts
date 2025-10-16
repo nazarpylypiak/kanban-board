@@ -20,18 +20,20 @@ export class AuthService {
   }
 
   refreshToken(): Observable<string | null> {
-    return this.http.get<{ accessToken: string }>('/api/auth/refresh').pipe(
-      map((res) => {
-        this.store.dispatch(
-          AuthActions.setAccessToken({ token: res.accessToken })
-        );
-        return res.accessToken;
-      }),
-      catchError(() => {
-        this.store.dispatch(AuthActions.clearTokens());
-        return of(null);
-      })
-    );
+    return this.http
+      .post<{ accessToken: string }>('/api/auth/refresh', null)
+      .pipe(
+        map((res) => {
+          this.store.dispatch(
+            AuthActions.setAccessToken({ token: res.accessToken })
+          );
+          return res.accessToken;
+        }),
+        catchError(() => {
+          this.store.dispatch(AuthActions.clearTokens());
+          return of(null);
+        })
+      );
   }
 
   clearTokens() {

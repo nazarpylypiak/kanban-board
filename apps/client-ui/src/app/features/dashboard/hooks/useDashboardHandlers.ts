@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { useDispatch } from 'react-redux';
 import { addBoard } from '../../../core/store/boards/boardsSlice';
-import { createBoard } from '../../../shared/services/boards.service';
+import { createBoard } from '../services/boards.service';
 
 interface Props {
   setSearch: Dispatch<SetStateAction<string>>;

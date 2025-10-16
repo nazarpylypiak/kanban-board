@@ -6,8 +6,8 @@ import { setUsers } from '../../../../../core/store/usersSlice';
 import {
   createColumn,
   getBoardColumns
-} from '../../../../../shared/services/columns.service';
-import { getAllUsers } from '../../../../../shared/services/user.service';
+} from '../../../services/columns.service';
+import { getAllUsers } from '../../../services/user.service';
 
 export const useBoardData = (boardId: string) => {
   const containerRef = useRef<HTMLDivElement>(null);

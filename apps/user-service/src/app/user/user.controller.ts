@@ -33,7 +33,7 @@ export class UserController {
   }
 
   @Get('profile')
-  @Roles('user')
+  @Roles('admin', 'user')
   getProfile(@Req() req: AuthenticatedRequest) {
     return this.userService.findOneUser(req.jwtUser.sub);
   }

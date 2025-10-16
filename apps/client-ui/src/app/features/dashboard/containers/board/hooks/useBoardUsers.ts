@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setBoardUsers } from '../../../../../core/store/boards/boardsSlice';
-import { getBoardUsers } from '../../../../../shared/services/boards.service';
+import { getBoardUsers } from '../../../services/boards.service';
 
 interface Props {
   boardId: string;

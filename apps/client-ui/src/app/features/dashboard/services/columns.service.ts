@@ -1,6 +1,9 @@
 import { IColumn } from '@kanban-board/shared';
-import { createApi } from '../../core/services/api';
-import { TCreateColumn, TUpdateColumn } from '../types/column.type';
+import { createApi } from '../../../core/services/api';
+import {
+  TCreateColumn,
+  TUpdateColumn
+} from '../../../shared/types/column.type';
 
 const columnsApi = createApi('/api');
 

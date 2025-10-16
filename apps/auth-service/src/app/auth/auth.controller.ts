@@ -1,15 +1,7 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  Get,
-  Req,
-  HttpCode,
-} from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto } from './dto';
+import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -28,14 +20,12 @@ export class AuthController {
     return this.authService.login(dto, reply);
   }
 
-  @Get('refresh')
+  @Post('refresh')
   async refresh(
     @Req() req: FastifyRequest,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
-    const tokens = await this.authService.refreshTokensFromCookie(req, res);
-
-    return { accessToken: tokens.accessToken };
+    return this.authService.refreshTokensFromCookie(req, res);
   }
 
   @Post('logout')
@@ -45,6 +35,5 @@ export class AuthController {
     @Res({ passthrough: true }) res: FastifyReply
   ) {
     await this.authService.logout(req, res);
-    res.clearCookie('refreshToken', { path: '/' });
   }
 }

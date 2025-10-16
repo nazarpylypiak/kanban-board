@@ -9,7 +9,11 @@
 
   <!-- Material Table -->
   <div class="mat-elevation-z2">
-    <table mat-table [dataSource]="(users$ | async) ?? []" class="min-w-full">
+    <table
+      mat-table
+      [dataSource]="(users$ | async)?.data ?? []"
+      class="min-w-full"
+    >
       <!-- ID Column -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef>ID</th>

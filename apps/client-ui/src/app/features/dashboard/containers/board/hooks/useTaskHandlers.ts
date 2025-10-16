@@ -5,7 +5,7 @@ import {
   updateTask,
   updateTasksInColumn
 } from '../../../../../core/store/tasks/tasksSlice';
-import { moveTask } from '../../../../../shared/services/task.service';
+import { moveTask } from '../../../services/task.service';
 
 export const useTaskHandlers = () => {
   const dispatch = useDispatch();
