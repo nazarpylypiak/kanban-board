@@ -1,9 +1,25 @@
-export class UserDto {
-  id: string;
-  email: string;
-  role: string;
+import { UserRole } from '@kanban-board/shared';
+import { Exclude, Expose } from 'class-transformer';
 
-  constructor(partial: Partial<UserDto>) {
-    Object.assign(this, partial);
-  }
+export class UserDto {
+  @Expose()
+  id!: string;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email!: string;
+
+  @Expose()
+  role: UserRole;
+
+  @Exclude()
+  password?: string;
+
+  @Exclude()
+  createdAt?: Date;
+
+  @Exclude()
+  updatedAt?: Date;
 }

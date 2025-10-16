@@ -2,10 +2,10 @@ import { User } from '@kanban-board/shared';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserDto } from './dto/user.dto';
-
 @Injectable()
 export class UserService {
   constructor(
@@ -13,49 +13,60 @@ export class UserService {
     private userRepository: Repository<User>
   ) {}
 
-  async create(dto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+  async createUser(dto: CreateUserDto) {
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
     const user = this.userRepository.create({
       ...dto,
       password: hashedPassword
     });
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+
+    return plainToInstance(UserDto, savedUser, {
+      excludeExtraneousValues: true
+    });
   }
 
-  async findAll() {
-    const users = await this.userRepository.find();
-    return users.map(
-      (user) =>
-        new UserDto({
-          id: user.id,
-          email: user.email,
-          role: user.role
-        })
-    );
+  async findAllUsers(page = 1, limit = 20) {
+    const [users, total] = await this.userRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit
+    });
+
+    return {
+      data: plainToInstance(UserDto, users, { excludeExtraneousValues: true }),
+      total,
+      page,
+      limit
+    };
   }
 
-  async findOne(id: string) {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+  async findOneUser(userId: string) {
+    const user = await this.findUserOrFail(userId);
+    return plainToInstance(UserDto, user, { excludeExtraneousValues: true });
   }
 
-  async update(id: string, dto: UpdateUserDto) {
-    const user = await this.findOne(id);
+  async updateUser(userId: string, dto: UpdateUserDto) {
+    const user = await this.findUserOrFail(userId);
+    const updatedData = { ...dto };
     if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
+      updatedData.password = await bcrypt.hash(dto.password, 12);
     }
-    Object.assign(user, dto);
-    return this.userRepository.save(user);
+    Object.assign(user, updatedData);
+    const savedUser = await this.userRepository.save(user);
+    return plainToInstance(UserDto, savedUser, {
+      excludeExtraneousValues: true
+    });
   }
 
-  async remove(id: string) {
-    const user = await this.findOne(id);
-    return this.userRepository.remove(user);
+  async remove(userId: string) {
+    const user = await this.findUserOrFail(userId);
+    const result = await this.userRepository.delete(user.id);
+    if (!result.affected) throw new NotFoundException('User not found');
+    return { success: true };
   }
 
-  async getProfile(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+  private async findUserOrFail(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
