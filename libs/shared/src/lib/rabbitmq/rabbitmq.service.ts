@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Channel, ChannelModel, connect } from 'amqplib';
-import { IRabbitMessage } from '../interfaces';
+import { IRabbitKey, IRabbitMessage } from '../interfaces';
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
@@ -30,9 +30,9 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publish<T extends string>(
-    exchange: string,
-    routingKey: T,
+  async publish(
+    exchange: 'kanban_exchange',
+    routingKey: IRabbitKey,
     message: IRabbitMessage
   ) {
     if (!this.channel) {

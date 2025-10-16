@@ -47,6 +47,7 @@ const boardsSlice = createSlice({
     addBoard: (state, action: PayloadAction<IBoard>) => {
       const exists = state.data.some((b) => b.id === action.payload.id);
       if (!exists) {
+        console.log(action.payload);
         state.data.push(action.payload);
         if (!state.selectedBoard) state.selectedBoard = action.payload;
       }
@@ -59,7 +60,6 @@ const boardsSlice = createSlice({
     },
     deleteBoard: (state, action: PayloadAction<string>) => {
       const boardId = action.payload;
-      console.log(boardId);
       state.data = state.data.filter((b) => b.id !== boardId);
 
       if (state.selectedBoard?.id === boardId) {

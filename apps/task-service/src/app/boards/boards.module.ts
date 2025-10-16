@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardsController } from './boards.controller';
-import { BoardsGateway } from './boards.gateway';
 import { BoardsService } from './boards.service';
+import { BoardEventsService } from './board-events.service';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { BoardsService } from './boards.service';
     RMQModule
   ],
   controllers: [BoardsController],
-  providers: [BoardsService, BoardsGateway],
+  providers: [BoardsService, BoardEventsService],
   exports: [BoardsService]
 })
 export class BoardsModule {}

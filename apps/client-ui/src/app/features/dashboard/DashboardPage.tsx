@@ -8,6 +8,7 @@ import { RootState } from '../../core/store';
 import { setSelectedBoard } from '../../core/store/boards/boardsSlice';
 import Board from './containers/board/Board';
 import SecondAppBar from './containers/board/SecondAppBar';
+import { useBoardNotification } from './hooks/useBoardNotification';
 import useDashboardData from './hooks/useDashboardData';
 import BoardSelectModal from './modals/BoardSelectModal';
 
@@ -35,11 +36,18 @@ export default function DashboardPage() {
     }
     handleClose();
   };
+  useBoardNotification();
 
   return (
     <>
       <SecondAppBar board={selectedBoard} isOwner={isOwner} user={user} />
-      {selectedBoard && <Board board={selectedBoard} isOwner={isOwner} />}
+      {selectedBoard ? (
+        <Board board={selectedBoard} isOwner={isOwner} />
+      ) : (
+        <div className="text-gray-500 text-center py-4">
+          No boards available
+        </div>
+      )}
       <Tooltip title="Select Board">
         <Fab
           color="primary"

@@ -29,7 +29,7 @@ export interface ITask {
 }
 
 export type TTaskEventType =
-  | 'task.created'
-  | 'task.updated'
-  | 'task.deleted'
-  | 'task.moved';
+  | 'board.task.created'
+  | 'board.task.updated'
+  | 'board.task.deleted'
+  | 'board.task.moved';

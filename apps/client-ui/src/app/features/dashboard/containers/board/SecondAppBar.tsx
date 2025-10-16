@@ -17,7 +17,7 @@ export default function SecondAppBar(props: Props) {
   const [open, setOpen] = useState(false);
   const users = useSelector((state: RootState) => state.users.data);
   const filteredUsers = useMemo(
-    () => users.filter(({ id }) => id !== user?.id),
+    () => users?.filter(({ id }) => id !== user?.id),
     [user?.id, users]
   );
 
@@ -44,14 +44,16 @@ export default function SecondAppBar(props: Props) {
         zIndex: 5
       }}
     >
-      <Typography
-        variant="h6"
-        fontWeight={600}
-        color="text.primary"
-        sx={{ letterSpacing: '-0.01em' }}
-      >
-        {board?.name || 'Untitled Board'}
-      </Typography>
+      {board?.id && (
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          color="text.primary"
+          sx={{ letterSpacing: '-0.01em' }}
+        >
+          {board?.name || 'Untitled Board'}
+        </Typography>
+      )}
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         {isOwner && (

@@ -1,31 +1,18 @@
-import {
-  IBoard,
-  ITask,
-  IUser,
-  IUserNotificationEvent,
-  TBoardEventType,
-  TTaskEventType
-} from '@kanban-board/shared';
-import { useEffect } from 'react';
+import { INotification, ITask, IUser } from '@kanban-board/shared';
+import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  addBoard,
-  deleteBoard
-} from '../../../../../core/store/boards/boardsSlice';
-import {
-  addTask,
-  deleteTask,
   moveTaskToOtherColumn,
-  reorderTaskInSameColumn,
-  updateTask
+  reorderTaskInSameColumn
 } from '../../../../../core/store/tasks/tasksSlice';
 import { socket } from '../../../../../socket';
 
 export function useTaskEvents(user: IUser | null) {
-  const dispatch = useDispatch();
+  const dispatchRef = useRef(useDispatch());
+  const userRef = useRef(user);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userRef.current) return;
 
     const handleTaskMoved = ({
       task,
@@ -58,54 +45,36 @@ export function useTaskEvents(user: IUser | null) {
       }
     };
 
-    const handleNotification = (notification: IUserNotificationEvent) => {
+    const handleNotification = (notification: INotification) => {
       console.log(notification);
-      if (notification.eventType.includes('task.')) {
-        const task = notification.payload.task as ITask;
-        switch (notification.eventType as TTaskEventType) {
-          case 'task.created':
-            dispatch(addTask(task));
-            break;
-          case 'task.updated':
-            if (!task.id) return;
-            dispatch(updateTask(task));
-            break;
-          case 'task.deleted':
-            if (!task.id) return;
-            dispatch(deleteTask(task.id));
-            break;
-          case 'task.moved':
-            if (
-              !notification.payload.homeColumnId ||
-              typeof notification.payload.homeColumnId !== 'string'
-            )
-              return;
-            handleTaskMoved({
-              task,
-              homeColumnId: notification.payload.homeColumnId
-            });
+      const eventType = notification.eventType.toLocaleLowerCase();
 
-            break;
-          default:
-        }
-      } else if (notification.eventType.includes('board.')) {
-        console.log(notification);
-        switch (notification.eventType as TBoardEventType) {
-          case 'board.shared': {
-            const { board } = notification.payload as { board: IBoard };
-
-            dispatch(addBoard(board));
-            break;
-          }
-          case 'board.deleted':
-          case 'board.unshared': {
-            const { boardId } = notification.payload as { boardId: string };
-            dispatch(deleteBoard(boardId));
-            break;
-          }
-          default:
-        }
-      }
+      // const task = notification.payload.task as ITask;
+      // switch (notification.eventType as TTaskEventType) {
+      //   case 'task.created':
+      //     dispatch(addTask(task));
+      //     break;
+      //   case 'task.updated':
+      //     if (!task.id) return;
+      //     dispatch(updateTask(task));
+      //     break;
+      //   case 'task.deleted':
+      //     if (!task.id) return;
+      //     dispatch(deleteTask(task.id));
+      //     break;
+      //   case 'task.moved':
+      //     if (
+      //       !notification.payload.homeColumnId ||
+      //       typeof notification.payload.homeColumnId !== 'string'
+      //     )
+      //       return;
+      //     handleTaskMoved({
+      //       task,
+      //       homeColumnId: notification.payload.homeColumnId
+      //     });
+      //     break;
+      //   default:
+      // }
     };
 
     socket.on('notification', handleNotification);
@@ -113,5 +82,5 @@ export function useTaskEvents(user: IUser | null) {
     return () => {
       socket.off('notification', handleNotification);
     };
-  }, [user, dispatch]);
+  }, [user]);
 }

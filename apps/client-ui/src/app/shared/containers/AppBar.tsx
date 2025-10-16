@@ -56,7 +56,12 @@ export default function SearchAppBar() {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) =>
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-  const { handleCreateBoard } = useDshboardHandlers({ setSearch, search });
+  const { handleCreateBoard } = useDshboardHandlers({
+    closeMenu: handleClose,
+    setSearch,
+    search
+  });
+  const isAdmin = user?.role === 'admin';
 
   return (
     <AppBar
@@ -90,15 +95,17 @@ export default function SearchAppBar() {
             <Typography variant="body2" color="grey.400">
               {user ? `User: ${user.email}` : 'Loading user...'}
             </Typography>
-            <Link
-              href="http://localhost:4200"
-              underline="hover"
-              variant="body2"
-              color="grey.300"
-              sx={{ fontWeight: 600 }}
-            >
-              Admin Panel
-            </Link>
+            {isAdmin && (
+              <Link
+                href="http://localhost:4200"
+                underline="hover"
+                variant="body2"
+                color="grey.300"
+                sx={{ fontWeight: 600 }}
+              >
+                Admin Panel
+              </Link>
+            )}
           </Box>
         </Box>
 

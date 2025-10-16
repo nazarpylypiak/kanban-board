@@ -1,12 +1,9 @@
-export interface IRabbitMessage {
-  payload: Record<string, unknown>;
-  createdBy: string;
-  recipientIds?: string[];
-  recepientEmails?: string[];
-  adminIds?: string[] | null;
-}
+import {
+  IBoardNotification,
+  IBoardUserEvent,
+  TBoardEventType
+} from './board.interface';
 
-export interface IUserNotificationEvent<T = string> extends IRabbitMessage {
-  timestamp?: string;
-  eventType: T;
-}
+export type IRabbitMessage = IBoardNotification;
+export type IRabbitKey = TBoardEventType;
+export type INotification = IBoardUserEvent;

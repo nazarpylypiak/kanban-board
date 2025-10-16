@@ -59,8 +59,8 @@ export class BoardsController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.boardsService.delete(id);
+  delete(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.boardsService.delete(id, req.jwtUser);
   }
 
   @Patch(':boardId/share')

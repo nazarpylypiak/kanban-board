@@ -1,8 +1,4 @@
-import {
-  ITask,
-  IUserNotificationEvent,
-  MailService
-} from '@kanban-board/shared';
+import { IBoardNotification, MailService } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 
@@ -15,62 +11,83 @@ export class NotificationService {
     private readonly mailService: MailService
   ) {}
 
-  async handleEvent(event: IUserNotificationEvent) {
-    const { payload, eventType, createdBy, recipientIds, recepientEmails } =
-      event;
-
-    if (!payload) {
+  /**
+   * Handle generic board event and notify both shared users and admins
+   */
+  async handleEvent(event: IBoardNotification) {
+    if (!event.payload) {
       this.logger.warn('Received event without payload');
       return;
     }
-    const { adminIds, ...adminEvent } = event;
-    this.gateway.notifyAdmins(adminIds, adminEvent);
-    // Ensure assignedTo is always an array
-    const recipientIdsArr = Array.isArray(recipientIds)
-      ? recipientIds
-      : [recipientIds];
-    const recipientsToNotify = recipientIdsArr.filter(
-      (userId) => userId !== createdBy
-    );
 
-    for (const userId of recipientsToNotify) {
-      // Send WebSocket notification
+    const {
+      eventType,
+      payload,
+      createdBy,
+      recipientIds = [],
+      adminIds = [],
+      type,
+      message,
+      timestamp
+    } = event;
 
-      this.gateway.sendToUser(userId, {
-        ...event,
-        timestamp: new Date().toISOString()
-      });
-      this.logger.log(`WebSocket notification sent to user ${userId}`);
+    const notification = {
+      eventType,
+      type,
+      payload,
+      createdBy,
+      message,
+      timestamp: timestamp || new Date().toISOString()
+    };
+
+    // 1️⃣ Notify shared users (exclude creator)
+    const userRecipients = recipientIds.filter((id) => id !== createdBy);
+
+    if (userRecipients.length > 0) {
+      await this.gateway.sendToUsers(userRecipients, notification);
+      this.logger.log(
+        `WebSocket notifications sent to ${userRecipients.length} users`
+      );
+    } else {
+      this.logger.debug(`No shared users to notify for event: ${eventType}`);
     }
-    // Send email if assignee email exists
-    if (payload.task) {
-      for (const email of recepientEmails || []) {
-        const { title, description } = payload.task as ITask;
-        const subject = `Task ${eventType}: ${title}`;
-        const text = `
-          Hi,
-          Task "${title}" has been ${eventType}.
-          Description: ${description || 'No description'}
-          Check your Kanban board for details.
-        `;
-        await this.mailService.sendMail(email, subject, text);
-        this.logger.log(`Email notification sent to ${email}`);
-      }
+
+    // 2️⃣ Notify admins
+    if (adminIds && adminIds.length > 0) {
+      await this.gateway.notifyAdmins(adminIds, notification);
+      this.logger.log(
+        `WebSocket notifications sent to ${adminIds.length} admins`
+      );
+    } else {
+      this.logger.debug(`No admins to notify for event: ${eventType}`);
     }
   }
 
-  // Optional helper for more generic user notifications
-  // private async notifyUsers(payload: any, subject: string) {
-  //   const recipients = payload.users || [];
-  //   const text = JSON.stringify(payload, null, 2);
+  async handleBoardEvent(event: IBoardNotification) {
+    return this.handleEvent(event);
+  }
 
-  //   for (const user of recipients) {
-  //     if (user.email) {
-  //       await this.mailService.sendMail(user.email, subject, text);
-  //     }
-  //     if (user.id) {
-  //       await this.gateway.sendToUser(user.id, { subject, payload });
-  //     }
-  //   }
-  // }
+  async sendEmailNotification(
+    event: IBoardNotification,
+    recipientEmails: string[] = []
+  ) {
+    if (!recipientEmails.length || !event.payload) return;
+
+    const { eventType, payload, message } = event;
+
+    for (const email of recipientEmails) {
+      const subject = `Board Notification: ${eventType}`;
+      const text = `
+        Hi,
+        ${message || 'There is an update on your board.'}
+        Board: ${payload.board?.name || 'Unknown'}
+      `;
+      try {
+        await this.mailService.sendMail(email, subject, text);
+        this.logger.log(`Email notification sent to ${email}`);
+      } catch (err) {
+        this.logger.error(`Failed to send email to ${email}`, err.stack);
+      }
+    }
+  }
 }

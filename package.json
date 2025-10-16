@@ -121,6 +121,7 @@
     "class-validator": "^0.14.2",
     "fastify": "^5.6.1",
     "fastify-cookie": "^5.6.1",
+    "jwt-decode": "^4.0.0",
     "ng2-charts": "^8.0.0",
     "nodemailer": "^7.0.9",
     "passport": "^0.7.0",

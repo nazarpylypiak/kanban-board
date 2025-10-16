@@ -3,7 +3,6 @@ import {
   JWTUser,
   RabbitmqService,
   Task,
-  TTaskEventType,
   User
 } from '@kanban-board/shared';
 import {
@@ -135,15 +134,15 @@ export class TasksService {
       updatedAt: task.updatedAt
     };
 
-    this.rmqService
-      .publish('kanban_exchange', 'task.created', {
-        payload: { task: taskRes },
-        createdBy: jwtUser.sub,
-        recipientIds: task.assigneeIds
-      })
-      .catch((err) => {
-        this.logger.error('Failed to publish task.created event', err);
-      });
+    // this.rmqService
+    //   .publish('kanban_exchange', 'board.task.created', {
+    //     payload: { task: taskRes },
+    //     createdBy: jwtUser.sub,
+    //     recipientIds: task.assigneeIds
+    //   })
+    //   .catch((err) => {
+    //     this.logger.error('Failed to publish task.created event', err);
+    //   });
 
     return taskRes;
   }
@@ -205,15 +204,15 @@ export class TasksService {
       ...savedTask,
       assigneeIds: savedTask.assignees.map(({ id }) => id)
     };
-    this.rmqService
-      .publish<TTaskEventType>('kanban_exchange', 'task.updated', {
-        payload: { task: taskRes },
-        createdBy: jwtUser.sub,
-        recipientIds: taskRes.assigneeIds
-      })
-      .catch((err) => {
-        this.logger.error('Failed to publish task.created event', err);
-      });
+    // this.rmqService
+    //   .publish<TTaskEventType>('kanban_exchange', 'board.task.updated', {
+    //     payload: { task: taskRes },
+    //     createdBy: jwtUser.sub,
+    //     recipientIds: taskRes.assigneeIds
+    //   })
+    //   .catch((err) => {
+    //     this.logger.error('Failed to publish task.created event', err);
+    //   });
 
     return taskRes;
   }
@@ -237,11 +236,15 @@ export class TasksService {
     if (!task) throw new NotFoundException('Task not found');
     await this.tasksRepository.delete(id);
 
-    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.deleted', {
-      payload: { task },
-      createdBy: jwtUser.sub,
-      recipientIds: task.assigneeIds
-    });
+    // this.rmqService.publish<TTaskEventType>(
+    //   'kanban_exchange',
+    //   'board.task.deleted',
+    //   {
+    //     payload: { task },
+    //     createdBy: jwtUser.sub,
+    //     recipientIds: task.assigneeIds
+    //   }
+    // );
     return { message: 'Task deleted successfully', id };
   }
 
@@ -350,12 +353,16 @@ export class TasksService {
       }
     };
 
-    this.rmqService.publish<TTaskEventType>('kanban_exchange', 'task.moved', {
-      payload: { task: taskRes, homeColumnId },
-      createdBy: jwtUser?.sub,
-      recipientIds: task.assigneeIds,
-      adminIds: [board.ownerId]
-    });
+    // this.rmqService.publish<TTaskEventType>(
+    //   'kanban_exchange',
+    //   'board.task.moved',
+    //   {
+    //     payload: { task: taskRes, homeColumnId },
+    //     createdBy: jwtUser?.sub,
+    //     recipientIds: task.assigneeIds,
+    //     adminIds: [board.ownerId]
+    //   }
+    // );
 
     return taskRes;
   }

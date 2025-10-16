@@ -9,12 +9,12 @@ export class EventsListener implements OnModuleInit {
   async onModuleInit() {
     const conn = await amqp.connect('amqp://localhost');
     const channel = await conn.createChannel();
-    await channel.assertQueue('task_events');
+    await channel.assertQueue('board_events');
 
-    channel.consume('task_events', async (msg) => {
+    channel.consume('board_events', async (msg) => {
       if (!msg) return;
       const event = JSON.parse(msg.content.toString());
-      await this.notificationService.handleEvent(event);
+      await this.notificationService.handleBoardEvent(event);
       channel.ack(msg);
     });
   }

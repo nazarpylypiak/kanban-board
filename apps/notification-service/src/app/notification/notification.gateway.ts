@@ -1,4 +1,4 @@
-import { IUserNotificationEvent } from '@kanban-board/shared';
+import { IBoardUserEvent } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -17,13 +17,16 @@ export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(NotificationGateway.name);
+
   @WebSocketServer() server: Server;
 
   handleConnection(client: Socket) {
     client.emit('connected');
+    this.logger.log(`Client ${client.id} connected`);
   }
 
   handleDisconnect(client: Socket) {
+    client.emit('disconnected');
     this.logger.log(`Client ${client.id} disconnected`);
   }
 
@@ -45,21 +48,55 @@ export class NotificationGateway
     this.logger.log(`📥 Admin joined room notify:admin:${data.adminId}`);
   }
 
-  sendToUser(userId: string, event: IUserNotificationEvent) {
-    const roomName = `notify:${userId}`;
-    this.server.to(roomName).emit('notification', event);
+  async sendToUsers(userIds: string[], event: IBoardUserEvent) {
+    if (!userIds || userIds.length === 0) {
+      this.logger.debug('No user IDs provided for notification');
+      return;
+    }
+
+    const notification = {
+      ...event,
+      timestamp: new Date().toISOString()
+    };
+
+    await Promise.all(
+      userIds.map(async (userId) => {
+        try {
+          this.server.to(`notify:${userId}`).emit('notification', notification);
+          this.logger.log(
+            `📤 WebSocket notification sent to user ${userId} for ${event.eventType}`
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify user ${userId}`, err.stack);
+        }
+      })
+    );
   }
 
-  async notifyAdmins(adminIds: string[] | null, event: IUserNotificationEvent) {
+  async notifyAdmins(adminIds: string[] | null, event: IBoardUserEvent) {
     if (!adminIds || adminIds.length === 0) {
       this.logger.warn('No admin IDs provided for notification');
       return;
     }
-    for (const adminId of adminIds) {
-      this.server.to(`notify:admin:${adminId}`).emit('notification', {
-        ...event,
-        timestamp: new Date().toISOString()
-      });
-    }
+
+    const notification = {
+      ...event,
+      timestamp: new Date().toISOString()
+    };
+
+    await Promise.all(
+      adminIds.map(async (adminId) => {
+        try {
+          this.server
+            .to(`notify:admin:${adminId}`)
+            .emit('notification', notification);
+          this.logger.log(
+            `📤 WebSocket notification sent to admin ${adminId} for ${event.eventType}`
+          );
+        } catch (err) {
+          this.logger.error(`Failed to notify admin ${adminId}`, err.stack);
+        }
+      })
+    );
   }
 }

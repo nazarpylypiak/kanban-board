@@ -1,21 +1,23 @@
-import { Board, JWTUser, RabbitmqService, User } from '@kanban-board/shared';
+import { Board, JWTUser, User } from '@kanban-board/shared';
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { BoardEventsService } from './board-events.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { ShareBoardDto } from './dto/share-board.dto';
 
 @Injectable()
 export class BoardsService {
+  private readonly logger = new Logger(BoardsService.name);
   constructor(
     @InjectRepository(Board) private boardRepository: Repository<Board>,
     @InjectRepository(User) private userRepository: Repository<User>,
-
-    private readonly rmqService: RabbitmqService
+    private readonly boardEventsService: BoardEventsService
   ) {}
 
   async findAllForUser(userId: string, role: 'admin' | 'user') {
@@ -112,8 +114,20 @@ export class BoardsService {
     return this.boardRepository.update(id, { name });
   }
 
-  delete(id: string) {
-    return this.boardRepository.delete(id);
+  async delete(boardId: string, currentUser: JWTUser) {
+    const board = await this.checkBoard(boardId);
+    const boardOwnerId = board.ownerId;
+
+    await this.boardRepository.delete(boardId);
+
+    this.boardEventsService.publishDeleted(
+      boardId,
+      board.sharedUserIds,
+      currentUser,
+      boardOwnerId
+    );
+
+    return { message: 'Deleted succussfully' };
   }
 
   async shareBoard(boardId: string, dto: ShareBoardDto, currentUser: JWTUser) {
@@ -121,34 +135,19 @@ export class BoardsService {
       where: { id: boardId }
     });
     if (!board) throw new NotFoundException('Board not found');
-    const isAdmin = currentUser.role === 'admin';
-    const isOwner = board.ownerId === currentUser.sub;
+    this.checkSharePermission(board, currentUser);
 
-    if (!isOwner && !isAdmin) throw new ForbiddenException('No permission');
-
-    const removedUsers: string[] =
-      board?.sharedUserIds?.filter((id) => !dto.userIds.includes(id)) ?? [];
-    const users = await this.userRepository.findBy({ id: In(dto.userIds) });
-
-    board.sharedUsers = users;
-    board.sharedUserIds = users.map(({ id }) => id);
-
+    const removedUserIds = await this.computeSharedChanges(board, dto.userIds);
     const savedBoard = await this.boardRepository.save(board);
 
-    // Notify users
-
-    this.rmqService.publish('kanban_exchange', 'board.shared', {
-      payload: { board },
-      createdBy: currentUser?.sub,
-      recipientIds: board.sharedUserIds
-    });
-    if (removedUsers?.length > 0) {
-      this.rmqService.publish('kanban_exchange', 'board.unshared', {
-        payload: { boardId },
-        createdBy: currentUser?.sub,
-        recipientIds: removedUsers
-      });
-    }
+    this.boardEventsService.publishShared(board, currentUser);
+    if (removedUserIds.length)
+      this.boardEventsService.publishDeleted(
+        boardId,
+        removedUserIds,
+        currentUser,
+        board.ownerId
+      );
 
     return {
       id: savedBoard.id,
@@ -156,5 +155,29 @@ export class BoardsService {
       ownerId: savedBoard.ownerId,
       sharedUserIds: savedBoard.sharedUsers.map(({ id }) => id)
     };
+  }
+
+  private checkBoard(id: string) {
+    const board = this.boardRepository.findOne({ where: { id } });
+    if (!board) throw new NotFoundException('Board not found');
+    return board;
+  }
+
+  private checkSharePermission(board: Board, currentUser: JWTUser) {
+    const isAdmin = currentUser.role === 'admin';
+    const isOwner = board.ownerId === currentUser.sub;
+    if (!isOwner && !isAdmin) throw new ForbiddenException('No permission');
+  }
+
+  private async computeSharedChanges(board: Board, newUserIds: string[]) {
+    const removedUserIds =
+      board.sharedUserIds?.filter((id) => !newUserIds.includes(id)) ?? [];
+
+    const users = await this.userRepository.findBy({ id: In(newUserIds) });
+
+    board.sharedUsers = users;
+    board.sharedUserIds = users.map((u) => u.id);
+
+    return removedUserIds;
   }
 }

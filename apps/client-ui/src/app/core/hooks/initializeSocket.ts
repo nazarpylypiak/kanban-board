@@ -14,11 +14,11 @@ export const useInitializeSocket = () => {
     }
 
     socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
+    socket.on('disconnected', onDisconnect);
 
     return () => {
       socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      socket.off('disconnected', onDisconnect);
     };
   }, [dispatch]);
 };

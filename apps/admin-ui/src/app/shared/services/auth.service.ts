@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { jwtDecode } from 'jwt-decode';
 import { catchError, map, Observable, of } from 'rxjs';
 import { AppState } from '../../core/store/app.state';
 import AuthActions from '../../core/store/auth/auth.actions';
@@ -9,6 +10,15 @@ import AuthActions from '../../core/store/auth/auth.actions';
 export class AuthService {
   private http = inject(HttpClient);
   private store = inject(Store<AppState>);
+
+  getUserRoleFromToken(token: string): string | null {
+    try {
+      const decoded = jwtDecode<{ role: 'admin' | 'user' }>(token);
+      return decoded.role ?? null;
+    } catch {
+      return null;
+    }
+  }
 
   isTokenExpired(token: string): boolean {
     try {
