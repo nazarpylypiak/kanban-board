@@ -25,22 +25,13 @@ export interface INotificationBoard {
   ownerId: string;
   sharedUserIds: string[];
 }
-export interface INotificationPayload {
+export interface IBoardNotificationPayload {
   board?: INotificationBoard;
   boardId?: string;
 }
-export interface IBoardNotification {
-  eventType: TBoardEventType;
-  type: TBoardNotificationType;
-  payload: INotificationPayload;
-  createdBy: string;
-  recipientIds: string[];
-  adminIds: string[];
-  timestamp: string;
-  message?: string;
-}
 
-export type IBoardUserEvent = Omit<
-  IBoardNotification,
-  'recipientIds' | 'adminIds'
->;
+export interface IBoardNotificationWrapper {
+  type: TBoardNotificationType;
+  eventType: TBoardEventType;
+  payload: IBoardNotificationPayload;
+}

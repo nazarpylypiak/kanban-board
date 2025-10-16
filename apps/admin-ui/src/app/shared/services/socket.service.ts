@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { INotification, IRabbitMessage } from '@kanban-board/shared';
+import {
+  IBoardNotificationWrapper,
+  IColumnNotificationWrapper,
+  INotificationUser
+} from '@kanban-board/shared';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
@@ -17,12 +21,20 @@ export class SocketService {
     });
   }
 
-  onNotification(): Observable<INotification> {
+  onNotification(): Observable<
+    INotificationUser<IBoardNotificationWrapper | IColumnNotificationWrapper>
+  > {
     return new Observable((subscriber) => {
-      this.socket.on('notification', (data: IRabbitMessage) => {
-        console.log('admin received', data);
-        subscriber.next(data);
-      });
+      this.socket.on(
+        'notification',
+        (
+          data: INotificationUser<
+            IBoardNotificationWrapper | IColumnNotificationWrapper
+          >
+        ) => {
+          subscriber.next(data);
+        }
+      );
     });
   }
 

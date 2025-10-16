@@ -15,3 +15,28 @@ export interface IColumn {
   createdAt: string;
   updatedAt: string;
 }
+
+export type TColumnEventType = 'column.added' | 'column.deleted';
+
+export type TColumnNotificationType = 'COLUMN_ADDED' | 'COLUMN_DELETED';
+
+export interface INotificationColumn {
+  id: string;
+  name: string;
+  boardId: string;
+  isDone: boolean;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IColumnNotificationPayload {
+  column?: INotificationColumn;
+  columnId?: string;
+}
+
+export interface IColumnNotificationWrapper {
+  type: TColumnNotificationType;
+  eventType: TColumnEventType;
+  payload: IColumnNotificationPayload;
+}

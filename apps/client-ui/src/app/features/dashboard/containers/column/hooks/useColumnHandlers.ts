@@ -1,9 +1,12 @@
 import { IColumn } from '@kanban-board/shared';
 import { useDispatch } from 'react-redux';
-import { updateColumn as updateColumnSlice } from '../../../../../core/store/columnsSlice';
+import {
+  deleteColumn as deleteColumnSlice,
+  updateColumn as updateColumnSlice
+} from '../../../../../core/store/columnsSlice';
 import { addTask } from '../../../../../core/store/tasks';
 import { TCreateTask } from '../../../../../shared/types/task.type';
-import { updateColumn } from '../../../services/columns.service';
+import { deleteColumn, updateColumn } from '../../../services/columns.service';
 import { createTask } from '../../../services/task.service';
 import { TRules } from '../types/rules.type';
 
@@ -35,5 +38,14 @@ export function useColumnHandlers({ column }: Props) {
     }
   };
 
-  return { handleTaskCreate, handleRuleAdd };
+  const handleDeleteColumn = async () => {
+    try {
+      await deleteColumn(column.id);
+      dispatch(deleteColumnSlice(column.id));
+    } catch (e) {
+      console.error(`Failed to delete column ${column.id}`, e);
+    }
+  };
+
+  return { handleTaskCreate, handleRuleAdd, handleDeleteColumn };
 }

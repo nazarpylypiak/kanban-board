@@ -23,9 +23,10 @@ export default function Column({ column, isOwner, user }: ColumnProps) {
   const tasks = useSelector(selectTasksByColumn(column.id));
   const boardUsers = useSelector((state: RootState) => state.boards.boardUsers);
 
-  const { handleTaskCreate, handleRuleAdd } = useColumnHandlers({
-    column
-  });
+  const { handleTaskCreate, handleRuleAdd, handleDeleteColumn } =
+    useColumnHandlers({
+      column
+    });
   const { ref, scrollableRef } = useColumnDnD({
     column,
     onStateChange: setState,
@@ -41,6 +42,7 @@ export default function Column({ column, isOwner, user }: ColumnProps) {
         title={column.name}
         isDone={column.isDone}
         onRuleAdded={handleRuleAdd}
+        deleteColumn={handleDeleteColumn}
       />
 
       <div

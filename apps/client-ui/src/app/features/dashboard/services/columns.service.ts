@@ -22,3 +22,6 @@ export const createColumn = async (boardId: string, body: TCreateColumn) => {
 export const updateColumn = async (id: string, body: TUpdateColumn) => {
   return await columnsApi.patch<IColumn>(`columns/${id}`, body);
 };
+
+export const deleteColumn = (columnId: string) =>
+  columnsApi.delete(`columns/${columnId}`);

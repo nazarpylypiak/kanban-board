@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Channel, ChannelModel, connect } from 'amqplib';
-import { IRabbitKey, IRabbitMessage } from '../interfaces';
+import { INotification, INotificationWrapper } from '../interfaces';
 
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
@@ -30,10 +30,10 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publish(
+  async publish<T extends INotification<INotificationWrapper>>(
     exchange: 'kanban_exchange',
-    routingKey: IRabbitKey,
-    message: IRabbitMessage
+    routingKey: T['eventType'],
+    message: T
   ) {
     if (!this.channel) {
       this.logger.error('Channel not initialized, message not sent.');

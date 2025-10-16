@@ -1,4 +1,7 @@
-import { IBoardNotification } from '@kanban-board/shared';
+import {
+  IBoardNotificationWrapper,
+  INotificationUser
+} from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addBoard, deleteBoard } from '../../../core/store/boards/boardsSlice';
@@ -18,8 +21,9 @@ export const useBoardNotification = () => {
       }
     };
 
-    const handleBoardNotification = (notification: IBoardNotification) => {
-      console.log(notification);
+    const handleBoardNotification = (
+      notification: INotificationUser<IBoardNotificationWrapper>
+    ) => {
       const { type, payload } = notification;
 
       switch (type) {

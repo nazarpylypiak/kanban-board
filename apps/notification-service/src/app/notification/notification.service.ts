@@ -1,4 +1,9 @@
-import { IBoardNotification, MailService } from '@kanban-board/shared';
+import {
+  IBoardNotificationWrapper,
+  IColumnNotificationWrapper,
+  INotification,
+  MailService
+} from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 
@@ -14,7 +19,9 @@ export class NotificationService {
   /**
    * Handle generic board event and notify both shared users and admins
    */
-  async handleEvent(event: IBoardNotification) {
+  async handleEvent(
+    event: INotification<IBoardNotificationWrapper | IColumnNotificationWrapper>
+  ) {
     if (!event.payload) {
       this.logger.warn('Received event without payload');
       return;
@@ -63,12 +70,10 @@ export class NotificationService {
     }
   }
 
-  async handleBoardEvent(event: IBoardNotification) {
-    return this.handleEvent(event);
-  }
-
   async sendEmailNotification(
-    event: IBoardNotification,
+    event: INotification<
+      IBoardNotificationWrapper | IColumnNotificationWrapper
+    >,
     recipientEmails: string[] = []
   ) {
     if (!recipientEmails.length || !event.payload) return;
@@ -80,8 +85,7 @@ export class NotificationService {
       const text = `
         Hi,
         ${message || 'There is an update on your board.'}
-        Board: ${payload.board?.name || 'Unknown'}
-      `;
+        `;
       try {
         await this.mailService.sendMail(email, subject, text);
         this.logger.log(`Email notification sent to ${email}`);

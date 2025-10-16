@@ -16,6 +16,7 @@ export default function SecondAppBar(props: Props) {
   const { board, isOwner, user } = props;
   const [open, setOpen] = useState(false);
   const users = useSelector((state: RootState) => state.users.data);
+
   const filteredUsers = useMemo(
     () => users?.filter(({ id }) => id !== user?.id),
     [user?.id, users]

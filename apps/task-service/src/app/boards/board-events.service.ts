@@ -1,6 +1,8 @@
 import {
   Board,
-  IRabbitMessage,
+  IBoardNotificationPayload,
+  IBoardNotificationWrapper,
+  INotification,
   JWTUser,
   RabbitmqService
 } from '@kanban-board/shared';
@@ -13,7 +15,7 @@ export class BoardEventsService {
   private buildSharedMessage(
     board: Board,
     currentUser: JWTUser
-  ): IRabbitMessage {
+  ): INotification<IBoardNotificationWrapper> {
     return {
       eventType: 'board.shared',
       type: 'BOARD_SHARED',
@@ -34,7 +36,11 @@ export class BoardEventsService {
 
   publishShared(board: Board, currentUser: JWTUser) {
     const msg = this.buildSharedMessage(board, currentUser);
-    this.rmqService.publish('kanban_exchange', 'board.shared', msg);
+    this.rmqService.publish<INotification<IBoardNotificationWrapper>>(
+      'kanban_exchange',
+      'board.shared',
+      msg
+    );
   }
 
   private buildUnsharedMessage(
@@ -42,11 +48,11 @@ export class BoardEventsService {
     removedUserIds: string[],
     currentUser: JWTUser,
     ownerId: string
-  ): IRabbitMessage {
+  ): INotification<IBoardNotificationWrapper> {
     return {
       eventType: 'board.deleted',
       type: 'BOARD_DELETED',
-      payload: { boardId },
+      payload: { boardId } as IBoardNotificationPayload,
       createdBy: currentUser.sub,
       adminIds: [ownerId],
       recipientIds: removedUserIds,
@@ -66,6 +72,10 @@ export class BoardEventsService {
       currentUser,
       ownerId
     );
-    this.rmqService.publish('kanban_exchange', 'board.deleted', msg);
+    this.rmqService.publish<INotification<IBoardNotificationWrapper>>(
+      'kanban_exchange',
+      'board.deleted',
+      msg
+    );
   }
 }

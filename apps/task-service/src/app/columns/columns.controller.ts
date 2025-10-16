@@ -1,7 +1,13 @@
-import { AuthenticatedRequest, JwtAuthGuard } from '@kanban-board/shared';
+import {
+  AuthenticatedRequest,
+  JwtAuthGuard,
+  Roles,
+  RolesGuard
+} from '@kanban-board/shared';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -13,12 +19,13 @@ import { ColumnsService } from './columns.service';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { UpdateColumnDto } from './dto/update-column.dto';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 export class ColumnsController {
   constructor(private columnsService: ColumnsService) {}
 
   @Get('columns')
+  @Roles('admin', 'user')
   findAll() {
     return this.columnsService.findAll();
   }
@@ -50,5 +57,13 @@ export class ColumnsController {
     @Req() req: AuthenticatedRequest
   ) {
     return this.columnsService.update(columnId, dto, req.jwtUser);
+  }
+
+  @Delete('columns/:columnId')
+  deleteColumn(
+    @Param('columnId') columnId: string,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.columnsService.delete(columnId, req.jwtUser);
   }
 }

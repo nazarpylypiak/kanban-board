@@ -10,7 +10,7 @@ import {
   FormGroup,
   Typography
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ShareBoardModalProps {
   board: IBoard | null;
@@ -30,7 +30,9 @@ export default function ShareBoardModal({
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
     board?.sharedUserIds || []
   );
-
+  useEffect(() => {
+    setSelectedUserIds(board?.sharedUserIds || []);
+  }, [board?.sharedUserIds]);
   const toggleUser = (userId: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(userId)

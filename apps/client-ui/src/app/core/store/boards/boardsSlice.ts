@@ -47,7 +47,6 @@ const boardsSlice = createSlice({
     addBoard: (state, action: PayloadAction<IBoard>) => {
       const exists = state.data.some((b) => b.id === action.payload.id);
       if (!exists) {
-        console.log(action.payload);
         state.data.push(action.payload);
         if (!state.selectedBoard) state.selectedBoard = action.payload;
       }

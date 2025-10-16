@@ -1,5 +1,6 @@
+import DeleteIcon from '@mui/icons-material/Delete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { Box, Typography } from '@mui/material';
+import { Box, ListItemIcon, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
@@ -14,8 +15,14 @@ interface Props {
   title: string;
   isDone?: boolean;
   onRuleAdded: (rules: any) => void;
+  deleteColumn: () => void;
 }
-export default function ColumnHeader({ title, isDone, onRuleAdded }: Props) {
+export default function ColumnHeader({
+  title,
+  isDone,
+  onRuleAdded,
+  deleteColumn
+}: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClose = () => setAnchorEl(null);
@@ -79,6 +86,17 @@ export default function ColumnHeader({ title, isDone, onRuleAdded }: Props) {
         >
           <Checkbox checked={!!isDone} sx={{ p: 0, mr: 1 }} />
           <ListItemText primary="Mark as completed" />
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            deleteColumn();
+            handleClose();
+          }}
+        >
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" sx={{ color: 'error.main' }} />
+          </ListItemIcon>
+          <ListItemText primary="Delete" />
         </MenuItem>
       </Menu>
     </Box>

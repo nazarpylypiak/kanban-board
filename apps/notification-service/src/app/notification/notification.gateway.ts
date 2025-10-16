@@ -1,4 +1,8 @@
-import { IBoardUserEvent } from '@kanban-board/shared';
+import {
+  IBoardNotificationWrapper,
+  IColumnNotificationWrapper,
+  INotificationUser
+} from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -48,7 +52,12 @@ export class NotificationGateway
     this.logger.log(`📥 Admin joined room notify:admin:${data.adminId}`);
   }
 
-  async sendToUsers(userIds: string[], event: IBoardUserEvent) {
+  async sendToUsers(
+    userIds: string[],
+    event: INotificationUser<
+      IBoardNotificationWrapper | IColumnNotificationWrapper
+    >
+  ) {
     if (!userIds || userIds.length === 0) {
       this.logger.debug('No user IDs provided for notification');
       return;
@@ -73,7 +82,12 @@ export class NotificationGateway
     );
   }
 
-  async notifyAdmins(adminIds: string[] | null, event: IBoardUserEvent) {
+  async notifyAdmins(
+    adminIds: string[] | null,
+    event: INotificationUser<
+      IBoardNotificationWrapper | IColumnNotificationWrapper
+    >
+  ) {
     if (!adminIds || adminIds.length === 0) {
       this.logger.warn('No admin IDs provided for notification');
       return;

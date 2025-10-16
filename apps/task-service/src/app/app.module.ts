@@ -25,9 +25,9 @@ import { TasksModule } from './tasks/tasks.module';
         synchronize: config.get<string>('NODE_ENV') === 'development'
       })
     }),
-    TasksModule,
     BoardsModule,
-    ColumnsModule
+    ColumnsModule,
+    TasksModule
   ]
 })
 export class AppModule {}

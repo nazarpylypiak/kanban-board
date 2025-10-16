@@ -116,7 +116,8 @@ export class BoardsService {
 
   async delete(boardId: string, currentUser: JWTUser) {
     const board = await this.checkBoard(boardId);
-    const boardOwnerId = board.ownerId;
+
+    this.checkPermission(board, currentUser);
 
     await this.boardRepository.delete(boardId);
 
@@ -124,7 +125,7 @@ export class BoardsService {
       boardId,
       board.sharedUserIds,
       currentUser,
-      boardOwnerId
+      board.ownerId
     );
 
     return { message: 'Deleted succussfully' };
@@ -135,7 +136,7 @@ export class BoardsService {
       where: { id: boardId }
     });
     if (!board) throw new NotFoundException('Board not found');
-    this.checkSharePermission(board, currentUser);
+    this.checkPermission(board, currentUser);
 
     const removedUserIds = await this.computeSharedChanges(board, dto.userIds);
     const savedBoard = await this.boardRepository.save(board);
@@ -163,7 +164,7 @@ export class BoardsService {
     return board;
   }
 
-  private checkSharePermission(board: Board, currentUser: JWTUser) {
+  private checkPermission(board: Board, currentUser: JWTUser) {
     const isAdmin = currentUser.role === 'admin';
     const isOwner = board.ownerId === currentUser.sub;
     if (!isOwner && !isAdmin) throw new ForbiddenException('No permission');

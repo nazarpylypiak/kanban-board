@@ -4,6 +4,7 @@ import { RootState } from '../../../../core/store';
 import AddNewColumn from '../../components/AddNewColumn';
 import Column from '../column/Column';
 import { useBoardData, useBoardUsers, useMonitorDnD } from './hooks';
+import { useColumnNotifications } from './hooks/useColumnNotifications';
 
 interface BoardProps {
   board: IBoard;
@@ -19,6 +20,7 @@ export default function Board({ board, isOwner }: BoardProps) {
 
   // useTaskEvents(user);
   useMonitorDnD(columns);
+  useColumnNotifications();
 
   return (
     <>
