@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../core/store';
 import { addBoard, setBoards } from '../../../../core/store/boards/boardsSlice';
-import { setUsers } from '../../../../core/store/usersSlice';
+import { setUsers } from '../../../../core/store/users/usersSlice';
 import {
   createBoard,
   getMyBoards

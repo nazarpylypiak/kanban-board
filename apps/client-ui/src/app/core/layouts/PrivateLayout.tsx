@@ -5,7 +5,7 @@ import { getProfile } from '../../features/dashboard/services/user.service';
 import AppBar from '../../shared/containers/AppBar';
 import { socket } from '../../socket';
 import { RootState } from '../store';
-import { setUser } from '../store/authSlice';
+import { setUser } from '../store/auth/authSlice';
 
 export default function PrivateLayout() {
   const dispatch = useDispatch();

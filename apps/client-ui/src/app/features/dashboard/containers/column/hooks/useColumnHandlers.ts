@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import {
   deleteColumn as deleteColumnSlice,
   updateColumn as updateColumnSlice
-} from '../../../../../core/store/columnsSlice';
+} from '../../../../../core/store/columns/columnsSlice';
 import { addTask } from '../../../../../core/store/tasks';
 import { TCreateTask } from '../../../../../shared/types/task.type';
 import { deleteColumn, updateColumn } from '../../../services/columns.service';

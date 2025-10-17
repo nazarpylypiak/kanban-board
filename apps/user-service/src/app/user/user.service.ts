@@ -1,4 +1,4 @@
-import { User, UserDto } from '@kanban-board/shared';
+import { mapUserToDto, User, UserDto } from '@kanban-board/shared';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -21,9 +21,7 @@ export class UserService {
     });
     const savedUser = await this.userRepository.save(user);
 
-    return plainToInstance(UserDto, savedUser, {
-      excludeExtraneousValues: true
-    });
+    return mapUserToDto(savedUser);
   }
 
   async findAllUsers(page = 1, limit = 20) {
@@ -33,7 +31,7 @@ export class UserService {
     });
 
     return {
-      data: plainToInstance(UserDto, users, { excludeExtraneousValues: true }),
+      data: mapUserToDto(users),
       total,
       page,
       limit
@@ -53,9 +51,7 @@ export class UserService {
     }
     Object.assign(user, updatedData);
     const savedUser = await this.userRepository.save(user);
-    return plainToInstance(UserDto, savedUser, {
-      excludeExtraneousValues: true
-    });
+    return mapUserToDto(savedUser);
   }
 
   async remove(userId: string) {

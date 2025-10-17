@@ -7,4 +7,5 @@ export * from './lib/filters';
 export * from './lib/guards';
 export * from './lib/interfaces';
 export * from './lib/mail';
+export * from './lib/mappers';
 export * from './lib/rabbitmq';

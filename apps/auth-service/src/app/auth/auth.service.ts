@@ -1,4 +1,9 @@
-import { RefreshToken, User, UserRole } from '@kanban-board/shared';
+import {
+  mapUserToDto,
+  RefreshToken,
+  User,
+  UserRole
+} from '@kanban-board/shared';
 import {
   BadRequestException,
   ForbiddenException,
@@ -41,7 +46,7 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    return { id: user.id, email: user.email, role: user.role };
+    return mapUserToDto(user);
   }
 
   /** ------------------- Login ------------------- */
@@ -96,16 +101,18 @@ export class AuthService {
   /** ------------------- Logout ------------------ */
   async logout(req: FastifyRequest, res: FastifyReply) {
     const refreshToken = req.cookies['refreshToken'];
-    if (!refreshToken) return;
-
-    try {
-      const { tokenEntity } = await this.validateRefreshToken(refreshToken);
-      await this.refreshTokenRepository.remove(tokenEntity);
-    } catch {
-      // silently ignore invalid/missing tokens
+    if (refreshToken) {
+      try {
+        const { tokenEntity } = await this.validateRefreshToken(refreshToken);
+        await this.refreshTokenRepository.remove(tokenEntity);
+      } catch {
+        // silently ignore invalid/missing tokens
+      }
     }
 
     res.clearCookie('refreshToken', { path: '/' });
+
+    return { message: 'Logged out' };
   }
 
   /** ------------- Token Generation -------------- */

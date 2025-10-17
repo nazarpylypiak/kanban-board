@@ -140,7 +140,7 @@ export class ColumnsService {
 
     this.logger.log(`Column ${columnId} updated by user ${currentUser.sub}`);
 
-    this.columnEventsService.publishCreated(updatedColumn, currentUser); // Optional: use separate "updated" event
+    await this.columnEventsService.publishCreated(updatedColumn, currentUser);
     this.logger.debug(`Column update event published for ${columnId}`);
 
     return mapColumnToDto(updatedColumn);

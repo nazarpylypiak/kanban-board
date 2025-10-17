@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { setAccessToken, setLoggedIn } from '../../../core/store/authSlice';
+import {
+  setAccessToken,
+  setLoggedIn
+} from '../../../core/store/auth/authSlice';
 import { login } from '../services/auth.service';
 
 import {

@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { clearAuth } from '../../core/store/authSlice';
+import { clearAuth } from '../../core/store/auth/authSlice';
 import { logout } from '../../features/auth/services/auth.service';
 
 export const useLogout = () => {

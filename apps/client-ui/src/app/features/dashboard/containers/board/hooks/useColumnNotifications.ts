@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 import {
   addColumn,
   deleteColumn
-} from '../../../../../core/store/columnsSlice';
+} from '../../../../../core/store/columns/columnsSlice';
 import {
   addTask,
   deleteTask,

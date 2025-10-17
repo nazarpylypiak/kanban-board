@@ -38,7 +38,8 @@ export class ColumnEventsService {
 
   publishCreated(column: Column, currentUser: JWTUser) {
     const msg = this.buildingMessage(column, currentUser);
-    this.rmqService.publish<INotification<IColumnNotificationWrapper>>(
+
+    return this.rmqService.publish<INotification<IColumnNotificationWrapper>>(
       'kanban_exchange',
       'column.added',
       msg

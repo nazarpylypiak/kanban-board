@@ -9,10 +9,11 @@ export const mapTaskToTto = (task: Task) => {
     id: task.id,
     title: task.title,
     description: task.description,
-    columnId: task.column.id,
     position: task.position,
     isDone: task.isDone,
     completedAt: task.completedAt,
+
+    columnId: task.column.id,
     assignees,
     assigneeIds,
     owner: {

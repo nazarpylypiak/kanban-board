@@ -1,10 +1,4 @@
-import {
-  Column,
-  JWTUser,
-  Task,
-  TaskResponseDto,
-  User
-} from '@kanban-board/shared';
+import { Column, JWTUser, Task, TaskDto, User } from '@kanban-board/shared';
 import {
   BadRequestException,
   Injectable,
@@ -124,7 +118,7 @@ export class TasksService {
         throw new InternalServerErrorException(errMsg);
       }
 
-      return plainToInstance(TaskResponseDto, task, {
+      return plainToInstance(TaskDto, task, {
         excludeExtraneousValues: true
       });
     });
@@ -348,7 +342,7 @@ export class TasksService {
       this.logger.error('Failed to publish task.move event', err);
     }
 
-    return plainToInstance(TaskResponseDto, taskRes, {
+    return plainToInstance(TaskDto, taskRes, {
       excludeExtraneousValues: true
     });
   }

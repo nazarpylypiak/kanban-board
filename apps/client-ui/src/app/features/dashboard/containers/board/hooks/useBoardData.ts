@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { addColumn, setColumns } from '../../../../../core/store/columnsSlice';
+import {
+  addColumn,
+  setColumns
+} from '../../../../../core/store/columns/columnsSlice';
 import { setTasks } from '../../../../../core/store/tasks/tasksSlice';
-import { setUsers } from '../../../../../core/store/usersSlice';
+import { setUsers } from '../../../../../core/store/users/usersSlice';
 import {
   createColumn,
   getBoardColumns

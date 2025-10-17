@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { refreshToken } from '../../features/auth/services/auth.service';
 import { AppDispatch } from '../store';
-import { setAccessToken, setLoading } from '../store/authSlice';
+import { setAccessToken, setLoading } from '../store/auth/authSlice';
 
 export const useInitializeAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
