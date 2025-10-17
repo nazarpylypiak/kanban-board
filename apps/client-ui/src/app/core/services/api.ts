@@ -15,7 +15,6 @@ export const createApi = (baseURL: string, listenerApi?: any) => {
   instance.interceptors.request.use((config) => {
     const token = getState().auth.accessToken;
     if (token && config.headers) {
-      console.log(token);
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

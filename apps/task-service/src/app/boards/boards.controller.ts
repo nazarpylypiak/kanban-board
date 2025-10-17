@@ -12,9 +12,9 @@ import {
   Req,
   UseGuards
 } from '@nestjs/common';
-import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { ShareBoardDto } from './dto/share-board.dto';
+import { BoardsService } from './services/boards.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('boards')

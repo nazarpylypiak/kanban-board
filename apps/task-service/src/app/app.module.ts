@@ -1,4 +1,4 @@
-import { Board, Column, Task, User } from '@kanban-board/shared';
+import { Board, Column, LoggerModule, Task, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -27,7 +27,8 @@ import { TasksModule } from './tasks/tasks.module';
     }),
     BoardsModule,
     ColumnsModule,
-    TasksModule
+    TasksModule,
+    LoggerModule
   ]
 })
 export class AppModule {}

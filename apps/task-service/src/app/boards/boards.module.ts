@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardsController } from './boards.controller';
-import { BoardsService } from './boards.service';
-import { BoardEventsService } from './board-events.service';
+import { BoardEventsService } from './services/board-events.service';
+import { BoardsService } from './services/boards.service';
 
 @Module({
   imports: [
