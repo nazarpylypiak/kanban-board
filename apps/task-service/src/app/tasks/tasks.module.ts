@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { TaskEventsService } from './task-events.service';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { TasksService } from './tasks.service';
     RMQModule
   ],
   controllers: [TasksController],
-  providers: [TasksService]
+  providers: [TasksService, TaskEventsService]
 })
 export class TasksModule {}

@@ -1,7 +1,8 @@
 import {
   IBoardNotificationWrapper,
   IColumnNotificationWrapper,
-  INotificationUser
+  INotificationUser,
+  ITaskNotificationWrapper
 } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import {
@@ -55,7 +56,9 @@ export class NotificationGateway
   async sendToUsers(
     userIds: string[],
     event: INotificationUser<
-      IBoardNotificationWrapper | IColumnNotificationWrapper
+      | IBoardNotificationWrapper
+      | IColumnNotificationWrapper
+      | ITaskNotificationWrapper
     >
   ) {
     if (!userIds || userIds.length === 0) {
@@ -85,7 +88,9 @@ export class NotificationGateway
   async notifyAdmins(
     adminIds: string[] | null,
     event: INotificationUser<
-      IBoardNotificationWrapper | IColumnNotificationWrapper
+      | IBoardNotificationWrapper
+      | IColumnNotificationWrapper
+      | ITaskNotificationWrapper
     >
   ) {
     if (!adminIds || adminIds.length === 0) {

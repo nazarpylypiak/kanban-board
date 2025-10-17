@@ -29,7 +29,39 @@ export interface ITask {
 }
 
 export type TTaskEventType =
-  | 'board.task.created'
-  | 'board.task.updated'
-  | 'board.task.deleted'
-  | 'board.task.moved';
+  | 'task.created'
+  | 'task.updated'
+  | 'task.deleted'
+  | 'task.moved';
+
+export type TTaskNotificationType =
+  | 'TASK_CREATED'
+  | 'TASK_UPDATED'
+  | 'TASK_DELETED'
+  | 'TASK_MOVED';
+
+export interface INotificationTask {
+  id: string;
+  title: string;
+  isDone: boolean;
+  position: number;
+
+  boardId: string;
+  columnId: string;
+  assignees: { id: string; email: string }[];
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ITaskNotificationPayload {
+  task?: INotificationTask;
+  taskId?: string;
+  homeColumnId?: string;
+}
+
+export interface ITaskNotificationWrapper {
+  type: TTaskNotificationType;
+  eventType: TTaskEventType;
+  payload: ITaskNotificationPayload;
+}

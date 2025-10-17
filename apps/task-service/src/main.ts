@@ -1,5 +1,5 @@
 import cookie, { FastifyCookieOptions } from '@fastify/cookie';
-import { SocketIOAdapter } from '@kanban-board/shared';
+import { GlobalExceptionFilter, SocketIOAdapter } from '@kanban-board/shared';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -14,6 +14,11 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter()
   );
+
+  const logger = new Logger('Bootstrap');
+  app.useLogger(logger);
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
   const globalPrefix = 'api';
 
   const configService = app.get(ConfigService);
@@ -43,7 +48,7 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT') || 3002;
   await app.listen(port);
-  Logger.log(
+  logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );
 }

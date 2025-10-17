@@ -1,22 +1,24 @@
 import {
   Column,
   JWTUser,
-  RabbitmqService,
   Task,
+  TaskResponseDto,
   User
 } from '@kanban-board/shared';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { DataSource, In, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { TaskPolicy } from './policies/task.policy';
+import { TaskEventsService } from './task-events.service';
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
@@ -29,8 +31,8 @@ export class TasksService {
 
     @InjectRepository(Task)
     private readonly tasksRepository: Repository<Task>,
-
-    private readonly rmqService: RabbitmqService
+    private readonly dataSource: DataSource,
+    private readonly taskEventsService: TaskEventsService
   ) {}
 
   findAll() {
@@ -43,111 +45,104 @@ export class TasksService {
     return task;
   }
 
-  async create(columnId: string, dto: CreateTaskDto, jwtUser: JWTUser) {
-    const column = await this.columnsRepository.findOne({
-      where: { id: columnId },
-      relations: ['board']
-    });
-    if (!column) throw new NotFoundException('Column not found');
-
-    const board = column.board;
-    if (!board) throw new NotFoundException('Board not found');
-
-    const isAdmin = jwtUser.role === 'admin';
-    const isOwner = board.ownerId === jwtUser.sub;
-    const isShared = board.sharedUsers?.some((u) => u.id === jwtUser.sub);
-
-    if (!isOwner && !isAdmin && !isShared) {
-      throw new ForbiddenException('You do not have permission to add tasks');
-    }
-
-    const lastTask = await this.tasksRepository.findOne({
-      where: { column: { id: columnId } },
-      order: { position: 'DESC' },
-      select: ['id', 'position']
-    });
-    const newPosition = (lastTask?.position ?? -1) + 1;
-
-    const owner = await this.usersRepository.findOne({
-      where: { id: jwtUser.sub },
-      select: ['id', 'email']
-    });
-
-    if (!owner) throw new NotFoundException('Owner not found');
-
-    let assignees: User[] = [];
-    if (dto.assigneeIds?.length) {
-      const validAssigneeIds = [board.ownerId, ...(board.sharedUserIds || [])];
-
-      const invalidIds = dto.assigneeIds.filter(
-        (id) => !validAssigneeIds.includes(id)
-      );
-      if (invalidIds.length > 0) {
-        throw new BadRequestException(
-          'Some assignees do not have access to this board'
-        );
+  async create(columnId: string, dto: CreateTaskDto, currentUser: JWTUser) {
+    let task: Task;
+    const taskRes = await this.dataSource.transaction(async (manager) => {
+      const column = await manager.findOne(Column, {
+        where: { id: columnId },
+        relations: ['board']
+      });
+      if (!column) {
+        this.logger.warn(`Column ${columnId} not found`);
+        throw new NotFoundException('Column not found');
       }
 
-      assignees = await this.usersRepository.find({
-        where: { id: In(dto.assigneeIds) },
+      const board = column.board;
+      if (!board) {
+        this.logger.warn(`Board ${column.boardId} not found`);
+        throw new NotFoundException('Board not found');
+      }
+
+      TaskPolicy.assertCanCreate(board, currentUser);
+
+      const lastTask = await manager.findOne(Task, {
+        where: { column: { id: columnId } },
+        order: { position: 'DESC' },
+        select: ['id', 'position']
+      });
+      const newPosition = Math.max((lastTask?.position ?? -1) + 1, 0);
+
+      const owner = await manager.findOne(User, {
+        where: { id: currentUser.sub },
         select: ['id', 'email']
       });
-    }
+      if (!owner) {
+        this.logger.warn(`Owner with id ${currentUser.sub} not found`);
+        throw new NotFoundException('Owner not found');
+      }
 
-    if (!assignees.length) assignees = [owner];
+      let assignees: User[] = [];
+      if (dto.assigneeIds?.length) {
+        const validAssigneeIds = [
+          board.ownerId,
+          ...(board.sharedUserIds || [])
+        ];
 
-    const task = this.tasksRepository.create({
-      title: dto.title,
-      description: dto.description,
-      owner,
-      board,
-      column,
-      assignees,
-      assigneeIds: assignees.map(({ id }) => id),
-      assigneeEmails: assignees.map((u) => u.email),
-      position: newPosition
+        const invalidIds = dto.assigneeIds.filter(
+          (id) => !validAssigneeIds.includes(id)
+        );
+        if (invalidIds.length > 0) {
+          throw new BadRequestException(
+            'Some assignees do not have access to this board'
+          );
+        }
+
+        assignees = await this.usersRepository.find({
+          where: { id: In(dto.assigneeIds) },
+          select: ['id', 'email']
+        });
+      }
+      if (!assignees.length) assignees = [owner];
+
+      const taskEntity = this.tasksRepository.create({
+        title: dto.title,
+        description: dto.description,
+        owner,
+        board,
+        column,
+        assignees,
+        assigneeIds: assignees.map(({ id }) => id),
+        assigneeEmails: assignees.map((u) => u.email),
+        position: newPosition
+      });
+
+      try {
+        task = await this.tasksRepository.save(taskEntity);
+      } catch (err) {
+        const errMsg = 'Failed to create task';
+        this.logger.error(errMsg, err);
+        throw new InternalServerErrorException(errMsg);
+      }
+
+      return plainToInstance(TaskResponseDto, task, {
+        excludeExtraneousValues: true
+      });
     });
 
     try {
-      await this.tasksRepository.save(task);
+      await this.taskEventsService.publishCreateTask(task, currentUser);
     } catch (err) {
-      const errMsg = 'Failed to create task';
-      this.logger.error(errMsg, err);
-      throw new InternalServerErrorException(errMsg);
+      this.logger.error('Failed to publish task.created event', err);
     }
-
-    const taskRes = {
-      id: task.id,
-      title: task.title,
-      description: task.description,
-
-      assignees: task.assignees,
-      assigneeIds: task.assigneeIds,
-      ownerId: owner.id,
-      boardId: board.id,
-      columnId: task.columnId,
-
-      isDone: task.isDone,
-
-      position: task.position,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt
-    };
-
-    // this.rmqService
-    //   .publish('kanban_exchange', 'board.task.created', {
-    //     payload: { task: taskRes },
-    //     createdBy: jwtUser.sub,
-    //     recipientIds: task.assigneeIds
-    //   })
-    //   .catch((err) => {
-    //     this.logger.error('Failed to publish task.created event', err);
-    //   });
 
     return taskRes;
   }
 
-  async update(taskId: string, updateTaskDto: UpdateTaskDto, jwtUser: JWTUser) {
+  async update(
+    taskId: string,
+    updateTaskDto: UpdateTaskDto,
+    currentUser: JWTUser
+  ) {
     const task = await this.tasksRepository
       .createQueryBuilder('task')
       .leftJoinAndSelect('task.assignees', 'assignee')
@@ -170,6 +165,7 @@ export class TasksService {
 
     if (!task) throw new NotFoundException('Task not found');
 
+    TaskPolicy.assertCanUpdate(task, currentUser);
     // Update simple fields
     if (updateTaskDto.title !== undefined) task.title = updateTaskDto.title;
     if (updateTaskDto.description !== undefined) {
@@ -217,34 +213,32 @@ export class TasksService {
     return taskRes;
   }
 
-  async delete(id: string, jwtUser: JWTUser) {
-    const task = await this.tasksRepository.findOne({
-      where: { id },
-      relations: [
-        'assignees',
-        'owner',
-        'board',
-        'board.owner',
-        'board.sharedUsers'
-      ]
-    });
-    if (task.owner.id !== jwtUser.sub && jwtUser.role !== 'admin') {
-      throw new ForbiddenException(
-        'You do not have permission to delete this task'
-      );
-    }
-    if (!task) throw new NotFoundException('Task not found');
-    await this.tasksRepository.delete(id);
+  async delete(id: string, currentUser: JWTUser) {
+    const taskRes = await this.dataSource.transaction(async (manager) => {
+      const task = await manager.findOne(Task, {
+        where: { id },
+        relations: [
+          'assignees',
+          'owner',
+          'board',
+          'board.owner',
+          'board.sharedUsers'
+        ]
+      });
+      if (!task) throw new NotFoundException('Task not found');
 
-    // this.rmqService.publish<TTaskEventType>(
-    //   'kanban_exchange',
-    //   'board.task.deleted',
-    //   {
-    //     payload: { task },
-    //     createdBy: jwtUser.sub,
-    //     recipientIds: task.assigneeIds
-    //   }
-    // );
+      TaskPolicy.assertCanDelete(task, currentUser);
+
+      await manager.delete(Task, id);
+
+      return task;
+    });
+
+    try {
+      await this.taskEventsService.publishDeleteTask(taskRes, currentUser);
+    } catch (err) {
+      this.logger.error('Failed to publish task.deleted event', err);
+    }
     return { message: 'Task deleted successfully', id };
   }
 
@@ -252,122 +246,118 @@ export class TasksService {
     taskId: string,
     columnId: string,
     position?: number,
-    jwtUser?: JWTUser
+    currentUser?: JWTUser
   ) {
-    const task = await this.tasksRepository
-      .createQueryBuilder('task')
-      .leftJoinAndSelect('task.assignees', 'assignee')
-      .leftJoinAndSelect('task.owner', 'owner')
-      .leftJoinAndSelect('task.column', 'column')
-      .leftJoinAndSelect('column.tasks', 'columnTask')
-      .leftJoinAndSelect('task.board', 'board')
-      .leftJoinAndSelect('board.sharedUsers', 'sharedUser')
-      .leftJoinAndSelect('board.owner', 'boardOwner')
-      .where('task.id = :taskId', { taskId })
-      .getOne();
+    let homeColumnId: string;
 
-    if (!task) throw new NotFoundException('Task not found');
+    const taskRes = await this.dataSource.transaction(async (manager) => {
+      const task = await manager
+        .createQueryBuilder(Task, 'task')
+        .leftJoinAndSelect('task.assignees', 'assignee')
+        .leftJoinAndSelect('task.owner', 'owner')
+        .leftJoinAndSelect('task.column', 'column')
+        .leftJoinAndSelect('column.tasks', 'columnTask')
+        .leftJoinAndSelect('task.board', 'board')
+        .leftJoinAndSelect('board.sharedUsers', 'sharedUser')
+        .leftJoinAndSelect('board.owner', 'boardOwner')
+        .where('task.id = :taskId', { taskId })
+        .getOne();
 
-    const homeColumnId = task.columnId;
-    const board = task.board;
+      if (!task) throw new NotFoundException('Task not found');
+      if (!task.board) throw new NotFoundException('Board not found');
 
-    // Permission check
-    const hasAccess =
-      jwtUser?.role === 'admin' ||
-      board.sharedUsers?.some(({ id }) => id === jwtUser.sub);
-    if (!hasAccess) throw new ForbiddenException('No permission');
+      homeColumnId = task.columnId;
 
-    // MOVE TO NEW COLUMN
-    if (columnId && columnId !== task.columnId) {
-      const oldColumn = task.column;
-      const newColumn = await this.columnsRepository.findOne({
-        where: { id: columnId },
-        relations: ['tasks']
-      });
-      if (!newColumn) throw new NotFoundException('Target column not found');
+      TaskPolicy.assertCanMove(task, currentUser);
 
-      // Update column reference
-      task.column = newColumn;
-      task.columnId = newColumn.id;
+      // --- MOVE TO NEW COLUMN ---
+      if (columnId && columnId !== task.columnId) {
+        const oldColumn = task.column;
+        const newColumn = await this.columnsRepository.findOne({
+          where: { id: columnId },
+          relations: ['tasks']
+        });
+        if (!newColumn) throw new NotFoundException('Target column not found');
 
-      // Handle completedAt status based on column type
-      if (newColumn.isDone && !task.isDone) {
-        task.completedAt = new Date();
-        task.isDone = true;
+        // Update ownership
+        task.column = newColumn;
+        task.columnId = newColumn.id;
+
+        // Handle done/undo-done state
+        if (newColumn.isDone && !task.isDone) {
+          task.completedAt = new Date();
+          task.isDone = true;
+        } else if (!newColumn.isDone && task.isDone) {
+          task.completedAt = null;
+          task.isDone = false;
+        }
+
+        const newColumnTasks = this.sortByPosition(newColumn.tasks);
+        const insertPosition =
+          typeof position === 'number'
+            ? Math.min(Math.max(position, 0), newColumnTasks.length)
+            : newColumnTasks.length;
+
+        newColumnTasks.splice(insertPosition, 0, task);
+        this.reindexTasks(newColumnTasks);
+
+        const oldColumnTasks =
+          oldColumn?.tasks
+            ?.filter((t) => t.id !== task.id)
+            .sort((a, b) => a.position - b.position) ?? [];
+
+        this.reindexTasks(oldColumnTasks);
+
+        await Promise.all([
+          manager.save(newColumnTasks),
+          oldColumnTasks.length
+            ? manager.save(oldColumnTasks)
+            : Promise.resolve()
+        ]);
       }
 
-      // Insert into new column (at given position or at bottom)
-      const newColumnTasks = [...newColumn.tasks].sort(
-        (a, b) => a.position - b.position
-      );
-      const insertPosition =
-        typeof position === 'number'
-          ? Math.min(Math.max(position, 0), newColumnTasks.length)
-          : newColumnTasks.length;
-      newColumnTasks.splice(insertPosition, 0, task);
-
-      // Reindex all tasks in new column
-      this.reindexTasks(newColumnTasks);
-      await this.tasksRepository.save(newColumnTasks);
-
-      // Reindex old column tasks
-      if (oldColumn?.tasks) {
-        const oldColumnTasks = oldColumn.tasks
+      // --- REORDER IN SAME COLUMN ---
+      else if (position !== undefined) {
+        const column = task.column;
+        const tasksInColumn = column.tasks
           .filter((t) => t.id !== task.id)
           .sort((a, b) => a.position - b.position);
-        this.reindexTasks(oldColumnTasks);
-        await this.tasksRepository.save(oldColumnTasks);
+
+        const newPosition = Math.min(
+          Math.max(position, 0),
+          tasksInColumn.length
+        );
+        tasksInColumn.splice(newPosition, 0, task);
+
+        this.reindexTasks(tasksInColumn);
+        await manager.save(tasksInColumn);
+
+        task.position = newPosition;
       }
+
+      return task;
+    });
+
+    try {
+      await this.taskEventsService.publishMoveTask(
+        taskRes,
+        currentUser,
+        homeColumnId
+      );
+    } catch (err) {
+      this.logger.error('Failed to publish task.move event', err);
     }
 
-    // REORDER IN SAME COLUMN
-    else if (position !== undefined) {
-      const column = task.column;
-      const tasksInColumn = column.tasks
-        .filter((t) => t.id !== task.id)
-        .sort((a, b) => a.position - b.position);
-
-      const newPosition = Math.min(Math.max(position, 0), tasksInColumn.length);
-      tasksInColumn.splice(newPosition, 0, task);
-
-      this.reindexTasks(tasksInColumn);
-      await this.tasksRepository.save(tasksInColumn);
-
-      task.position = newPosition;
-    }
-
-    const taskRes = {
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      columnId: task.column.id,
-      position: task.position,
-      isDone: task.isDone,
-      completedAt: task.completedAt,
-      assignees:
-        task.assignees?.map((u) => ({ id: u.id, email: u.email })) || [],
-      assigneeIds: task.assignees.map(({ id }) => id),
-      owner: {
-        id: task.owner.id,
-        email: task.owner.email
-      }
-    };
-
-    // this.rmqService.publish<TTaskEventType>(
-    //   'kanban_exchange',
-    //   'board.task.moved',
-    //   {
-    //     payload: { task: taskRes, homeColumnId },
-    //     createdBy: jwtUser?.sub,
-    //     recipientIds: task.assigneeIds,
-    //     adminIds: [board.ownerId]
-    //   }
-    // );
-
-    return taskRes;
+    return plainToInstance(TaskResponseDto, taskRes, {
+      excludeExtraneousValues: true
+    });
   }
 
   private reindexTasks(tasks: Task[]) {
     tasks.forEach((t, i) => (t.position = i));
+  }
+
+  private sortByPosition(tasks: Task[]) {
+    return [...tasks].sort((a, b) => a.position - b.position);
   }
 }

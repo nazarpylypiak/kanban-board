@@ -1,11 +1,11 @@
-import { User } from '@kanban-board/shared';
+import { User, UserDto } from '@kanban-board/shared';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { UserDto } from './dto/user.dto';
+
 @Injectable()
 export class UserService {
   constructor(

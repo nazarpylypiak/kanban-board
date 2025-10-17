@@ -2,6 +2,7 @@ import {
   IBoardNotificationWrapper,
   IColumnNotificationWrapper,
   INotification,
+  ITaskNotificationWrapper,
   MailService
 } from '@kanban-board/shared';
 import { Injectable, Logger } from '@nestjs/common';
@@ -16,11 +17,12 @@ export class NotificationService {
     private readonly mailService: MailService
   ) {}
 
-  /**
-   * Handle generic board event and notify both shared users and admins
-   */
   async handleEvent(
-    event: INotification<IBoardNotificationWrapper | IColumnNotificationWrapper>
+    event: INotification<
+      | IBoardNotificationWrapper
+      | IColumnNotificationWrapper
+      | ITaskNotificationWrapper
+    >
   ) {
     if (!event.payload) {
       this.logger.warn('Received event without payload');
@@ -47,7 +49,7 @@ export class NotificationService {
       timestamp: timestamp || new Date().toISOString()
     };
 
-    // 1️⃣ Notify shared users (exclude creator)
+    // Notify shared users (exclude creator)
     const userRecipients = recipientIds.filter((id) => id !== createdBy);
 
     if (userRecipients.length > 0) {
@@ -59,7 +61,7 @@ export class NotificationService {
       this.logger.debug(`No shared users to notify for event: ${eventType}`);
     }
 
-    // 2️⃣ Notify admins
+    // Notify admins
     if (adminIds && adminIds.length > 0) {
       await this.gateway.notifyAdmins(adminIds, notification);
       this.logger.log(

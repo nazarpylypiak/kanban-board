@@ -13,6 +13,24 @@
       },
       "group": {
         "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Serve in macOS Terminal",
+      "type": "shell",
+      "command": "osascript",
+      "args": [
+        "-e",
+        "tell application \"Terminal\" to do script \"cd ${workspaceFolder} && ./serve.sh\""
+      ],
+      "group": {
+        "kind": "build",
         "isDefault": true
       },
       "problemMatcher": [],

@@ -1,10 +1,10 @@
 import { IColumn, IUser } from '@kanban-board/shared';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
 import AddNewTask from '../../components/AddNewTask';
 
 import { RootState } from '../../../../core/store';
+import { makeSelectTasksByColumn } from '../../../../core/store/selectors/taskSelectors';
 import ColumnHeader from '../../components/column/ColumnHeader';
 import TaskComponent from '../task/Task';
 import { useColumnDnD, useColumnHandlers } from './hooks';
@@ -20,9 +20,14 @@ const idle = { type: 'idle' } satisfies ColumnState;
 
 export default function Column({ column, isOwner, user }: ColumnProps) {
   const [state, setState] = useState<ColumnState>(idle);
-  const tasks = useSelector(selectTasksByColumn(column.id));
   const boardUsers = useSelector((state: RootState) => state.boards.boardUsers);
 
+  const selectTasks = useMemo(
+    () => makeSelectTasksByColumn(column.id),
+    [column.id]
+  );
+
+  const tasks = useSelector((state: RootState) => selectTasks(state));
   const { handleTaskCreate, handleRuleAdd, handleDeleteColumn } =
     useColumnHandlers({
       column

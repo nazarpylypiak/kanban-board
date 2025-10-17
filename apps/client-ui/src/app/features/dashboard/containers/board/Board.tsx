@@ -17,8 +17,6 @@ export default function Board({ board, isOwner }: BoardProps) {
   const { containerRef, handleAddColumn } = useBoardData(board.id);
 
   useBoardUsers({ boardId: board.id });
-
-  // useTaskEvents(user);
   useMonitorDnD(columns);
   useColumnNotifications();
 
