@@ -1,7 +1,6 @@
 import { IUser } from '@kanban-board/shared';
-import { useState } from 'react';
-// import Select from 'react-select';
 import { Button } from '@mui/material';
+import { useState } from 'react';
 import { TCreateTask } from '../../../shared/types/task.type';
 import AddTaskModal from '../modals/AddTaskModal';
 interface Props {
@@ -30,7 +29,7 @@ export default function AddNewTask({
     <>
       <Button
         variant="contained"
-        color="inherit" // Neutral color
+        color="inherit"
         fullWidth
         onClick={(e) => handleOpen(e)}
         sx={{

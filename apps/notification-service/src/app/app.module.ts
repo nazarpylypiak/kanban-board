@@ -1,4 +1,4 @@
-import { MailModule, RMQModule } from '@kanban-board/shared';
+import { LoggerModule, MailModule, RMQModule } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventsModule } from './events/events.module';
@@ -9,10 +9,12 @@ import { NotificationModule } from './notification/notification.module';
     ConfigModule.forRoot({
       isGlobal: true
     }),
+
     NotificationModule,
     MailModule,
     RMQModule,
-    EventsModule
+    EventsModule,
+    LoggerModule
   ]
 })
 export class AppModule {}

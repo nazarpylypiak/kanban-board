@@ -1,3 +1,4 @@
+import { GlobalExceptionFilter } from '@kanban-board/shared';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -10,8 +11,20 @@ import { AppModule } from './app/app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    new FastifyAdapter({
+      logger: {
+        level: 'info', // production: 'info' or 'warn'
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? { target: 'pino-pretty' }
+            : undefined
+      }
+    })
   );
+
+  const logger = new Logger('Bootstrap');
+  app.useLogger(logger);
+  app.useGlobalFilters(new GlobalExceptionFilter());
   const globalPrefix = 'api';
 
   const configService = app.get(ConfigService);

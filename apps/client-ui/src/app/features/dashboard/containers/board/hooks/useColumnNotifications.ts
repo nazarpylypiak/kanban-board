@@ -7,6 +7,7 @@ import {
 } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSocketContext } from '../../../../../core/context/SocketContext';
 import {
   addColumn,
   deleteColumn
@@ -17,12 +18,14 @@ import {
   moveTaskToOtherColumn,
   reorderTaskInSameColumn
 } from '../../../../../core/store/tasks/tasksSlice';
-import { socket } from '../../../../../socket';
 
 export const useColumnNotifications = () => {
   const dispatch = useDispatch();
+  const { socket } = useSocketContext();
 
   useEffect(() => {
+    if (!socket) return;
+
     const handleColumnNotification = (
       notification: INotificationUser<
         IColumnNotificationWrapper | ITaskNotificationWrapper

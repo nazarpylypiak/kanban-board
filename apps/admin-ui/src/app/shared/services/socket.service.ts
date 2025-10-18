@@ -1,23 +1,39 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   IBoardNotificationWrapper,
   IColumnNotificationWrapper,
   INotificationUser
 } from '@kanban-board/shared';
-import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { filter, Observable, take } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
+import { selectAccessToken } from '../../core/store/auth/auth.selectors';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocketService {
-  private socket: Socket;
+  private socket!: Socket;
+  private store = inject(Store);
+  accessToken$ = this.store.select(selectAccessToken);
+
   constructor() {
+    this.accessToken$
+      .pipe(
+        filter((token): token is string => !!token),
+        take(1)
+      )
+      .subscribe({
+        next: (accessToken) => this.initSocket(accessToken)
+      });
+  }
+
+  initSocket(token: string) {
     this.socket = io(environment.socketUrl, {
-      // auth: {
-      //   token: localStorage.getItem('accessToken')
-      // }
+      auth: {
+        token
+      }
     });
   }
 

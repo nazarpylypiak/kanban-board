@@ -2,9 +2,11 @@ import {
   IBoardNotificationWrapper,
   IColumnNotificationWrapper,
   INotificationUser,
-  ITaskNotificationWrapper
+  ITaskNotificationWrapper,
+  LoggerService
 } from '@kanban-board/shared';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
@@ -21,13 +23,32 @@ import { Server, Socket } from 'socket.io';
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger = new Logger(NotificationGateway.name);
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly jwtService: JwtService
+  ) {
+    this.logger.setContext(NotificationGateway.name);
+  }
 
   @WebSocketServer() server: Server;
 
-  handleConnection(client: Socket) {
-    client.emit('connected');
-    this.logger.log(`Client ${client.id} connected`);
+  async handleConnection(client: Socket) {
+    try {
+      const token = client.handshake.auth.token || client.handshake.query.token;
+      if (!token) throw new Error('Missing token');
+
+      const payload = await this.jwtService.verifyAsync(token);
+      const userId = payload.sub;
+      const role = payload.role || 'UnknownRole';
+      client.data.user = payload;
+
+      this.logger.log(`✅ User connected: sub=${userId}, role=${role}`);
+      client.emit('connected');
+    } catch (error) {
+      this.logger.warn(`❌ Unauthorized socket connection: ${error.message}`);
+      client.emit('unauthorized');
+      client.disconnect(true);
+    }
   }
 
   handleDisconnect(client: Socket) {

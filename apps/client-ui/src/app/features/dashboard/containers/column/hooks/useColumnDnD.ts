@@ -76,10 +76,6 @@ export const useColumnDnD = ({ column, onStateChange, idle }: Props) => {
         }),
         autoScrollForElements({
           canScroll({ source }) {
-            // if (!settings.isOverElementAutoScrollEnabled) {
-            //   return false;
-            // }
-
             return isDraggingATask({ source });
           },
           getConfiguration: () => ({

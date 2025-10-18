@@ -1,4 +1,3 @@
-// authenticated-request.interface.ts
 import { FastifyRequest } from 'fastify';
 import { JWTUser } from './user.interface';
 

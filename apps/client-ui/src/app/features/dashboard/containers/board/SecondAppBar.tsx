@@ -37,7 +37,7 @@ export default function SecondAppBar(props: Props) {
         alignItems: 'center',
         borderBottom: '1px solid',
         borderColor: 'divider',
-        bgcolor: 'grey.100', // lighter than background.paper
+        bgcolor: 'grey.100',
         px: 3,
         py: 1.5,
         position: 'sticky',

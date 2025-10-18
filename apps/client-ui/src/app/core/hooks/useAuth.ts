@@ -4,7 +4,7 @@ import { refreshToken } from '../../features/auth/services/auth.service';
 import { AppDispatch } from '../store';
 import { setAccessToken, setLoading } from '../store/auth/authSlice';
 
-export const useInitializeAuth = () => {
+export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {

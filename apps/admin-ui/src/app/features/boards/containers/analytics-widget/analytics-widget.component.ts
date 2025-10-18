@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  OnInit,
   effect,
   inject,
   input
@@ -36,7 +35,7 @@ import { TaskPerUserComponent } from './components/task-per-user/task-per-user.c
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnalyticsWidgetComponent implements OnInit {
+export class AnalyticsWidgetComponent {
   boardId = input.required<string>();
   currentUserId = input<string | null>('');
 
@@ -75,16 +74,5 @@ export class AnalyticsWidgetComponent implements OnInit {
         );
       }
     });
-  }
-
-  ngOnInit(): void {
-    console.log('Not Empty');
-    // combineLatest([this.stats$, this.loading$])
-    //   .pipe(
-    //     filter((res): res is [TaskStats, boolean] => !!res[0]),
-    //     tap(([res]) => this.updateCharts(res)),
-    //     takeUntilDestroyed(this.destroyRef)
-    //   )
-    //   .subscribe();
   }
 }

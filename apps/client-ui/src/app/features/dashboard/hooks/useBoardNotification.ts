@@ -4,14 +4,16 @@ import {
 } from '@kanban-board/shared';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSocketContext } from '../../../core/context/SocketContext';
 import { addBoard, deleteBoard } from '../../../core/store/boards/boardsSlice';
-import { socket } from '../../../socket';
 import { getOne } from '../services/boards.service';
 
 export const useBoardNotification = () => {
   const dispatch = useDispatch();
+  const { socket } = useSocketContext();
 
   useEffect(() => {
+    if (!socket) return;
     const handleBoardShared = async (boardId: string) => {
       try {
         const board = await getOne(boardId);

@@ -5,6 +5,7 @@ import { ILogger, LoggerMeta } from './types';
 @Injectable({ scope: Scope.DEFAULT })
 export class LoggerService implements ILogger {
   private logger: PinoLogger;
+  private context?: string;
 
   constructor() {
     const env = process.env['NODE_ENV'];
@@ -20,8 +21,18 @@ export class LoggerService implements ILogger {
     });
   }
 
+  setContext(context: string) {
+    this.context = context;
+  }
+
+  private formatMessage(message: string) {
+    return this.context ? `[${this.context}] ${message}` : message;
+  }
+
   log(message: string, meta?: LoggerMeta) {
-    meta ? this.logger.info(meta, message) : this.logger.info(message);
+    meta
+      ? this.logger.info(meta, this.formatMessage(message))
+      : this.logger.info(this.formatMessage(message));
   }
 
   info(message: string, meta?: LoggerMeta) {
@@ -29,15 +40,21 @@ export class LoggerService implements ILogger {
   }
 
   warn(message: string, meta?: LoggerMeta) {
-    meta ? this.logger.warn(meta, message) : this.logger.warn(message);
+    meta
+      ? this.logger.warn(meta, this.formatMessage(message))
+      : this.logger.warn(this.formatMessage(message));
   }
 
   error(message: string, meta?: LoggerMeta) {
-    meta ? this.logger.error(meta, message) : this.logger.error(message);
+    meta
+      ? this.logger.error(meta, this.formatMessage(message))
+      : this.logger.error(this.formatMessage(message));
   }
 
   debug(message: string, meta?: LoggerMeta) {
-    meta ? this.logger.debug(meta, message) : this.logger.debug(message);
+    meta
+      ? this.logger.debug(meta, this.formatMessage(message))
+      : this.logger.debug(this.formatMessage(message));
   }
 
   child(meta: LoggerMeta): ILogger {

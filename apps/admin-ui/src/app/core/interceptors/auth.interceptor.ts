@@ -28,7 +28,6 @@ export const authInterceptor: HttpInterceptorFn = (
         });
       }
 
-      // у HttpInterceptorFn замість next.handle(req) викликаємо просто next(authReq)
       next(authReq).subscribe({
         next: (res) => observer.next(res),
         error: (err) => observer.error(err),

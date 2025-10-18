@@ -16,7 +16,7 @@ export const useTaskHandlers = ({ task, setShowConfirm }: Props) => {
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowConfirm(true); // open modal
+    setShowConfirm(true);
   };
 
   const handleConfirmDelete = async () => {

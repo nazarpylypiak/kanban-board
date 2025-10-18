@@ -25,7 +25,7 @@ export default function AddNewBoard({ onBoardCreate }: Props) {
         value={newBoardName}
         onChange={(e) => {
           setNewBoardName(e.target.value);
-          if (error) setError(''); // clear error while typing
+          if (error) setError('');
         }}
         placeholder="New board name"
         className={`flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 ${
