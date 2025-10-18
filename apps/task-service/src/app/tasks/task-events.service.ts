@@ -35,7 +35,7 @@ export class TaskEventsService {
       },
       adminIds: [task.board.ownerId],
       createdBy: currentUser.sub,
-      recipientIds: task.board.sharedUserIds,
+      recipientIds: task.assigneeIds,
       timestamp: new Date().toISOString()
     };
   }

@@ -45,13 +45,6 @@ export class NotificationGateway
       const role = payload.role || 'UnknownRole';
       client.data.user = payload;
 
-      // 👇 Disconnect old socket if the same user is already connected
-      const existingSocketId = this.connectedUsers.get(userId);
-      if (existingSocketId && existingSocketId !== client.id) {
-        const oldSocket = this.server.sockets.sockets.get(existingSocketId);
-        if (oldSocket) oldSocket.disconnect(true);
-      }
-
       this.connectedUsers.set(userId, client.id);
 
       this.logger.log(`🟢 User connected: sub=${userId}, role=${role}`);
@@ -64,10 +57,6 @@ export class NotificationGateway
   }
 
   handleDisconnect(client: Socket) {
-    const user = client.data.user;
-    if (user?.sub) {
-      this.connectedUsers.delete(user.sub);
-    }
     client.emit('disconnected');
     this.logger.log(`🔴 Client ${client.id} disconnected`);
   }
@@ -130,9 +119,9 @@ export class NotificationGateway
       userIds.map(async (userId) => {
         try {
           this.server.to(`notify:${userId}`).emit('notification', notification);
-          this.logger.log(
-            `📤 WebSocket notification sent to user ${userId} for ${event.eventType}`
-          );
+          // this.logger.log(
+          //   `📤 WebSocket notification sent to user ${userId} for ${event.eventType}`
+          // );
         } catch (err) {
           this.logger.error(`Failed to notify user ${userId}`, err.stack);
         }

@@ -12,6 +12,7 @@ export class TaskDto {
   @Expose() boardId!: string;
 
   @Expose() @Type(() => UserDto) owner!: UserDto;
+  @Expose() ownerId!: string;
 
   @Expose() @Type(() => UserDto) assignees!: UserDto[];
 

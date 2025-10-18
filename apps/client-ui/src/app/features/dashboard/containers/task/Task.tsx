@@ -36,7 +36,6 @@ export default function Task({ task, column, index }: TaskProps) {
     onStateChange: setState,
     idle
   });
-
   const {
     handleCancelDelete,
     handleConfirmDelete,
