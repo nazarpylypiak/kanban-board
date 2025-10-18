@@ -4,8 +4,7 @@ import { ILogger, LoggerMeta } from './types';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class LoggerService implements ILogger {
-  private logger: PinoLogger;
-  private context?: string;
+  private readonly logger: PinoLogger;
 
   constructor() {
     const env = process.env['NODE_ENV'];
@@ -21,53 +20,82 @@ export class LoggerService implements ILogger {
     });
   }
 
-  setContext(context: string) {
-    this.context = context;
+  /** Format message and remove context from meta */
+  private format(msg: string, meta?: LoggerMeta | string, context?: string) {
+    let rest: Record<string, any> = {};
+
+    if (typeof meta === 'string') {
+      context = meta;
+    } else if (meta) {
+      rest = { ...meta };
+      if ('context' in rest) delete rest['context'];
+      if (!context && 'context' in meta) context = meta['context'];
+    }
+
+    const finalMsg = context ? `[${context}] ${msg}` : msg;
+    return { finalMsg, rest };
   }
 
-  private formatMessage(message: string) {
-    return this.context ? `[${this.context}] ${message}` : message;
+  log(msg: string, meta?: LoggerMeta | string) {
+    const { finalMsg, rest } = this.format(msg, meta);
+    this.logger.info(rest, finalMsg);
   }
 
-  log(message: string, meta?: LoggerMeta) {
-    meta
-      ? this.logger.info(meta, this.formatMessage(message))
-      : this.logger.info(this.formatMessage(message));
+  info(msg: string, meta?: LoggerMeta | string) {
+    const { finalMsg, rest } = this.format(msg, meta);
+    this.logger.info(rest, finalMsg);
   }
 
-  info(message: string, meta?: LoggerMeta) {
-    this.log(message, meta);
+  warn(msg: string, meta?: LoggerMeta | string) {
+    const { finalMsg, rest } = this.format(msg, meta);
+    this.logger.warn(rest, finalMsg);
   }
 
-  warn(message: string, meta?: LoggerMeta) {
-    meta
-      ? this.logger.warn(meta, this.formatMessage(message))
-      : this.logger.warn(this.formatMessage(message));
+  error(msg: string, meta?: LoggerMeta | string) {
+    const { finalMsg, rest } = this.format(msg, meta);
+    this.logger.error(rest, finalMsg);
   }
 
-  error(message: string, meta?: LoggerMeta) {
-    meta
-      ? this.logger.error(meta, this.formatMessage(message))
-      : this.logger.error(this.formatMessage(message));
+  debug(msg: string, meta?: LoggerMeta | string) {
+    const { finalMsg, rest } = this.format(msg, meta);
+    this.logger.debug(rest, finalMsg);
   }
 
-  debug(message: string, meta?: LoggerMeta) {
-    meta
-      ? this.logger.debug(meta, this.formatMessage(message))
-      : this.logger.debug(this.formatMessage(message));
-  }
-
+  /** Create a child logger with inherited context */
   child(meta: LoggerMeta): ILogger {
-    const childLogger = this.logger.child(meta);
+    const parentContext = meta['context'];
+    const { context, rest } = { context: parentContext, rest: { ...meta } };
+    if ('context' in rest) delete rest['context'];
+
+    const childLogger = this.logger.child(rest);
+    return this.wrapPino(childLogger, context);
+  }
+
+  /** Wrap PinoLogger and propagate context */
+  private wrapPino(loggerInstance: PinoLogger, context?: string): ILogger {
     return {
-      log: (msg, m) => (m ? childLogger.info(m, msg) : childLogger.info(msg)),
-      info: (msg, m) => (m ? childLogger.info(m, msg) : childLogger.info(msg)),
-      warn: (msg, m) => (m ? childLogger.warn(m, msg) : childLogger.warn(msg)),
-      error: (msg, m) =>
-        m ? childLogger.error(m, msg) : childLogger.error(msg),
-      debug: (msg, m) =>
-        m ? childLogger.debug(m, msg) : childLogger.debug(msg),
-      child: (m) => this.child(m)
+      log: (msg, meta?) => {
+        const { finalMsg, rest } = this.format(msg, meta, context);
+        loggerInstance.info(rest, finalMsg);
+      },
+      info: (msg, meta?) => {
+        const { finalMsg, rest } = this.format(msg, meta, context);
+        loggerInstance.info(rest, finalMsg);
+      },
+      warn: (msg, meta?) => {
+        const { finalMsg, rest } = this.format(msg, meta, context);
+        loggerInstance.warn(rest, finalMsg);
+      },
+      error: (msg, meta?) => {
+        const { finalMsg, rest } = this.format(msg, meta, context);
+        loggerInstance.error(rest, finalMsg);
+      },
+      debug: (msg, meta?) => {
+        const { finalMsg, rest } = this.format(msg, meta, context);
+        loggerInstance.debug(rest, finalMsg);
+      },
+      child: (childMeta) =>
+        this.wrapPino(loggerInstance.child(childMeta), context)
     };
   }
 }

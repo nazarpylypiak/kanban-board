@@ -1,6 +1,9 @@
 import cookie, { FastifyCookieOptions } from '@fastify/cookie';
-import { GlobalExceptionFilter, SocketIOAdapter } from '@kanban-board/shared';
-import { Logger } from '@nestjs/common';
+import {
+  GlobalExceptionFilter,
+  LoggerService,
+  SocketIOAdapter
+} from '@kanban-board/shared';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -13,17 +16,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      logger: {
-        level: 'info', // production: 'info' or 'warn'
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? { target: 'pino-pretty' }
-            : undefined
-      }
-    })
+      logger: false
+    }),
+    { logger: false }
   );
 
-  const logger = new Logger('Bootstrap');
+  const loggerService = app.get(LoggerService);
+  const logger = loggerService.child({ context: 'Bootstrap' });
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
 
@@ -36,7 +35,7 @@ async function bootstrap() {
     ?.split(',')
     .map((url) => url.trim());
 
-  app.useWebSocketAdapter(new SocketIOAdapter(app, origins));
+  app.useWebSocketAdapter(new SocketIOAdapter(app, origins, loggerService));
 
   app.setGlobalPrefix(globalPrefix);
 

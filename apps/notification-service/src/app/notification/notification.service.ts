@@ -3,18 +3,21 @@ import {
   IColumnNotificationWrapper,
   INotification,
   ITaskNotificationWrapper,
+  LoggerService,
   MailService
 } from '@kanban-board/shared';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 
 @Injectable()
 export class NotificationService {
-  private readonly logger = new Logger(NotificationService.name);
-
+  private logger = this.loggerService.child({
+    context: NotificationService.name
+  });
   constructor(
     private readonly gateway: NotificationGateway,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
+    private readonly loggerService: LoggerService
   ) {}
 
   async handleEvent(
@@ -25,7 +28,9 @@ export class NotificationService {
     >
   ) {
     if (!event.payload) {
-      this.logger.warn('Received event without payload');
+      this.logger.warn('Received event without payload', {
+        eventType: event.eventType
+      });
       return;
     }
 
@@ -55,20 +60,22 @@ export class NotificationService {
     if (userRecipients.length > 0) {
       await this.gateway.sendToUsers(userRecipients, notification);
       this.logger.log(
-        `WebSocket notifications sent to ${userRecipients.length} users`
+        `WebSocket notifications sent to ${userRecipients.length} users`,
+        { eventType }
       );
     } else {
-      this.logger.debug(`No shared users to notify for event: ${eventType}`);
+      this.logger.debug(`No shared users to notify`, { eventType });
     }
 
     // Notify admins
     if (adminIds && adminIds.length > 0) {
       await this.gateway.notifyAdmins(adminIds, notification);
       this.logger.log(
-        `WebSocket notifications sent to ${adminIds.length} admins`
+        `WebSocket notifications sent to ${adminIds.length} admins`,
+        { eventType }
       );
     } else {
-      this.logger.debug(`No admins to notify for event: ${eventType}`);
+      this.logger.debug(`No admins to notify`, { eventType });
     }
   }
 
@@ -80,19 +87,22 @@ export class NotificationService {
   ) {
     if (!recipientEmails.length || !event.payload) return;
 
-    const { eventType, payload, message } = event;
+    const { eventType, message } = event;
 
     for (const email of recipientEmails) {
       const subject = `Board Notification: ${eventType}`;
       const text = `
         Hi,
         ${message || 'There is an update on your board.'}
-        `;
+      `;
       try {
         await this.mailService.sendMail(email, subject, text);
-        this.logger.log(`Email notification sent to ${email}`);
+        this.logger.log(`Email notification sent to ${email}`, { eventType });
       } catch (err) {
-        this.logger.error(`Failed to send email to ${email}`, err.stack);
+        this.logger.error(`Failed to send email to ${email}`, {
+          eventType,
+          stack: err.stack
+        });
       }
     }
   }

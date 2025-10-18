@@ -23,12 +23,14 @@ import { Server, Socket } from 'socket.io';
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
+  private logger = this.loggerService.child({
+    context: NotificationGateway.name
+  });
+
   constructor(
-    private readonly logger: LoggerService,
+    private readonly loggerService: LoggerService,
     private readonly jwtService: JwtService
-  ) {
-    this.logger.setContext(NotificationGateway.name);
-  }
+  ) {}
 
   @WebSocketServer() server: Server;
 

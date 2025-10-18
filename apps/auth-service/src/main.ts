@@ -4,8 +4,7 @@
  */
 
 import cookie, { FastifyCookieOptions } from '@fastify/cookie';
-import { GlobalExceptionFilter } from '@kanban-board/shared';
-import { Logger } from '@nestjs/common';
+import { GlobalExceptionFilter, LoggerService } from '@kanban-board/shared';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -18,17 +17,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      logger: {
-        level: 'info', // production: 'info' or 'warn'
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? { target: 'pino-pretty' }
-            : undefined
-      }
-    })
+      logger: false
+    }),
+    { logger: false }
   );
 
-  const logger = new Logger('Bootstrap');
+  const loggerService = app.get(LoggerService);
+  const logger = loggerService.child({ context: 'Bootstrap' });
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
   const globalPrefix = 'api';
@@ -56,7 +51,7 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
-  Logger.log(
+  logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );
 }

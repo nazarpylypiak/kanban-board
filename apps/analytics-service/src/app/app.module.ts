@@ -1,4 +1,4 @@
-import { Board, Column, Task, User } from '@kanban-board/shared';
+import { Board, Column, LoggerModule, Task, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,7 +23,8 @@ import { AnalyticsModule } from './analytics/analytics.module';
         synchronize: config.get<string>('NODE_ENV') === 'development'
       })
     }),
-    AnalyticsModule
+    AnalyticsModule,
+    LoggerModule
   ]
 })
 export class AppModule {}

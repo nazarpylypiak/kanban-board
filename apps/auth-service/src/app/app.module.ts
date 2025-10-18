@@ -1,4 +1,4 @@
-import { RefreshToken, User } from '@kanban-board/shared';
+import { LoggerModule, RefreshToken, User } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -23,8 +23,8 @@ import { AuthModule } from './auth/auth.module';
         synchronize: config.get<string>('NODE_ENV') === 'development'
       })
     }),
-
-    AuthModule
+    AuthModule,
+    LoggerModule
   ]
 })
 export class AppModule {}
