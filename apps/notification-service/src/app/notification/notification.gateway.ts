@@ -18,7 +18,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(3005)
+@WebSocketGateway()
 @Injectable()
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -26,6 +26,7 @@ export class NotificationGateway
   private logger = this.loggerService.child({
     context: NotificationGateway.name
   });
+  private connectedUsers = new Map<string, string>();
 
   constructor(
     private readonly loggerService: LoggerService,
@@ -44,18 +45,31 @@ export class NotificationGateway
       const role = payload.role || 'UnknownRole';
       client.data.user = payload;
 
-      this.logger.log(`✅ User connected: sub=${userId}, role=${role}`);
+      // 👇 Disconnect old socket if the same user is already connected
+      const existingSocketId = this.connectedUsers.get(userId);
+      if (existingSocketId && existingSocketId !== client.id) {
+        const oldSocket = this.server.sockets.sockets.get(existingSocketId);
+        if (oldSocket) oldSocket.disconnect(true);
+      }
+
+      this.connectedUsers.set(userId, client.id);
+
+      this.logger.log(`🟢 User connected: sub=${userId}, role=${role}`);
       client.emit('connected');
     } catch (error) {
-      this.logger.warn(`❌ Unauthorized socket connection: ${error.message}`);
+      this.logger.warn(`⚠️ Unauthorized socket connection: ${error.message}`);
       client.emit('unauthorized');
       client.disconnect(true);
     }
   }
 
   handleDisconnect(client: Socket) {
+    const user = client.data.user;
+    if (user?.sub) {
+      this.connectedUsers.delete(user.sub);
+    }
     client.emit('disconnected');
-    this.logger.log(`Client ${client.id} disconnected`);
+    this.logger.log(`🔴 Client ${client.id} disconnected`);
   }
 
   @SubscribeMessage('subscribe')
@@ -67,6 +81,15 @@ export class NotificationGateway
     this.logger.log(`📥 User joined room notify:${data.userId}`);
   }
 
+  @SubscribeMessage('unsubscribe')
+  handleLeaveUser(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.leave(`notify:${data.userId}`);
+    this.logger.log(`📤 User left room notify:${data.userId}`);
+  }
+
   @SubscribeMessage('subscribeAdmin')
   handleJoinAdmin(
     @MessageBody() data: { adminId: string },
@@ -74,6 +97,15 @@ export class NotificationGateway
   ) {
     socket.join(`notify:admin:${data.adminId}`);
     this.logger.log(`📥 Admin joined room notify:admin:${data.adminId}`);
+  }
+
+  @SubscribeMessage('unsubscribeAdmin')
+  handleLeaveAdmin(
+    @MessageBody() data: { userId: string },
+    @ConnectedSocket() socket: Socket
+  ) {
+    socket.leave(`notify:admin:${data.userId}`);
+    this.logger.log(`📤 Admin left room notify:${data.userId}`);
   }
 
   async sendToUsers(
@@ -132,9 +164,9 @@ export class NotificationGateway
           this.server
             .to(`notify:admin:${adminId}`)
             .emit('notification', notification);
-          this.logger.log(
-            `📤 WebSocket notification sent to admin ${adminId} for ${event.eventType}`
-          );
+          // this.logger.log(
+          //   `📤 WebSocket notification sent to admin ${adminId} for ${event.eventType}`
+          // );
         } catch (err) {
           this.logger.error(`Failed to notify admin ${adminId}`, err.stack);
         }

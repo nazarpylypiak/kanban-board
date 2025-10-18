@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { MouseEvent, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectIsAdmin } from '../../../../core/store/selectors/authSelectors';
+import { selectIsAdmin } from '../../../../core/store/auth/selectors/authSelectors';
 import { TRules } from '../../containers/column/types/rules.type';
 
 interface Props {

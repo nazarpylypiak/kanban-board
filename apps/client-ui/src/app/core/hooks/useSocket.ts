@@ -13,7 +13,7 @@ export const useSocket = () => {
   useEffect(() => {
     if (loading || !accessToken) return;
 
-    const socketPort = import.meta.env.VITE_SOCKET_PORT || 3005;
+    const socketPort = import.meta.env.VITE_SOCKET_PORT || 3004;
     const socketPath = import.meta.env.VITE_SOCKET_PATH || '/socket.io';
     const socketHost = import.meta.env.VITE_SOCKET_HOST || 'http://localhost';
 

@@ -59,23 +59,22 @@ export class NotificationService {
 
     if (userRecipients.length > 0) {
       await this.gateway.sendToUsers(userRecipients, notification);
-      this.logger.log(
-        `WebSocket notifications sent to ${userRecipients.length} users`,
-        { eventType }
-      );
-    } else {
-      this.logger.debug(`No shared users to notify`, { eventType });
     }
 
     // Notify admins
-    if (adminIds && adminIds.length > 0) {
+    if (adminIds.length > 0) {
       await this.gateway.notifyAdmins(adminIds, notification);
+    }
+
+    // Single log for the entire notification event
+    const totalUsers = userRecipients.length + (adminIds?.length || 0);
+    if (totalUsers > 0) {
       this.logger.log(
-        `WebSocket notifications sent to ${adminIds.length} admins`,
+        `WebSocket notifications sent: ${userRecipients.length} users, ${adminIds?.length || 0} admins`,
         { eventType }
       );
     } else {
-      this.logger.debug(`No admins to notify`, { eventType });
+      this.logger.debug(`No recipients for notification`, { eventType });
     }
   }
 

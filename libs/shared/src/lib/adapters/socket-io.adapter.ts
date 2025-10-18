@@ -21,7 +21,7 @@ export class SocketIOAdapter extends IoAdapter {
     const wsLogger = this.logger.child({ context: 'WebSocket' });
 
     server.on('connection', (socket: Socket) => {
-      wsLogger.info('🔌 Client connected', { socketId: socket.id });
+      // wsLogger.info('🔌 Client connected', { socketId: socket.id });
 
       socket.onAny((event, ...args) => {
         wsLogger.debug('📨 Event received', {

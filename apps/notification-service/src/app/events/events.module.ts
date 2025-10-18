@@ -2,8 +2,6 @@ import { MailModule, RMQModule } from '@kanban-board/shared';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
-import { NotificationGateway } from '../notification/notification.gateway';
-import { NotificationService } from '../notification/notification.service';
 
 @Module({
   imports: [
@@ -20,7 +18,6 @@ import { NotificationService } from '../notification/notification.service';
     }),
     RMQModule,
     MailModule
-  ],
-  providers: [NotificationService, NotificationGateway]
+  ]
 })
 export class EventsModule {}

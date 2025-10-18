@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  socketUrl: 'http://localhost:3005'
+  socketUrl: 'http://localhost:3004'
 };

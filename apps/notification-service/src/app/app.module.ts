@@ -9,7 +9,6 @@ import { NotificationModule } from './notification/notification.module';
     ConfigModule.forRoot({
       isGlobal: true
     }),
-
     NotificationModule,
     MailModule,
     RMQModule,

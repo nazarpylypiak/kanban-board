@@ -5,6 +5,7 @@ import { getProfile } from '../../features/dashboard/services/user.service';
 import AppBar from '../../shared/containers/AppBar';
 import { SocketProvider } from '../context/SocketContext';
 import { useSocket } from '../hooks/useSocket';
+import { useSubscribeToNotification } from '../hooks/useSubscribeToNotification';
 import { RootState } from '../store';
 import { setUser } from '../store/auth/authSlice';
 
@@ -14,6 +15,7 @@ export default function PrivateLayout() {
     (state: RootState) => state.auth
   );
   const socket = useSocket();
+  useSubscribeToNotification({ socket });
 
   useEffect(() => {
     if (accessToken) {
