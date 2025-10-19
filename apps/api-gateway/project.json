@@ -1,7 +1,7 @@
 {
-  "name": "notification-service",
+  "name": "api-gateway",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/notification-service/src",
+  "sourceRoot": "apps/api-gateway/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -10,7 +10,7 @@
       "options": {
         "command": "webpack-cli build",
         "args": ["--node-env=production"],
-        "cwd": "apps/notification-service"
+        "cwd": "apps/api-gateway"
       },
       "configurations": {
         "development": {
@@ -23,8 +23,8 @@
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
-        "{workspaceRoot}/dist/apps/notification-service/package.json",
-        "{workspaceRoot}/dist/apps/notification-service/package-lock.json"
+        "{workspaceRoot}/dist/apps/api-gateway/package.json",
+        "{workspaceRoot}/dist/apps/api-gateway/package-lock.json"
       ],
       "options": {
         "buildTarget": "build"
@@ -33,9 +33,7 @@
     "copy-workspace-modules": {
       "dependsOn": ["build"],
       "cache": true,
-      "outputs": [
-        "{workspaceRoot}/dist/apps/notification-service/workspace_modules"
-      ],
+      "outputs": ["{workspaceRoot}/dist/apps/api-gateway/workspace_modules"],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
         "buildTarget": "build"
@@ -51,17 +49,17 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "notification-service:build",
+        "buildTarget": "api-gateway:build",
         "runBuildTargetDependencies": false,
         "inspect": "inspect",
-        "port": 9232
+        "port": 9234
       },
       "configurations": {
         "development": {
-          "buildTarget": "notification-service:build:development"
+          "buildTarget": "api-gateway:build:development"
         },
         "production": {
-          "buildTarget": "notification-service:build:production"
+          "buildTarget": "api-gateway:build:production"
         }
       }
     },
@@ -69,7 +67,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/notification-service/jest.config.ts",
+        "jestConfig": "apps/api-gateway/jest.config.ts",
         "passWithNoTests": true
       }
     }

@@ -9,7 +9,7 @@ export class MailService {
   private transporter: nodemailer.Transporter;
   private rateLimiter: RateLimiterMemory;
 
-  constructor(private config: ConfigService) {
+  constructor(config: ConfigService) {
     this.transporter = nodemailer.createTransport({
       host: config.get<string>('MAIL_HOST') || 'smtp.mailtrap.io',
       port: Number(config.get<string>('MAIL_PORT')) || 2525,

@@ -1,9 +1,4 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import cookie, { FastifyCookieOptions } from '@fastify/cookie';
+import fastifyProxy from '@fastify/http-proxy';
 import { GlobalExceptionFilter, LoggerService } from '@kanban-board/shared';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -26,30 +21,44 @@ async function bootstrap() {
   const logger = loggerService.child({ context: 'Bootstrap' });
   app.useLogger(logger);
   app.useGlobalFilters(new GlobalExceptionFilter());
+
   const globalPrefix = 'api';
+  app.setGlobalPrefix(globalPrefix);
 
   const configService = app.get(ConfigService);
+
   const origins = configService
-    .get<string>('CORS_ORIGIN')
+    .get<string>('CORS_ORIGINS')
     ?.split(',')
     .map((url) => url.trim());
-
-  app.setGlobalPrefix(globalPrefix);
 
   app.enableCors({
     origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
   });
-  await app.register(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cookie as any,
-    {
-      secret: configService.get<string>('COOKIE_SECRET')
-    } as FastifyCookieOptions
-  );
 
-  const port = configService.get<number>('PORT') || 3001;
+  const services = [
+    { prefix: '/auth', target: 'http://localhost:3001' },
+    { prefix: '/users', target: 'http://localhost:3002' },
+    { prefix: '/boards', target: 'http://localhost:3003' },
+    { prefix: '/columns', target: 'http://localhost:3003' },
+    { prefix: '/tasks', target: 'http://localhost:3003' },
+    { prefix: '/notify', target: 'http://localhost:3004' },
+    { prefix: '/analytics', target: 'http://localhost:3005' }
+  ];
+
+  for (const { prefix, target } of services) {
+    await app.register(fastifyProxy, {
+      upstream: target,
+      prefix: `/${globalPrefix}${prefix}`,
+      rewritePrefix: `/${globalPrefix}${prefix}`,
+      http2: false
+    });
+    logger.log(`🔗 ${prefix} → ${target}`);
+  }
+
+  const port = process.env.PORT || 4400;
   await app.listen(port);
   logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`

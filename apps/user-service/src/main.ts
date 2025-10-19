@@ -51,7 +51,7 @@ async function bootstrap() {
     } as FastifyCookieOptions
   );
 
-  const port = configService.get<number>('PORT') || 3001;
+  const port = configService.get<number>('PORT') || 3002;
   await app.listen(port);
   logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`

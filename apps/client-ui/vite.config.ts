@@ -11,11 +11,7 @@ export default defineConfig(() => ({
     port: 4300,
     host: 'localhost',
     proxy: {
-      '/api/auth': 'http://localhost:3000',
-      '/api/users': 'http://localhost:3001',
-      '/api/boards': 'http://localhost:3002',
-      '/api/columns': 'http://localhost:3002',
-      '/api/tasks': 'http://localhost:3002'
+      '/api': 'http://localhost:4400'
     }
   },
   preview: {

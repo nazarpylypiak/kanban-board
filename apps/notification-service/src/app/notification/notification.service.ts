@@ -71,7 +71,7 @@ export class NotificationService {
     if (totalUsers > 0) {
       this.logger.log(
         `WebSocket notifications sent: ${userRecipients.length} users, ${adminIds?.length || 0} admins`,
-        { eventType }
+        { eventType, userRecipients, adminIds }
       );
     } else {
       this.logger.debug(`No recipients for notification`, { eventType });

@@ -52,7 +52,7 @@
         "buildTarget": "auth-service:build",
         "runBuildTargetDependencies": false,
         "inspect": "inspect",
-        "port": 9231
+        "port": 9229
       },
       "configurations": {
         "development": {

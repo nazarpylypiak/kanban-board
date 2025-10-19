@@ -51,7 +51,7 @@
       "options": {
         "buildTarget": "task-service:build",
         "inspect": "inspect",
-        "port": 9232,
+        "port": 9231,
         "runBuildTargetDependencies": false
       },
       "configurations": {
