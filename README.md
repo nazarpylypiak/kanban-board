@@ -17,7 +17,7 @@
 
 **Infrastructure:**
 
-- API Gateway (NestJS or Kong)
+- API Gateway (NestJS, Fastify, proxies requests to microservices)
 - Message broker: RabbitMQ / Kafka (event-driven, e.g., task.created → notification)
 - DB: PostgreSQL (relational) + Redis (cache)
 - DevOps: Docker Compose (local), Kubernetes (cloud), CI/CD (GitHub Actions)
@@ -34,6 +34,7 @@
 - Auth service: registration, login, JWT + refresh
 - User service: profile, roles (admin, user)
 - React frontend: login/register pages
+- API Gateway: initial setup to route requests to services
 
 ### Sprint 2
 
@@ -50,21 +51,11 @@
 - Angular admin: dashboard with charts
 - React frontend: push notifications (toast on task updates)
 
-### Sprint 4 (Optional)
+### Sprint 4
 
 - Docker Compose for local launch (gateway + services + frontends)
 - CI/CD (GitHub Actions: build + test + deploy)
 - Deploy on Render/Heroku/Netlify for live demo
-
----
-
-## Bonus (Senior-Level)
-
-- Role-based access control (RBAC)
-- GraphQL Gateway (federation between microservices)
-- Multi-tenant support (multiple organizations)
-- Testing: Jest (unit), Cypress (e2e)
-- Swagger / OpenAPI for API documentation
 
 ---
 
@@ -76,6 +67,7 @@
 - **Messaging:** RabbitMQ / Kafka
 - **DevOps:** Docker Compose, Kubernetes, GitHub Actions CI/CD
 - **Monorepo:** NX
+- **API Gateway:** NestJS + Fastify + HTTP Proxy
 
 ---
 
@@ -110,6 +102,7 @@ nx serve user-service
 nx serve task-service
 nx serve notification-service
 nx serve analytics-service
+nx serve api-gateway
 ```
 
 ---
@@ -134,6 +127,7 @@ apps/
   analytics-service/
   client-ui/
   admin-ui/
+  api-gateway/
 libs/
   shared/
 ```
