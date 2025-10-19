@@ -18,8 +18,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({
       logger: false
-    }),
-    { logger: false }
+    })
   );
 
   const loggerService = app.get(LoggerService);

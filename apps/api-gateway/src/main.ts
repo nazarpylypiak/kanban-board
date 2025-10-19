@@ -13,8 +13,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter({
       logger: false
-    }),
-    { logger: false }
+    })
   );
 
   const loggerService = app.get(LoggerService);
@@ -39,13 +38,13 @@ async function bootstrap() {
   });
 
   const services = [
-    { prefix: '/auth', target: 'http://localhost:3001' },
-    { prefix: '/users', target: 'http://localhost:3002' },
-    { prefix: '/boards', target: 'http://localhost:3003' },
-    { prefix: '/columns', target: 'http://localhost:3003' },
-    { prefix: '/tasks', target: 'http://localhost:3003' },
-    { prefix: '/notify', target: 'http://localhost:3004' },
-    { prefix: '/analytics', target: 'http://localhost:3005' }
+    { prefix: '/auth', target: configService.get('AUTH_URL') },
+    { prefix: '/users', target: configService.get('USER_URL') },
+    { prefix: '/boards', target: configService.get('BOARDS_URL') },
+    { prefix: '/columns', target: configService.get('COLUMNS_URL') },
+    { prefix: '/tasks', target: configService.get('TASKS_URL') },
+    { prefix: '/notify', target: configService.get('NOTIFY_URL') },
+    { prefix: '/analytics', target: configService.get('ANALYTICS_URL') }
   ];
 
   for (const { prefix, target } of services) {
@@ -59,7 +58,7 @@ async function bootstrap() {
   }
 
   const port = process.env.PORT || 4400;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );

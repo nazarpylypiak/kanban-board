@@ -1,5 +1,4 @@
-import { inject } from '@angular/core';
-import { Injectable } from '@nestjs/common';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of } from 'rxjs';
 import { UserApiService } from '../../../shared/services/api/user-api.service';

@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   postgres:
     image: postgres:15
@@ -37,6 +35,140 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
+    networks:
+      - kanban-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      args:
+        SERVICE: auth-service
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3001:3001'
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - kanban-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+      args:
+        SERVICE: user-service
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3002:3002'
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - kanban-network
+
+  task-service:
+    build:
+      context: .
+      dockerfile: apps/task-service/Dockerfile
+      args:
+        SERVICE: task-service
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3003:3003'
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - kanban-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+      args:
+        SERVICE: notification-service
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3004:3004'
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - kanban-network
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: apps/analytics-service/Dockerfile
+      args:
+        SERVICE: analytics-service
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3005:3005'
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - kanban-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+      args:
+        SERVICE: api-gateway
+    env_file: .env.prod
+    ports:
+      - '4400:4400'
+    depends_on:
+      - auth-service
+      - user-service
+      - task-service
+      - notification-service
+      - analytics-service
+    networks:
+      - kanban-network
+
+  admin-ui:
+    build:
+      context: .
+      dockerfile: apps/admin-ui/Dockerfile
+      args:
+        UI: admin-ui
+    ports:
+      - '4200:80'
+    depends_on:
+      - api-gateway
+    networks:
+      - kanban-network
+
+  client-ui:
+    build:
+      context: .
+      dockerfile: apps/client-ui/Dockerfile
+      args:
+        UI: client-ui
+    ports:
+      - '4300:80'
+    depends_on:
+      - api-gateway
     networks:
       - kanban-network
 
